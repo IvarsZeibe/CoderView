@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using webapi.Data;
+using webapi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,9 @@ builder.Services.AddDbContext<CoderViewDbContext>(options =>
 });
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<CoderViewDbContext>()
+    .AddSignInManager<SignInManager<IdentityUser>>()
     .AddDefaultTokenProviders();
+builder.Services.AddScoped<AuthService>();
 
 
 var app = builder.Build();

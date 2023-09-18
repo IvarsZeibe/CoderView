@@ -1,0 +1,32 @@
+<h1>Create an account</h1>
+<form *ngIf="!isSuccessful"
+      #f="ngForm"
+      (ngSubmit)="onSubmit()">
+    <p>
+        <mat-form-field class="example-full-width">
+            <mat-label>Username</mat-label>
+            <input type="text" name="username" matInput
+                   [(ngModel)]="form.username">
+        </mat-form-field>
+    </p>
+    <p>
+        <mat-form-field class="example-full-width">
+            <mat-label>Email</mat-label>
+            <input type="email" name="email" matInput placeholder="Ex. pat@example.com"
+                   [(ngModel)]="form.email">
+        </mat-form-field>
+    </p>
+    <p>
+        <mat-form-field class="example-full-width">
+            <mat-label>Password</mat-label>
+            <input type="password" name="password" matInput [(ngModel)]="form.password">
+        </mat-form-field>
+    </p>
+    <p>
+        <mat-form-field class="example-full-width">
+            <mat-label>Repeat Password</mat-label>
+            <input type="password" name="repeatPassword" matInput [(ngModel)]="form.repeatPassword">
+        </mat-form-field>
+    </p>
+    <button mat-raised-button>Create an account</button>
+</form>
