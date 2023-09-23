@@ -3,5 +3,6 @@
     <button mat-button [routerLink]="['/about']">About</button>
     <span class="spacer"></span>
     <button *ngIf="!isLoggedIn" mat-button [routerLink]="['/signin']">Sign In</button>
+    <button *ngIf="isLoggedIn" mat-button [routerLink]="['/profile']">Profile</button>
     <button *ngIf="isLoggedIn" mat-button (click)="logout()">Sign Out</button>
 </mat-toolbar>

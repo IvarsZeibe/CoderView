@@ -15,8 +15,11 @@ builder.Services.AddDbContext<CoderViewDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-    .AddEntityFrameworkStores<CoderViewDbContext>()
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+{
+    options.Password.RequiredLength = 8;
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+}).AddEntityFrameworkStores<CoderViewDbContext>()
     .AddSignInManager<SignInManager<IdentityUser>>()
     .AddDefaultTokenProviders();
 builder.Services.AddScoped<AuthService>();

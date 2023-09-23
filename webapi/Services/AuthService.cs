@@ -27,7 +27,7 @@ namespace webapi.Services
 
         public async Task<bool> SignInAsync(SignInViewModel model)
         {
-            IdentityUser user = _context.Set<IdentityUser>().Where(u => u.Email == model.Email).FirstOrDefault();
+            IdentityUser user = _context.Set<IdentityUser>().Where(u => u.UserName == model.Username).FirstOrDefault();
             if (user is null)
             {
                 return false;
@@ -61,18 +61,12 @@ namespace webapi.Services
             return user != null;
         }
 
-        public Task<bool> SignUpAsync(SignUpViewModel model)
+        public Task<IdentityResult> SignUpAsync(SignUpViewModel model)
         {
             IdentityUser user = new IdentityUser();
             user.UserName = model.Username;
-            user.NormalizedUserName = model.Username.ToUpperInvariant();
             user.Email = model.Email;
-            user.NormalizedEmail = model.Email.ToUpperInvariant();
-            user.PasswordHash = _passwordHasher.HashPassword(user, model.Password);
-
-            _context.Add(user);
-            _context.SaveChanges();
-            return Task.FromResult(true);
+            return _userManager.CreateAsync(user, model.Password);
         }
     }
 }

@@ -1,18 +1,21 @@
 <h1>Sign in</h1>
-<form
-    #f="ngForm"
-    (ngSubmit)="onSubmit()">
+<div class="error-message">
+    <div *ngIf="isLoginFailed">
+        Username or Password incorrect!
+    </div>
+</div>
+<form [formGroup]="loginForm"
+      (ngSubmit)="onSubmit()">
     <p>
         <mat-form-field class="example-full-width">
-            <mat-label>Email</mat-label>
-            <input type="email" name="email" matInput placeholder="Ex. pat@example.com"
-                   [(ngModel)]="form.email">
+            <mat-label>Username</mat-label>
+            <input type="text" formControlName="username" matInput>
         </mat-form-field>
     </p>
     <p>
         <mat-form-field class="example-full-width">
             <mat-label>Password</mat-label>
-            <input type="password" name="password" matInput [(ngModel)]="form.password">
+            <input type="password" formControlName="password" matInput>
         </mat-form-field>
     </p>
     <button mat-button [routerLink]="['/signup']">Create an account</button>

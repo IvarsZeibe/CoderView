@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using webapi.Data;
 using webapi.Services;
@@ -23,7 +25,7 @@ public class AuthenticationController : ControllerBase
 
     [HttpPost]
     [Route("/api/signup")]
-    public Task<bool> SignUp(SignUpViewModel model)
+    public Task<IdentityResult> SignUp(SignUpViewModel model)
     {
         return _authService.SignUpAsync(model);
     }
@@ -33,5 +35,13 @@ public class AuthenticationController : ControllerBase
     public void SignOut()
     {
         _authService.SignOutAsync();
+    }
+
+    [HttpPost]
+    [Authorize]
+    [Route("/api/profile")]
+    public ProfileViewModel GetUserData()
+    {
+        return new ProfileViewModel { Username = User.Identity.Name };
     }
 }

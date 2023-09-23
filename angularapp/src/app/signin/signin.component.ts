@@ -1,50 +1,41 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../_services/auth-service.service';
 import { StorageService } from '../_services/storage.service';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Component({
 	selector: 'app-signin',
 	templateUrl: './signin.component.html',
+	styleUrls: ['./signin.component.css']
 })
 export class SignInComponent implements OnInit {
-	form: any = {
-		email: null,
-		password: null
-	};
-	isLoggedIn = false;
+	loginForm!: FormGroup;
 	isLoginFailed = false;
-	errorMessage = '';
 	roles: string[] = [];
 
 	constructor(private authService: AuthService, private storageService: StorageService) { }
 
 	ngOnInit(): void {
-		if (this.storageService.isLoggedIn()) {
-			this.isLoggedIn = true;
-			this.roles = this.storageService.getUser().roles;
-		}
+		this.loginForm = new FormGroup({
+			username: new FormControl('', [Validators.required]),
+			password: new FormControl('', [Validators.required]),
+		});
 	}
 
 	onSubmit(): void {
-		const { email, password } = this.form;
+		const { username, password } = this.loginForm.value;
 
-		this.authService.login(email, password).subscribe({
+		this.authService.login(username, password).subscribe({
 			next: hasLoggedIn => {
 				if (hasLoggedIn) {
 					this.storageService.saveUser("");
-
 					this.isLoginFailed = false;
-					this.isLoggedIn = true;
 					this.roles = this.storageService.getUser().roles;
 					this.reloadPage();
 				} else {
 					console.log("Log in failed");
 					this.isLoginFailed = true;
 				}
-			},
-			error: err => {
-				this.errorMessage = err.error.message;
-				this.isLoginFailed = true;
 			}
 		});
 	}

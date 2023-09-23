@@ -1,32 +1,38 @@
 <h1>Create an account</h1>
-<form *ngIf="!isSuccessful"
-      #f="ngForm"
+<div *ngIf="showError" class="error-message">
+    <span [innerHTML]="errorMessage"></span>
+</div>
+<form [formGroup]="registerForm"
       (ngSubmit)="onSubmit()">
     <p>
         <mat-form-field class="example-full-width">
             <mat-label>Username</mat-label>
-            <input type="text" name="username" matInput
-                   [(ngModel)]="form.username">
+            <input type="text" formControlName="username" matInput>
         </mat-form-field>
     </p>
     <p>
         <mat-form-field class="example-full-width">
             <mat-label>Email</mat-label>
-            <input type="email" name="email" matInput placeholder="Ex. pat@example.com"
-                   [(ngModel)]="form.email">
+            <input type="email" formControlName="email" matInput placeholder="Ex. pat@example.com">
         </mat-form-field>
     </p>
     <p>
         <mat-form-field class="example-full-width">
             <mat-label>Password</mat-label>
-            <input type="password" name="password" matInput [(ngModel)]="form.password">
+            <input type="password" formControlName="password" matInput>
         </mat-form-field>
     </p>
     <p>
         <mat-form-field class="example-full-width">
             <mat-label>Repeat Password</mat-label>
-            <input type="password" name="repeatPassword" matInput [(ngModel)]="form.repeatPassword">
+            <input type="password" formControlName="confirmPassword" matInput>
+            <mat-error *ngIf="validateControl('confirmPassword') && hasError('confirmPassword', 'required')">
+                Confirmation is required
+            </mat-error>
+            <mat-error *ngIf="hasError('confirmPassword', 'mustMatch')">
+                Passwords must match
+            </mat-error>
         </mat-form-field>
     </p>
-    <button mat-raised-button>Create an account</button>
+    <button mat-raised-button [disabled]="!registerForm.valid">Create an account</button>
 </form>

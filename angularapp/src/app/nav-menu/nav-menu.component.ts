@@ -7,7 +7,7 @@ import { AuthService } from '../_services/auth-service.service';
 	templateUrl: './nav-menu.component.html',
 	styleUrls: ['./nav-menu.component.css'],
 })
-export class NavMenuComponent {
+export class NavMenuComponent implements OnInit {
 	isLoggedIn = false;
 	username?: string;
 
@@ -21,6 +21,14 @@ export class NavMenuComponent {
 
 			this.username = user.username;
 		}
+
+		window.addEventListener('storage', (event) => {
+			if (event.storageArea == localStorage) {
+				if (!this.storageService.isLoggedIn()) {
+					this.logout();
+				}
+			}
+		}, false);
 	}
 
 	logout(): void {
@@ -32,6 +40,9 @@ export class NavMenuComponent {
 				window.location.reload();
 			},
 			error: err => {
+				this.storageService.clean();
+
+				window.location.reload();
 				console.log(err);
 			}
 		});

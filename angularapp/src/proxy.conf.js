@@ -19,6 +19,11 @@ const PROXY_CONFIG = [
 		target: "https://localhost:7051",
 		secure: false,
 	},
+	{
+		context: ["/api/profile"],
+		target: "https://localhost:7051",
+		secure: false,
+	},
 ];
 
 module.exports = PROXY_CONFIG;
