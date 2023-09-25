@@ -1,0 +1,12 @@
+.post {
+	margin-bottom: 10px;
+}
+
+.post mat-card-content {
+	min-height: 30vh;
+}
+
+.comment {
+	margin-top: 5px;
+	display: block;
+}

@@ -1,5 +1,6 @@
 <mat-toolbar color="primary">
     <button mat-button class="home-button" [routerLink]="['/']">CoderView</button>
+    <button mat-button [routerLink]="['/posts']">Posts</button>
     <button mat-button [routerLink]="['/about']">About</button>
     <span class="spacer"></span>
     <button *ngIf="!isLoggedIn" mat-button [routerLink]="['/signin']">Sign In</button>

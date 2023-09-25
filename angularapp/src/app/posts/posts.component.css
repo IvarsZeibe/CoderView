@@ -1,0 +1,9 @@
+.card {
+    cursor: pointer;
+    margin: 20px 5px;
+}
+
+.create-post-button {
+    display: block;
+    width: 100%;
+}

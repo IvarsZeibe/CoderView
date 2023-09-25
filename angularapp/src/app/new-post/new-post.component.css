@@ -1,0 +1,8 @@
+.title, .post {
+	display: block;
+	width: 100%;
+}
+
+.post textarea {
+	min-height: 50vh;
+}
