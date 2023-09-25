@@ -13,16 +13,11 @@ export class StorageService {
 
 	public saveUser(user: any): void {
 		window.localStorage.removeItem(USER_KEY);
-		window.localStorage.setItem(USER_KEY, JSON.stringify(user));
+		window.localStorage.setItem(USER_KEY, user);
 	}
 
-	public getUser(): any {
-		const user = window.localStorage.getItem(USER_KEY);
-		if (user) {
-			return JSON.parse(user);
-		}
-
-		return null;
+	public getUsername(): any {
+		return window.localStorage.getItem(USER_KEY);
 	}
 
 	public isLoggedIn(): boolean {

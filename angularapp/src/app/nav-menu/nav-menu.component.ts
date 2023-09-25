@@ -17,7 +17,7 @@ export class NavMenuComponent implements OnInit {
 		this.isLoggedIn = this.storageService.isLoggedIn();
 
 		if (this.isLoggedIn) {
-			const user = this.storageService.getUser();
+			const user = this.storageService.getUsername();
 
 			this.username = user.username;
 		}

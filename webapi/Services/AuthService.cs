@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using webapi.Data;
+using webapi.Models;
 using webapi.ViewModels;
 
 namespace webapi.Services
@@ -9,25 +10,25 @@ namespace webapi.Services
     public class AuthService
     {
         private readonly CoderViewDbContext _context;
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IPasswordHasher<IdentityUser> _passwordHasher;
+        private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
 
         public AuthService(
-            CoderViewDbContext context, SignInManager<IdentityUser> signInManager, 
-            UserManager<IdentityUser> userManager, IHttpContextAccessor httpContextAccessor)
+            CoderViewDbContext context, SignInManager<ApplicationUser> signInManager, 
+            UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _signInManager = signInManager;
             _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
-            _passwordHasher = new PasswordHasher<IdentityUser>();
+            _passwordHasher = new PasswordHasher<ApplicationUser>();
         }
 
         public async Task<bool> SignInAsync(SignInViewModel model)
         {
-            IdentityUser user = _context.Set<IdentityUser>().Where(u => u.UserName == model.Username).FirstOrDefault();
+            ApplicationUser user = _context.ApplicationUsers.Where(u => u.UserName == model.Username).FirstOrDefault();
             if (user is null)
             {
                 return false;
@@ -63,7 +64,7 @@ namespace webapi.Services
 
         public Task<IdentityResult> SignUpAsync(SignUpViewModel model)
         {
-            IdentityUser user = new IdentityUser();
+            ApplicationUser user = new ApplicationUser();
             user.UserName = model.Username;
             user.Email = model.Email;
             return _userManager.CreateAsync(user, model.Password);

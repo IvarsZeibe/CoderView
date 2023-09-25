@@ -2,6 +2,8 @@ import { KeyValuePipe } from '@angular/common';
 import { Component, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StorageService } from '../_services/storage.service';
+import { PostsService } from '../_services/posts.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-post',
@@ -12,104 +14,129 @@ export class PostComponent implements OnInit {
 	@ViewChild('comment') comment: any;
 	@ViewChild('test', { read: ViewContainerRef }) container: any;
 
-	id: string | null = null;
+	postId = 0;
+	title = "";
+	author = "";
+	content = "";
+	voteCount = 0;
+	isVotedByUser = false;
+
 	// key is -2 for new comment while the server hasn't returned the id of the newly created comment
-	comments: Record<string | "-2", {
+	comments: Record<number | -2, {
 		owner: string,
 		content: string,
-		replyTo: string | null,
-		depth: number
+		replyTo: number | null,
+		depth: number,
+		voteCount: number,
+		isVotedByUser: boolean
 	}> = {};
 
-	replies: Record<string, string> = {};
-	constructor(private route: ActivatedRoute, private storageService: StorageService, private router: Router) { }
+	replies: Record<number, string> = {};
+	constructor(
+		private route: ActivatedRoute,
+		private storageService: StorageService,
+		private router: Router,
+		private postsService: PostsService
+	) { }
 
 	ngOnInit(): void {
-		this.id = this.route.snapshot.paramMap.get('id');
-		this.comments = {
-			"1": {
-				content: "text",
-				depth: 0,
-				owner: "owner",
-				replyTo: null
-			},
-			"2": {
-				content: "text",
-				depth: 0,
-				owner: "owner",
-				replyTo: null
-			},
-			"3": {
-				content: "text",
-				depth: 0,
-				owner: "owner",
-				replyTo: null
-			},
-			"4": {
-				content: "text1",
-				depth: 1,
-				owner: "owner",
-				replyTo: "2"
-			},
-			"5": {
-				content: "text",
-				depth: 0,
-				owner: "owner",
-				replyTo: null
-			},
-			"6": {
-				content: "text2",
-				depth: 1,
-				owner: "owner",
-				replyTo: "2"
-			},
-			"7": {
-				content: "text",
-				depth: 2,
-				owner: "owner",
-				replyTo: "4"
+		this.postId = parseInt(this.route.snapshot.paramMap.get('id')!);
+		this.postsService.getPostData(this.postId).subscribe(postData => {
+			this.title = postData.title;
+			this.author = postData.author;
+			this.content = postData.content;
+			this.voteCount = postData.voteCount;
+			this.isVotedByUser = postData.isVotedByUser;
+			for (const comment of postData.comments) {
+				this.comments[comment.id] = {
+					content: comment.content,
+					owner: comment.author,
+					replyTo: comment.replyTo,
+					depth: comment.replyTo ? this.comments[comment.replyTo].depth + 1 : 0,
+					voteCount: comment.voteCount,
+					isVotedByUser: comment.isVotedByUser
+				};
 			}
-		}
+		})
 	}
 
-	getOrderedCommentIds(): string[] {
-		const orderedCommentIds: string[] = [];
-		for (const commentId of Object.keys(this.comments)) {
-			if (this.comments[commentId].replyTo) {
-				const parentIndex = orderedCommentIds.indexOf(this.comments[commentId].replyTo!);
-				orderedCommentIds.splice(parentIndex + 1, 0, commentId);
+	getCommentCount(): number {
+		return Object.keys(this.comments).length;
+	}
+
+	getOrderedCommentIds(): number[] {
+		let currentDepth = 0;
+		const orderedCommentIds: number[] = [];
+		for (let i = 0; i < currentDepth + 1; i++) {
+			let areCommentsInThisDepthFound = false;
+			for (const commentIdString of Object.keys(this.comments).reverse()) {
+				const commentId = parseInt(commentIdString);
+				if (this.comments[commentId].depth == currentDepth) {
+					areCommentsInThisDepthFound = true;
+					if (this.comments[commentId].replyTo) {
+						const parentIndex = orderedCommentIds.indexOf(this.comments[commentId].replyTo!);
+						orderedCommentIds.splice(parentIndex + 1, 0, commentId);
+					} else {
+						orderedCommentIds.push(commentId);
+					}
+				}
 			}
-			else if (commentId == "-2") {
-				orderedCommentIds.splice(0, 0, commentId);
-			} else {
-				orderedCommentIds.push(commentId);
+			if (areCommentsInThisDepthFound) {
+				currentDepth++;
 			}
 		}
 		return orderedCommentIds;
 	}
 
-	createComment(): void {
-		this.replies["-1"] = "";
-	}
-
-	startReply(commentId: string): void {
+	startReply(commentId: number): void {
 		if (!this.storageService.isLoggedIn()) {
 			this.router.navigate(['/signin']);
 		}
 		this.replies[commentId] = "";
 	}
 
-	cancelReply(commentId: string): void {
+	cancelReply(commentId: number): void {
 		delete this.replies[commentId];
 	}
 
-	submitReply(replyTo: string | "-1"): void {
-		this.comments["-2"] = {
+	submitReply(replyTo: number | -1): void {
+		this.comments[-2] = {
 			content: this.replies[replyTo],
-			depth: replyTo == "-1" ? 0 : this.comments[replyTo].depth + 1,
-			owner: "user",
-			replyTo: replyTo == "-1" ? null : replyTo
+			depth: replyTo == -1 ? 0 : this.comments[replyTo].depth + 1,
+			owner: this.storageService.getUsername(),
+			replyTo: replyTo == -1 ? null : replyTo,
+			voteCount: 0,
+			isVotedByUser: false
 		}
+		this.postsService.submitComment(this.replies[replyTo], this.postId, replyTo == -1 ? null : replyTo).subscribe({
+			next: commentId => {
+				const id = commentId.toString();
+				this.comments[id] = this.comments[-2];
+				delete this.comments[-2];
+			}
+		})
 		delete this.replies[replyTo];
+	}
+
+	async voteOnPost(): Promise<void> {
+		if (!this.storageService.isLoggedIn()) {
+			this.router.navigate(['/signin']);
+		}
+		if (!this.isVotedByUser) {
+			this.voteCount++;
+			this.isVotedByUser = true;
+			await firstValueFrom(this.postsService.voteOnPost(this.postId));
+		}
+	}
+
+	async voteOnComment(commentId: number): Promise<void> {
+		if (!this.storageService.isLoggedIn()) {
+			this.router.navigate(['/signin']);
+		}
+		if (!this.comments[commentId].isVotedByUser) {
+			this.comments[commentId].voteCount++;
+			this.comments[commentId].isVotedByUser = true;
+			await firstValueFrom(this.postsService.voteOnComment(commentId));
+		}
 	}
 }

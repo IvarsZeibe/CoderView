@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using webapi.Data;
+using webapi.Models;
 using webapi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,12 +16,12 @@ builder.Services.AddDbContext<CoderViewDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 8;
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 }).AddEntityFrameworkStores<CoderViewDbContext>()
-    .AddSignInManager<SignInManager<IdentityUser>>()
+    .AddSignInManager<SignInManager<ApplicationUser>>()
     .AddDefaultTokenProviders();
 builder.Services.AddScoped<AuthService>();
 

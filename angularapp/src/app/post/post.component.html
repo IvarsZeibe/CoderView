@@ -1,22 +1,22 @@
 <mat-card class="post">
     <mat-card-header>
-        <mat-card-title>Post1</mat-card-title>
-        <mat-card-subtitle>User1</mat-card-subtitle>
+        <mat-card-title>{{title}}</mat-card-title>
+        <mat-card-subtitle>{{author}}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ultricies libero vitae nisl varius, ut semper nisi ultricies. Donec sit amet faucibus lectus, quis gravida leo. Phasellus tincidunt malesuada volutpat. Cras at nunc quis nulla vehicula egestas sit amet et justo. Curabitur sodales porta tortor id ullamcorper. Sed tortor tellus, vulputate a pulvinar non, fermentum at sapien. Nunc sit amet erat ipsum. Vivamus sodales lectus vel elit egestas sollicitudin. Nam vel eros blandit, rhoncus risus eget, fringilla quam. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculu</p>
+        <p>{{content}}</p>
     </mat-card-content>
     <mat-card-actions>
-        <button mat-button (click)="createComment()">Comment (123)</button>
-        <button mat-button>Vote (31232)</button>
+        <button mat-button (click)="startReply(-1)">Comment ({{getCommentCount()}})</button>
+        <button mat-button [class.button-pressed]="isVotedByUser" (click)="voteOnPost()">Vote ({{voteCount}})</button>
     </mat-card-actions>
 </mat-card>
 <mat-card>
     <mat-card-content>
-        <mat-form-field class="comment" *ngIf="replies.hasOwnProperty('-1')">
-            <input type="text" [(ngModel)]="replies['-1']" matInput>
-            <button matSuffix mat-button (click)="cancelReply('-1')">Cancel</button>
-            <button matSuffix mat-button (click)="submitReply('-1')">Comment</button>
+        <mat-form-field class="comment" *ngIf="replies.hasOwnProperty(-1)">
+            <input type="text" [(ngModel)]="replies[-1]" matInput>
+            <button matSuffix mat-button (click)="cancelReply(-1)">Cancel</button>
+            <button matSuffix mat-button (click)="submitReply(-1)">Comment</button>
         </mat-form-field>
         <div *ngFor="let commentId of getOrderedCommentIds()">
             <mat-card [style.marginLeft]="15 * comments[commentId].depth + 'px'" class="comment">
@@ -29,6 +29,7 @@
                     </div>
                 </mat-card-content>
                 <mat-card-actions align="end">
+                    <button mat-button [class.button-pressed]="comments[commentId].isVotedByUser" (click)="voteOnComment(commentId)">Vote ({{comments[commentId].voteCount}})</button>
                     <button mat-button (click)="startReply(commentId)">Reply</button>
                 </mat-card-actions>
             </mat-card>

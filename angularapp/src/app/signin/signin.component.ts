@@ -28,9 +28,9 @@ export class SignInComponent implements OnInit {
 		this.authService.login(username, password).subscribe({
 			next: hasLoggedIn => {
 				if (hasLoggedIn) {
-					this.storageService.saveUser("");
+					this.storageService.saveUser(username);
 					this.isLoginFailed = false;
-					this.roles = this.storageService.getUser().roles;
+					this.roles = this.storageService.getUsername().roles;
 					this.reloadPage();
 				} else {
 					console.log("Log in failed");
