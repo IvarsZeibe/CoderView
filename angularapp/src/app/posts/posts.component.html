@@ -11,7 +11,7 @@
         </mat-card-content>
         <mat-card-actions>
             <button mat-button>Comment ({{post.commentCount}})</button>
-            <button mat-button [class.button-pressed]="post.isVotedByUser">Vote ({{post.voteCount}})</button>
+            <button mat-button [class.button-pressed]="post.isVotedByUser" (click)="voteOnPost($event, post)">Vote ({{post.voteCount}})</button>
         </mat-card-actions>
     </mat-card>
 </div>

@@ -118,25 +118,33 @@ export class PostComponent implements OnInit {
 		delete this.replies[replyTo];
 	}
 
-	async voteOnPost(): Promise<void> {
+	voteOnPost() {
 		if (!this.storageService.isLoggedIn()) {
 			this.router.navigate(['/signin']);
 		}
 		if (!this.isVotedByUser) {
 			this.voteCount++;
 			this.isVotedByUser = true;
-			await firstValueFrom(this.postsService.voteOnPost(this.postId));
+			this.postsService.voteOnPost(this.postId);
+		} else {
+			this.voteCount--;
+			this.isVotedByUser = false;
+			this.postsService.unvoteOnPost(this.postId);
 		}
 	}
 
-	async voteOnComment(commentId: number): Promise<void> {
+	voteOnComment(commentId: number) {
 		if (!this.storageService.isLoggedIn()) {
 			this.router.navigate(['/signin']);
 		}
 		if (!this.comments[commentId].isVotedByUser) {
 			this.comments[commentId].voteCount++;
 			this.comments[commentId].isVotedByUser = true;
-			await firstValueFrom(this.postsService.voteOnComment(commentId));
+			this.postsService.voteOnComment(commentId);
+		} else {
+			this.comments[commentId].voteCount--;
+			this.comments[commentId].isVotedByUser = false;
+			this.postsService.unvoteOnComment(commentId);
 		}
 	}
 }

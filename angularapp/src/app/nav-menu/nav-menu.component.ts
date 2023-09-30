@@ -9,40 +9,24 @@ import { AuthService } from '../_services/auth-service.service';
 })
 export class NavMenuComponent implements OnInit {
 	isLoggedIn = false;
-	username?: string;
 
 	constructor(private storageService: StorageService, private authService: AuthService) { }
 
 	ngOnInit(): void {
-		this.isLoggedIn = this.storageService.isLoggedIn();
-
-		if (this.isLoggedIn) {
-			const user = this.storageService.getUsername();
-
-			this.username = user.username;
-		}
-
 		window.addEventListener('storage', (event) => {
 			if (event.storageArea == localStorage) {
-				if (!this.storageService.isLoggedIn()) {
-					this.logout();
-				}
+				this.isLoggedIn = this.storageService.isLoggedIn();
 			}
 		}, false);
+
+		this.isLoggedIn = this.storageService.isLoggedIn();
 	}
 
 	logout(): void {
+		this.storageService.clean();
+		this.isLoggedIn = false;
 		this.authService.logout().subscribe({
-			next: res => {
-				console.log(res);
-				this.storageService.clean();
-
-				window.location.reload();
-			},
 			error: err => {
-				this.storageService.clean();
-
-				window.location.reload();
 				console.log(err);
 			}
 		});

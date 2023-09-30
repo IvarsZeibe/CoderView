@@ -145,6 +145,35 @@ namespace webapi.Controllers
         }
 
         [HttpPost]
+        [Route("/api/post/unvote/{id}")]
+        [Authorize]
+        public IActionResult UnvoteOnPost(int id)
+        {
+            ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
+            if (user is null)
+            {
+                return BadRequest();
+            }
+
+            var post = _context.Posts.Find(id);
+            if (post is null)
+            {
+                return BadRequest();
+            }
+
+            var vote = _context.Votes.Where(v => v.PostVotedFor == post && v.User == user).FirstOrDefault();
+            if (vote is null)
+            {
+                return BadRequest();
+            }
+
+            _context.Votes.Remove(vote);
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpPost]
         [Route("/api/comment/vote/{id}")]
         [Authorize]
         public IActionResult VoteOnComment(int id)
@@ -171,6 +200,35 @@ namespace webapi.Controllers
                 CommentVotedFor = comment,
                 User = user,
             });
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("/api/comment/unvote/{id}")]
+        [Authorize]
+        public IActionResult UnvoteOnComment(int id)
+        {
+            ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
+            if (user is null)
+            {
+                return BadRequest();
+            }
+
+            var comment = _context.Comments.Find(id);
+            if (comment is null)
+            {
+                return BadRequest();
+            }
+
+            var vote = _context.Votes.Where(v => v.CommentVotedFor == comment && v.User == user).FirstOrDefault();
+            if (vote is null)
+            {
+                return BadRequest();
+            }
+
+            _context.Votes.Remove(vote);
             _context.SaveChanges();
 
             return Ok();

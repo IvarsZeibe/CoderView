@@ -16,6 +16,14 @@ public class AuthenticationController : ControllerBase
         _authService = authService;
     }
 
+
+    [HttpPost]
+    [Route("/api/isAuthenticated")]
+    public bool IsAuthenticated()
+    {
+        return User.Identity.IsAuthenticated;
+    }
+
     [HttpPost]
     [Route("/api/signin")]
     public Task<bool> SignIn(SignInViewModel model)

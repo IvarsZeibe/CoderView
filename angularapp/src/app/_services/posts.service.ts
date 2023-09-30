@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 
 const AUTH_API = '/api/';
 
@@ -78,19 +78,35 @@ export class PostsService {
 		);
 	}
 
-	public voteOnPost(postId: number): Observable<any> {
-		return this.http.post(
+	public voteOnPost(postId: number) {
+		firstValueFrom(this.http.post(
 			AUTH_API + 'post/vote/' + postId,
 			{},
 			httpOptions
-		);
+		));
 	}
 
-	public voteOnComment(commentId: number): Observable<any> {
-		return this.http.post(
+	public unvoteOnPost(postId: number) {
+		firstValueFrom(this.http.post(
+			AUTH_API + 'post/unvote/' + postId,
+			{},
+			httpOptions
+		));
+	}
+
+	public voteOnComment(commentId: number) {
+		firstValueFrom(this.http.post(
 			AUTH_API + 'comment/vote/' + commentId,
 			{},
 			httpOptions
-		);
+		));
+	}
+
+	public unvoteOnComment(commentId: number) {
+		firstValueFrom(this.http.post(
+			AUTH_API + 'comment/unvote/' + commentId,
+			{},
+			httpOptions
+		));
 	}
 }
