@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../_services/auth-service.service';
 import { StorageService } from '../_services/storage.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { finalize } from 'rxjs';
 
 @Component({
 	selector: 'app-signin',
@@ -11,6 +12,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 export class SignInComponent implements OnInit {
 	loginForm!: FormGroup;
 	isLoginFailed = false;
+	isLoading = false;
 	roles: string[] = [];
 
 	constructor(private authService: AuthService, private storageService: StorageService) { }
@@ -24,19 +26,26 @@ export class SignInComponent implements OnInit {
 
 	onSubmit(): void {
 		const { username, password } = this.loginForm.value;
+		this.isLoading = true;
 
-		this.authService.login(username, password).subscribe({
-			next: hasLoggedIn => {
-				if (hasLoggedIn) {
-					this.storageService.saveUser(username);
-					this.isLoginFailed = false;
-					this.roles = this.storageService.getUsername().roles;
-					this.reloadPage();
-				} else {
-					console.log("Log in failed");
-					this.isLoginFailed = true;
+		this.authService.login(username, password)
+			.pipe(
+				finalize(() => {
+					this.isLoading = false;
+				})
+			)
+			.subscribe({
+				next: hasLoggedIn => {
+					if (hasLoggedIn) {
+						this.storageService.saveUser(username);
+						this.isLoginFailed = false;
+						this.roles = this.storageService.getUsername().roles;
+						this.reloadPage();
+					} else {
+						console.log("Log in failed");
+						this.isLoginFailed = true;
+					}
 				}
-			}
 		});
 	}
 

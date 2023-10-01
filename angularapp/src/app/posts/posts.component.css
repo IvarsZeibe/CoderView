@@ -1,6 +1,6 @@
 .card {
     cursor: pointer;
-    margin: 20px 5px;
+    margin: 20px 0px;
 }
 
 .create-post-button {
@@ -9,5 +9,19 @@
 }
 
 .button-pressed {
-	background-color: #EEEEEE;
+	background-color: #393939;
+}
+
+.heading {
+	display: flex;
+	align-items: center;
+	width: 100%;
+}
+
+.heading h1 {
+	flex-grow: 1;
+}
+
+.search-bar {
+	width: 100%;
 }

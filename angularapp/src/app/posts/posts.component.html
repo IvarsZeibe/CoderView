@@ -1,5 +1,10 @@
-<h1>All Posts</h1>
-<button class="create-post-button" mat-raised-button [routerLink]="['/new_post']">Create a new post</button>
+<div class="heading">
+    <h1>Discussions</h1>
+    <button mat-raised-button color="accent" [routerLink]="['/new_post']">Start a discussion</button>
+</div>
+<mat-form-field class="search-bar">
+    <input matInput placeholder="Search discussion">
+</mat-form-field>
 <div>
     <mat-card class="card" *ngFor="let post of posts" [routerLink]="['/post', post.id]">
         <mat-card-header>

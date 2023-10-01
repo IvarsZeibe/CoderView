@@ -1,7 +1,7 @@
 <mat-card class="post">
     <mat-card-header>
         <mat-card-title>{{title}}</mat-card-title>
-        <mat-card-subtitle>{{author}}</mat-card-subtitle>
+        <mat-card-subtitle class="user">{{author}}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
         <p>{{content}}</p>
@@ -19,21 +19,21 @@
             <button matSuffix mat-button (click)="submitReply(-1)">Comment</button>
         </mat-form-field>
         <div *ngFor="let commentId of getOrderedCommentIds()">
-            <mat-card [style.marginLeft]="15 * comments[commentId].depth + 'px'" class="comment">
+            <mat-card [style.marginLeft]="15 * comments[commentId].depth + 'px'" [style.borderColor]="getCommentColor(comments[commentId].depth)" class="comment">
                 <mat-card-header>
-                    <mat-card-subtitle>{{comments[commentId].owner}}</mat-card-subtitle>
+                    <mat-card-subtitle class="user">{{comments[commentId].owner}}</mat-card-subtitle>
                 </mat-card-header>
                 <mat-card-content>
                     <div>
                         {{comments[commentId].content}}
                     </div>
                 </mat-card-content>
-                <mat-card-actions align="end">
+                <mat-card-actions align="end" [style.borderColor]="getCommentColor(comments[commentId].depth)">
                     <button mat-button [class.button-pressed]="comments[commentId].isVotedByUser" (click)="voteOnComment(commentId)">Vote ({{comments[commentId].voteCount}})</button>
                     <button mat-button (click)="startReply(commentId)">Reply</button>
                 </mat-card-actions>
             </mat-card>
-            <mat-form-field class="comment" *ngIf="replies.hasOwnProperty(commentId)">
+            <mat-form-field class="comment-input" *ngIf="replies.hasOwnProperty(commentId)">
                 <input type="text" [(ngModel)]="replies[commentId]" matInput>
                 <button matSuffix mat-button (click)="cancelReply(commentId)">Cancel</button>
                 <button matSuffix mat-button (click)="submitReply(commentId)">Comment</button>

@@ -20,6 +20,7 @@ export class PostComponent implements OnInit {
 	content = "";
 	voteCount = 0;
 	isVotedByUser = false;
+	commentDepthColors = ["red", "orange", "green", "purple"];
 
 	// key is -2 for new comment while the server hasn't returned the id of the newly created comment
 	comments: Record<number | -2, {
@@ -62,6 +63,11 @@ export class PostComponent implements OnInit {
 
 	getCommentCount(): number {
 		return Object.keys(this.comments).length;
+	}
+
+	getCommentColor(depth: number): string {
+		depth = depth % this.commentDepthColors.length;
+		return this.commentDepthColors[depth];
 	}
 
 	getOrderedCommentIds(): number[] {

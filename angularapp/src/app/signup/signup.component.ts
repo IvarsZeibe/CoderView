@@ -3,6 +3,7 @@ import { AuthService } from '../_services/auth-service.service';
 import { PasswordConfirmationValidatorService } from '../_services/password-confirmation-validator.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 
 @Component({
 	selector: 'app-signup',
@@ -13,7 +14,8 @@ export class SignUpComponent implements OnInit {
 	registerForm!: FormGroup;
 
 	errorMessage = '';
-	showError = false;
+	isLoginFailed = false;
+	isLoading = false;
 
 	constructor(private authService: AuthService,
 		private passwordConfirmationValidator: PasswordConfirmationValidatorService,
@@ -27,17 +29,25 @@ export class SignUpComponent implements OnInit {
 			confirmPassword: new FormControl('')
 		});
 
+		this.registerForm.get('password')!.setValidators([Validators.required,
+			this.passwordConfirmationValidator.validatePassword(this.registerForm.get('confirmPassword')!)]);
 		this.registerForm.get('confirmPassword')!.setValidators([Validators.required,
 			this.passwordConfirmationValidator.validateConfirmPassword(this.registerForm.get('password')!)]);
 	}
 
 	onSubmit(): void {
-		this.showError = false;
+		this.isLoginFailed = false;
+		this.isLoading = true;
 		const { username, email, password } = this.registerForm.value;
 
-		this.authService.register(username, email, password).subscribe({
+		this.authService.register(username, email, password)
+			.pipe(
+				finalize(() => {
+					this.isLoading = false;
+				})
+			)
+			.subscribe({
 			next: data => {
-				console.log(data);
 				if (data.succeeded) {
 					this.router.navigate(['/']);
 				} else {
@@ -47,13 +57,14 @@ export class SignUpComponent implements OnInit {
 						this.errorMessage += m.description + '<br>';
 					});
 					this.errorMessage.slice(0, -4);
-					this.showError = true;
+					this.isLoginFailed = true;
 				}
 			},
 			error: err => {
 				this.errorMessage = err.error.message;
-			}
+			},
 		});
+
 	}
 
 	public validateControl = (controlName: string) => {

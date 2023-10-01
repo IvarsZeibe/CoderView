@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatCardModule } from '@angular/material/card';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { AppComponent } from './app.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
@@ -18,12 +19,13 @@ import { httpInterceptorProviders } from './_helpers/http.interceptor';
 import { PostsComponent } from './posts/posts.component';
 import { NewPostComponent } from './new-post/new-post.component';
 import { PostComponent } from './post/post.component';
+import { HomeComponent } from './home/home.component';
 
 @NgModule({
 	declarations: [
 		AppComponent, NavMenuComponent, SignInComponent,
 		SignUpComponent, PostsComponent, NewPostComponent,
-		PostComponent
+		PostComponent, HomeComponent
 	],
 	imports: [
 		BrowserModule,
@@ -35,7 +37,7 @@ import { PostComponent } from './post/post.component';
 		MatInputModule,
 		MatFormFieldModule,
 		FormsModule, ReactiveFormsModule,
-		MatCardModule,
+		MatCardModule, MatProgressBarModule
 	],
 	providers: [httpInterceptorProviders],
 	bootstrap: [AppComponent],

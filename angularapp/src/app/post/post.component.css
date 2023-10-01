@@ -7,10 +7,19 @@
 }
 
 .comment {
-	margin-top: 5px;
+	background-color: #565656;
+	margin-bottom: 5px;
+	display: block;
+	border-left: solid 5px red;
+}
+.comment-input {
 	display: block;
 }
 
 .button-pressed {
-	background-color: #EEEEEE;
+	background-color: #393939;
+}
+
+.user {
+	/*color: #afb42b;*/
 }

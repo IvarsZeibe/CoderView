@@ -11,20 +11,87 @@
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
-$angularapp-primary: mat.define-palette(mat.$indigo-palette);
-$angularapp-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
+
+$primary: (
+    50 : #e4e9ed,
+    100 : #bbc7d3,
+    200 : #8da2b6,
+    300 : #5f7c98,
+    400 : #3d6082,
+    500 : #1b446c,
+    600 : #183e64,
+    700 : #143559,
+    800 : #102d4f,
+    900 : #081f3d,
+    A100 : #74a8ff,
+    A200 : #4188ff,
+    A400 : #0e68ff,
+    A700 : #005bf4,
+    contrast: (
+        50 : #000000,
+        100 : #000000,
+        200 : #000000,
+        300 : #ffffff,
+        400 : #ffffff,
+        500 : #ffffff,
+        600 : #ffffff,
+        700 : #ffffff,
+        800 : #ffffff,
+        900 : #ffffff,
+        A100 : #000000,
+        A200 : #000000,
+        A400 : #ffffff,
+        A700 : #ffffff,
+    )
+);
+
+$analogous: (
+    50 : #e4eded,
+    100 : #bbd3d3,
+    200 : #8db6b6,
+    300 : #5f9898,
+    400 : #3d8282,
+    500 : #1b6c6c,
+    600 : #186464,
+    700 : #145959,
+    800 : #104f4f,
+    900 : #083d3d,
+    A100 : #74ffff,
+    A200 : #41ffff,
+    A400 : #0effff,
+    A700 : #00f4f4,
+    contrast: (
+        50 : #000000,
+        100 : #000000,
+        200 : #000000,
+        300 : #000000,
+        400 : #ffffff,
+        500 : #ffffff,
+        600 : #ffffff,
+        700 : #ffffff,
+        800 : #ffffff,
+        900 : #ffffff,
+        A100 : #000000,
+        A200 : #000000,
+        A400 : #000000,
+        A700 : #000000,
+    )
+);
+
+$angularapp-primary: mat.define-palette($primary);
+$angularapp-accent: mat.define-palette($analogous);
 
 // The warn palette is optional (defaults to red).
 $angularapp-warn: mat.define-palette(mat.$red-palette);
 
 // Create the theme object. A theme consists of configurations for individual
 // theming systems such as "color" or "typography".
-$angularapp-theme: mat.define-light-theme(
+$angularapp-theme: mat.define-dark-theme(
 	(
 		color: (
 			primary: $angularapp-primary,
 			accent: $angularapp-accent,
-			warn: $angularapp-warn,
+			warn: $angularapp-warn
 		),
 	)
 );

@@ -1,4 +1,26 @@
+:host {
+	width: 100%;
+	display: block;
+	max-width: 500px;
+	margin: auto;
+}
+
+mat-form-field {
+	width: 100%;
+}
+
+mat-card {
+	padding: 20px;
+}
+
+mat-card-title {
+	text-align: center;
+}
+
+h1 {
+	margin: 5px;
+}
+
 .error-message {
 	color: red;
-	height: 15px;
 }
