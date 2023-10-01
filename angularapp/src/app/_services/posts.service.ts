@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom, map } from 'rxjs';
 
 const AUTH_API = '/api/';
 
@@ -9,17 +9,18 @@ const httpOptions = {
 };
 
 export type PostSummary = {
-	id: number,
+	id: string,
 	title: string,
 	content: string,
 	author: string,
 	commentCount: number,
 	voteCount: number,
-	isVotedByUser: boolean
+	isVotedByUser: boolean,
+	createdOn: Date
 };
 
 export type PostData = {
-	id: number,
+	id: string,
 	title: string,
 	content: string,
 	author: string,
@@ -34,6 +35,11 @@ export type PostData = {
 		isVotedByUser: boolean
 	}[],
 };
+
+export enum SortOrder {
+	Ascending,
+	Descending
+}
 
 @Injectable({
   providedIn: 'root'
@@ -52,21 +58,31 @@ export class PostsService {
 		);
 	}
 
-	public getAllPosts() {
+	public getPosts(titleSearchFilter = '', timeStamp: Date | null = null, sortOrder: SortOrder = SortOrder.Descending) {
+		const urlSearchParams = new URLSearchParams();
+		if (titleSearchFilter != '') {
+			urlSearchParams.append('titleSearchFilter', titleSearchFilter);
+		}
+		if (timeStamp != null) {
+			urlSearchParams.append('timeStamp', timeStamp.toISOString());
+		}
+		urlSearchParams.append('sortOrder', sortOrder.toString());
 		return this.http.get <PostSummary[]>(
-			AUTH_API + 'posts',
+			AUTH_API + 'posts?' + urlSearchParams.toString(),
 			httpOptions
+		).pipe(
+			map(response => response.map(p => Object.assign(p, { createdOn: new Date(p.createdOn) })))
 		);
 	}
 
-	public getPostData(id: number) {
+	public getPostData(id: string) {
 		return this.http.get<PostData>(
 			AUTH_API + 'post/' + id,
 			httpOptions
 		);
 	}
 
-	public submitComment(content: string, postId: number, replyTo: number | null): Observable<any> {
+	public submitComment(content: string, postId: string, replyTo: number | null): Observable<any> {
 		return this.http.post(
 			AUTH_API + 'comment',
 			{
@@ -78,7 +94,7 @@ export class PostsService {
 		);
 	}
 
-	public voteOnPost(postId: number) {
+	public voteOnPost(postId: string) {
 		firstValueFrom(this.http.post(
 			AUTH_API + 'post/vote/' + postId,
 			{},
@@ -86,7 +102,7 @@ export class PostsService {
 		));
 	}
 
-	public unvoteOnPost(postId: number) {
+	public unvoteOnPost(postId: string) {
 		firstValueFrom(this.http.post(
 			AUTH_API + 'post/unvote/' + postId,
 			{},

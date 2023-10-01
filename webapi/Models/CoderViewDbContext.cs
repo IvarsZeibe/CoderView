@@ -19,4 +19,12 @@ public class CoderViewDbContext : IdentityDbContext<ApplicationUser>
         Database.EnsureCreated();
         Database.Migrate();
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<Post>()
+            .Property(p => p.CreatedOn)
+            .HasDefaultValueSql("getdate()");
+    }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { PostSummary, PostsService } from '../_services/posts.service';
 import { StorageService } from '../_services/storage.service';
 import { Router } from '@angular/router';
@@ -10,11 +10,42 @@ import { Router } from '@angular/router';
 })
 export class PostsComponent implements OnInit {
 	posts: PostSummary[] = [];
+	titleSearchFilter = "";
+	lastSearchFilter = "";
+	timeStamp: Date | null = null;
+	isTryingToLoadPosts = false;
+	areAllPostsLoaded = false;
 
 	constructor(private postsService: PostsService, private storageService: StorageService, private router: Router) { }
 
 	ngOnInit(): void {
-		this.postsService.getAllPosts().subscribe(posts => this.posts = posts);
+		this.filterPosts();
+	}
+
+	filterPosts(event: Event | null = null): void {
+		if (event) {
+			event.stopPropagation();
+		}
+		this.lastSearchFilter = this.titleSearchFilter;
+		this.areAllPostsLoaded = false;
+		this.timeStamp = null;
+		this.postsService.getPosts(this.lastSearchFilter).subscribe(posts => {
+			this.posts = posts;
+			this.timeStamp = posts[posts.length - 1].createdOn;
+
+		});
+	}
+
+	loadMorePosts(): void {
+		this.isTryingToLoadPosts = true;
+		this.postsService.getPosts(this.lastSearchFilter, this.timeStamp).subscribe(posts => {
+			if (posts.length == 0) {
+				this.areAllPostsLoaded = true;
+			}
+			this.posts = this.posts.concat(posts);
+			this.timeStamp = this.posts[this.posts.length - 1].createdOn;
+			this.isTryingToLoadPosts = false;
+		});
 	}
 
 	async voteOnPost(event: Event, post: PostSummary): Promise<void> {
@@ -30,6 +61,18 @@ export class PostsComponent implements OnInit {
 			post.voteCount++;
 			post.isVotedByUser = true;
 			this.postsService.voteOnPost(post.id);
+		}
+	}
+
+	@HostListener("window:scroll", ["$event"])
+	onWindowScroll() {
+		//In chrome and some browser scroll is given to body tag
+		const position = (document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.offsetHeight;
+		const max = document.documentElement.scrollHeight;
+		if (max - position < 100) {
+			if (!this.isTryingToLoadPosts && !this.areAllPostsLoaded) {
+				this.loadMorePosts();
+			}
 		}
 	}
 }

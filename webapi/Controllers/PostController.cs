@@ -4,12 +4,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.Intrinsics.Arm;
 using webapi.Data;
+using webapi.Helper;
 using webapi.Models;
 using webapi.ViewModels;
 
 namespace webapi.Controllers
 {
+    public enum SortOrder
+    {
+        Ascending,
+        Descending
+    }
+
     [ApiController]
     public class PostController : Controller
     {
@@ -21,27 +29,45 @@ namespace webapi.Controllers
 
         [HttpGet]
         [Route("/api/posts")]
-        public List<PostOverviewViewModel> GetPosts()
+        public List<PostOverviewViewModel> GetPosts(DateTime? timeStamp, string? titleSearchFilter, SortOrder sortOrder = SortOrder.Descending)
         {
-            var posts = _context.Posts.Select(p => new PostOverviewViewModel
-                {
-                    Id = p.PostId,
-                    Author = p.Author.UserName,
-                    Content = p.Content,
-                    Title = p.Title,
-                    CommentCount = _context.Comments.Where(c => c.Post == p).Count(),
-                    VoteCount = _context.Votes.Where(c => c.PostVotedFor == p).Count(),
-                    IsVotedByUser = _context.Votes.Any(v => v.PostVotedFor == p && v.User.UserName == User.Identity.Name),
+            const int MAX_POSTS_RETURNED = 5;
+
+            IQueryable<Post> posts = sortOrder == SortOrder.Descending ?
+                _context.Posts.OrderByDescending(p => p.CreatedOn) :
+                _context.Posts.OrderBy(p => p.CreatedOn);
+
+            if (timeStamp is not null)
+            {
+                posts = sortOrder == SortOrder.Descending ?
+                    posts.Where(p => p.CreatedOn < timeStamp) :
+                    posts.Where(p => p.CreatedOn > timeStamp);
             }
-            ).ToList();
-            return posts;
+
+            if (titleSearchFilter is not null)
+            {
+                posts = posts.Where(p => p.Title.Contains(titleSearchFilter));
+            }
+
+            return posts.Select(p => new PostOverviewViewModel
+            {
+                Id = new ShortGuid(p.PostId),
+                Author = p.Author.UserName,
+                Content = p.Content,
+                Title = p.Title,
+                CommentCount = _context.Comments.Where(c => c.Post == p).Count(),
+                VoteCount = _context.Votes.Where(c => c.PostVotedFor == p).Count(),
+                IsVotedByUser = _context.Votes.Any(v => v.PostVotedFor == p && v.User.UserName == User.Identity.Name),
+                CreatedOn = p.CreatedOn
+            }
+            ).Take(MAX_POSTS_RETURNED).ToList();
         }
 
         [HttpGet]
         [Route("/api/post/{id}")]
-        public PostViewModel GetPost(int id)
+        public PostViewModel GetPost(string id)
         {
-            var post = _context.Posts.Include(p => p.Author).Where(p => p.PostId == id).First();
+            var post = _context.Posts.Include(p => p.Author).Where(p => ShortGuid.Parse(id) == p.PostId).First();
             return new PostViewModel 
             {
                 Author = post.Author.UserName,
@@ -80,7 +106,7 @@ namespace webapi.Controllers
                 Title = model.Title,
             });
             _context.SaveChanges();
-            return Ok(post.Entity.PostId);
+            return Ok(Json(new ShortGuid(post.Entity.PostId).ToString()));
         }
         [HttpPost]
         [Route("/api/comment")]
@@ -93,7 +119,7 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
-            var post = _context.Posts.Find(model.PostId);
+            var post = _context.Posts.Find(ShortGuid.Parse(model.PostId));
             if (post is null)
             {
                 return BadRequest();
@@ -115,7 +141,7 @@ namespace webapi.Controllers
         [HttpPost]
         [Route("/api/post/vote/{id}")]
         [Authorize]
-        public IActionResult VoteOnPost(int id)
+        public IActionResult VoteOnPost(string id)
         {
             ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
             if (user is null)
@@ -147,7 +173,7 @@ namespace webapi.Controllers
         [HttpPost]
         [Route("/api/post/unvote/{id}")]
         [Authorize]
-        public IActionResult UnvoteOnPost(int id)
+        public IActionResult UnvoteOnPost(string id)
         {
             ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
             if (user is null)

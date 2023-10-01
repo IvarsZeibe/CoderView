@@ -3,7 +3,8 @@
     <button mat-raised-button color="accent" [routerLink]="['/new_post']">Start a discussion</button>
 </div>
 <mat-form-field class="search-bar">
-    <input matInput placeholder="Search discussion">
+    <input [(ngModel)]="titleSearchFilter" matInput placeholder="Search discussion">
+    <button mat-button matSuffix (click)="filterPosts($event)">Search</button>
 </mat-form-field>
 <div>
     <mat-card class="card" *ngFor="let post of posts" [routerLink]="['/post', post.id]">
@@ -19,4 +20,5 @@
             <button mat-button [class.button-pressed]="post.isVotedByUser" (click)="voteOnPost($event, post)">Vote ({{post.voteCount}})</button>
         </mat-card-actions>
     </mat-card>
+    <mat-progress-bar color="accent" [style.visibility]="isTryingToLoadPosts ? 'visible' : 'hidden'" mode="indeterminate"></mat-progress-bar>
 </div>

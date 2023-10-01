@@ -15,9 +15,8 @@ export class NewPostComponent {
 
 	createNewPost(): void {
 		this.postsService.createNewPost(this.title, this.content).subscribe({
-			next: postId => {
-				console.log("test");
-				this.router.navigate(['/post/' + postId]);
+			next: response => {
+				this.router.navigate(['/post/' + response.value]);
 			}
 		});
 	}

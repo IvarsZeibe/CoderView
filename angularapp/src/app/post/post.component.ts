@@ -14,7 +14,7 @@ export class PostComponent implements OnInit {
 	@ViewChild('comment') comment: any;
 	@ViewChild('test', { read: ViewContainerRef }) container: any;
 
-	postId = 0;
+	postId = "";
 	title = "";
 	author = "";
 	content = "";
@@ -41,7 +41,7 @@ export class PostComponent implements OnInit {
 	) { }
 
 	ngOnInit(): void {
-		this.postId = parseInt(this.route.snapshot.paramMap.get('id')!);
+		this.postId = this.route.snapshot.paramMap.get('id')!;
 		this.postsService.getPostData(this.postId).subscribe(postData => {
 			this.title = postData.title;
 			this.author = postData.author;
