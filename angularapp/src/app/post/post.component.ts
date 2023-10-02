@@ -163,4 +163,20 @@ export class PostComponent implements OnInit {
 			this.postsService.unvoteOnComment(commentId);
 		}
 	}
+
+	isCommentShortened(element: HTMLElement) {
+		return element.offsetHeight < element.scrollHeight && element.style.display == "";
+	}
+
+	isCommentExpanded(element: HTMLElement) {
+		return element.style.display == "block";
+	}
+
+	expandComment(element: HTMLElement) {
+		element.style.display = "block";
+	}
+
+	shortenComment(element: HTMLElement) {
+		element.style.display = "";
+	}
 }

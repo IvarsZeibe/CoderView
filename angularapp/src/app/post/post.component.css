@@ -12,6 +12,18 @@
 	display: block;
 	border-left: solid 5px red;
 }
+
+.comment mat-card-content {
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.comment mat-card-actions {
+	justify-content: space-between;
+}
+
 .comment-input {
 	display: block;
 }
