@@ -28,8 +28,8 @@ export type PostData = {
 	isVotedByUser: boolean
 	comments: {
 		id: number,
-		author: string,
-		content: string,
+		author: string | null,
+		content: string | null,
 		replyTo: number | null,
 		voteCount: number,
 		isVotedByUser: boolean
@@ -122,6 +122,13 @@ export class PostsService {
 		firstValueFrom(this.http.post(
 			AUTH_API + 'comment/unvote/' + commentId,
 			{},
+			httpOptions
+		));
+	}
+
+	public deleteComment(commentId: number) {
+		firstValueFrom(this.http.delete(
+			AUTH_API + 'comment/' + commentId,
 			httpOptions
 		));
 	}

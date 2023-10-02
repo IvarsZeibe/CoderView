@@ -8,7 +8,8 @@ namespace webapi.Models
         public int CommentId { get; set; }
         public Post? Post { get; set; }
         public Comment? ReplyTo { get; set; }
-        public required string Content { get; set; }
-        public required ApplicationUser Author { get; set; }
+        public string? Content { get; set; }
+        public ApplicationUser? Author { get; set; }
+        public List<Comment>? Replies { get; set; }
     }
 }

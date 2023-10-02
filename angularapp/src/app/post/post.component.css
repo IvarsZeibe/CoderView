@@ -37,6 +37,10 @@ mat-card-content, mat-card-title {
 	overflow-wrap: anywhere;
 }
 
+.delete-button {
+	float: right;
+}
+
 .user {
 	/*color: #afb42b;*/
 }

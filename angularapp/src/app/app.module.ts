@@ -20,6 +20,8 @@ import { PostsComponent } from './posts/posts.component';
 import { NewPostComponent } from './new-post/new-post.component';
 import { PostComponent } from './post/post.component';
 import { HomeComponent } from './home/home.component';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
 	declarations: [
@@ -37,7 +39,8 @@ import { HomeComponent } from './home/home.component';
 		MatInputModule,
 		MatFormFieldModule,
 		FormsModule, ReactiveFormsModule,
-		MatCardModule, MatProgressBarModule
+		MatCardModule, MatIconModule,
+		MatProgressBarModule, MatDialogModule
 	],
 	providers: [httpInterceptorProviders],
 	bootstrap: [AppComponent],

@@ -25,6 +25,11 @@
             </mat-form-field>
             <div *ngFor="let commentId of getOrderedCommentIds()">
                 <mat-card [style.marginLeft]="15 * comments[commentId].depth + 'px'" [style.borderColor]="getCommentColor(comments[commentId].depth)" class="comment">
+                    <button *ngIf="isCommentedByCurrentUser(commentId)"
+                            class="delete-button" matSuffix mat-icon-button aria-label="Clear"
+                            (click)="openDeleteCommentDialog(commentId)">
+                        <mat-icon>close</mat-icon>
+                    </button>
                     <mat-card-header>
                         <mat-card-subtitle class="user">{{comments[commentId].owner}}</mat-card-subtitle>
                     </mat-card-header>

@@ -17,7 +17,6 @@ public class CoderViewDbContext : IdentityDbContext<ApplicationUser>
         : base(options)
     {
         Database.EnsureCreated();
-        Database.Migrate();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

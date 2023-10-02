@@ -1,10 +1,10 @@
-import { KeyValuePipe } from '@angular/common';
-import { Component, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StorageService } from '../_services/storage.service';
 import { PostsService } from '../_services/posts.service';
-import { firstValueFrom } from 'rxjs';
-import { FormControl, Validators } from '@angular/forms';
+import { FormControl } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-post',
@@ -12,9 +12,6 @@ import { FormControl, Validators } from '@angular/forms';
   styleUrls: ['./post.component.css']
 })
 export class PostComponent implements OnInit {
-	@ViewChild('comment') comment: any;
-	@ViewChild('test', { read: ViewContainerRef }) container: any;
-
 	postId = "";
 	title = "";
 	author = "";
@@ -39,7 +36,8 @@ export class PostComponent implements OnInit {
 		private route: ActivatedRoute,
 		private storageService: StorageService,
 		private router: Router,
-		private postsService: PostsService
+		private postsService: PostsService,
+		private dialog: MatDialog
 	) { }
 
 	ngOnInit(): void {
@@ -52,8 +50,8 @@ export class PostComponent implements OnInit {
 			this.isVotedByUser = postData.isVotedByUser;
 			for (const comment of postData.comments) {
 				this.comments[comment.id] = {
-					content: comment.content,
-					owner: comment.author,
+					content: comment.content ?? "[Deleted]",
+					owner: comment.author ?? "",
 					replyTo: comment.replyTo,
 					depth: comment.replyTo ? this.comments[comment.replyTo].depth + 1 : 0,
 					voteCount: comment.voteCount,
@@ -179,4 +177,55 @@ export class PostComponent implements OnInit {
 	shortenComment(element: HTMLElement) {
 		element.style.display = "";
 	}
+
+	isCommentedByCurrentUser(commentId: number) {
+		return this.comments[commentId].owner == this.storageService.getUsername();
+	}
+
+	openDeleteCommentDialog(commentId: number) {
+		this.dialog.open(DeleteCommentDialogComponent, {
+			data: () => {
+				this.postsService.deleteComment(commentId);
+				
+				if (!Object.values(this.comments).some(c => c.replyTo == commentId)) {
+					// eslint-disable-next-line no-constant-condition
+					while (true) {
+						const parentId: number | null = this.comments[commentId].replyTo;
+
+						delete this.comments[commentId];
+
+						if (parentId !== null &&
+							this.comments[parentId].content === "[Deleted]" &&
+							!Object.values(this.comments).some(c => c.replyTo == parentId)
+						) {
+							commentId = parentId;
+						} else {
+							break;
+						}
+					}
+					delete this.comments[commentId];
+				} else {
+					this.comments[commentId].content = "[Deleted]";
+					this.comments[commentId].owner = "";
+				}
+			}
+		});
+	}
+}
+
+@Component({
+	selector: 'app-delete-comment-dialog',
+	template: `<h1 mat-dialog-title>Delete comment</h1>
+<div mat-dialog-content>
+  Are you sure you want to delete this comment?
+</div>
+<div mat-dialog-actions>
+  <button mat-button mat-dialog-close cdkFocusInitial>Cancel</button>
+  <button mat-button (click)="deleteComment()" mat-dialog-close cdkFocusInitial>Delete</button>
+</div>`,
+	standalone: true,
+	imports: [MatDialogModule, MatButtonModule],
+})
+export class DeleteCommentDialogComponent {
+	constructor(@Inject(MAT_DIALOG_DATA) public deleteComment: () => void) { }
 }
