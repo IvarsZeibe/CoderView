@@ -305,6 +305,7 @@ namespace webapi.Controllers
                         .Include(c => c.Replies)
                         .FirstOrDefault(c => c == comment.ReplyTo);
 
+                    _context.Votes.Where(v => v.CommentVotedFor == comment).ExecuteDelete();
                     _context.Comments.Remove(comment);
                     if (parent is not null && parent.Content is null && parent.Replies.Count == 1)
                     {
@@ -315,6 +316,7 @@ namespace webapi.Controllers
                         break;
                     }
                 }
+                _context.Votes.Where(v => v.CommentVotedFor == comment).ExecuteDelete();
                 _context.Comments.Remove(comment);
             }
             else
