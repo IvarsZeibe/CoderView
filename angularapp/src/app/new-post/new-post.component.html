@@ -1,16 +1,30 @@
-<mat-card>
-    <mat-card-content>
-        <mat-form-field class="title">
-            <mat-label>Title</mat-label>
-            <input [(ngModel)]="title" matInput>
-        </mat-form-field>
-        <mat-form-field class="post">
-            <mat-label>Post</mat-label>
-            <textarea [(ngModel)]="content" matInput></textarea>
-        </mat-form-field>
-    </mat-card-content>
-    <mat-card-actions align="end">
-        <button mat-button [routerLink]="['/']">Cancel</button>
-        <button mat-button (click)="createNewPost()">Create Post</button>
-    </mat-card-actions>
-</mat-card>
+<form>
+    <mat-card>
+        <mat-card-content>
+            <mat-form-field class="title">
+                <mat-label>Title</mat-label>
+                <input required maxlength="150" minlength="5" [formControl]="titleFormControl" matInput>
+                <mat-error *ngIf="titleFormControl.hasError('required')">
+                    Title is required
+                </mat-error>
+                <mat-error *ngIf="titleFormControl.hasError('invalidLength')">
+                    Title must be 5 to 150 characters long
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field class="post">
+                <mat-label>Post</mat-label>
+                <textarea required maxlength="40000" [formControl]="contentFormControl" matInput></textarea>
+                <mat-error *ngIf="contentFormControl.hasError('required')">
+                    Content is required
+                </mat-error>
+                <mat-error *ngIf="contentFormControl.hasError('invalidLength')">
+                    Content must be 5 to 40 000 characters long
+                </mat-error>
+            </mat-form-field>
+        </mat-card-content>
+        <mat-card-actions align="end">
+            <button mat-button type="button" [routerLink]="['/']">Cancel</button>
+            <button mat-button type="submit" (click)="createNewPost()">Create Post</button>
+        </mat-card-actions>
+    </mat-card>
+</form>

@@ -94,6 +94,13 @@ namespace webapi.Controllers
         [Authorize]
         public IActionResult PostNewPost(NewPostViewModel model)
         {
+            model.Title = model.Title.Trim();
+            model.Content = model.Content.Trim();
+            if (!TryValidateModel(model))
+            {
+                return BadRequest(ModelState);
+            }
+
             ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).First();
             if (user is null)
             {
@@ -113,13 +120,19 @@ namespace webapi.Controllers
         [Authorize]
         public IActionResult PostComment(NewCommentViewModel model)
         {
+            model.Content = model.Content.Trim();
+            if (!TryValidateModel(model))
+            {
+                return BadRequest(ModelState);
+            }
+
             ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
             if (user is null)
             {
                 return BadRequest();
             }
 
-            var post = _context.Posts.Find(ShortGuid.Parse(model.PostId));
+            var post = _context.Posts.Find(ShortGuid.Parse(model.PostId).ToGuid());
             if (post is null)
             {
                 return BadRequest();
@@ -149,7 +162,7 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
-            var post = _context.Posts.Find(id);
+            var post = _context.Posts.Find(ShortGuid.Parse(id).ToGuid());
             if (post is null)
             {
                 return BadRequest();
@@ -181,7 +194,7 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
-            var post = _context.Posts.Find(id);
+            var post = _context.Posts.Find(ShortGuid.Parse(id).ToGuid());
             if (post is null)
             {
                 return BadRequest();

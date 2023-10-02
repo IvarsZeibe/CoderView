@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { StorageService } from '../_services/storage.service';
 import { PostsService } from '../_services/posts.service';
 import { firstValueFrom } from 'rxjs';
+import { FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-post',
@@ -32,7 +33,8 @@ export class PostComponent implements OnInit {
 		isVotedByUser: boolean
 	}> = {};
 
-	replies: Record<number, string> = {};
+	// key is -1 for comment on post
+	repliesInProgress: Record<number | -1, FormControl<string>> = {};
 	constructor(
 		private route: ActivatedRoute,
 		private storageService: StorageService,
@@ -98,30 +100,38 @@ export class PostComponent implements OnInit {
 		if (!this.storageService.isLoggedIn()) {
 			this.router.navigate(['/signin']);
 		}
-		this.replies[commentId] = "";
+		this.repliesInProgress[commentId] = new FormControl("", { nonNullable: true });
 	}
 
 	cancelReply(commentId: number): void {
-		delete this.replies[commentId];
+		delete this.repliesInProgress[commentId];
 	}
 
 	submitReply(replyTo: number | -1): void {
+		this.repliesInProgress[replyTo].setValue(this.repliesInProgress[replyTo].value.trim());
+		if (this.repliesInProgress[replyTo].value.length == 0) {
+			this.repliesInProgress[replyTo].setErrors({ required: true });
+			return;
+		} else if (this.repliesInProgress[replyTo].value.length > 5000) {
+			this.repliesInProgress[replyTo].setErrors({ tooLong: true });
+			return;
+		}
 		this.comments[-2] = {
-			content: this.replies[replyTo],
+			content: this.repliesInProgress[replyTo].value,
 			depth: replyTo == -1 ? 0 : this.comments[replyTo].depth + 1,
 			owner: this.storageService.getUsername(),
 			replyTo: replyTo == -1 ? null : replyTo,
 			voteCount: 0,
 			isVotedByUser: false
 		}
-		this.postsService.submitComment(this.replies[replyTo], this.postId, replyTo == -1 ? null : replyTo).subscribe({
+		this.postsService.submitComment(this.repliesInProgress[replyTo].value, this.postId, replyTo == -1 ? null : replyTo).subscribe({
 			next: commentId => {
 				const id = commentId.toString();
 				this.comments[id] = this.comments[-2];
 				delete this.comments[-2];
 			}
 		})
-		delete this.replies[replyTo];
+		delete this.repliesInProgress[replyTo];
 	}
 
 	voteOnPost() {

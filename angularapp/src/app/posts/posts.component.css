@@ -25,3 +25,8 @@
 .search-bar {
 	width: 100%;
 }
+
+mat-card-content, mat-card-title {
+	white-space: break-spaces;
+	overflow-wrap: anywhere;
+}

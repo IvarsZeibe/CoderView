@@ -20,6 +20,11 @@
 	background-color: #393939;
 }
 
+mat-card-content, mat-card-title {
+	white-space: break-spaces;
+	overflow-wrap: anywhere;
+}
+
 .user {
 	/*color: #afb42b;*/
 }
