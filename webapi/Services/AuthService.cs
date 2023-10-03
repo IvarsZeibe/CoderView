@@ -69,5 +69,46 @@ namespace webapi.Services
             user.Email = model.Email;
             return _userManager.CreateAsync(user, model.Password);
         }
+
+        public async Task<IdentityResult> ChangeUsername(string currentUsername, string newUsername)
+        {
+            var user = _userManager.FindByNameAsync(currentUsername).Result;
+            if (user is null) 
+            {
+                return IdentityResult.Failed();
+            }
+            var response = _userManager.SetUserNameAsync(user, newUsername).Result;
+            if (response.Succeeded)
+            {
+                await _signInManager.SignOutAsync();
+                await _signInManager.SignInAsync(user, isPersistent: false);
+            }
+            return response;
+        }
+
+        public Task<IdentityResult> ChangeEmail(string username, string newEmail)
+        {
+            var user = _userManager.FindByNameAsync(username).Result;
+            if (user is null)
+            {
+                return Task.FromResult(IdentityResult.Failed());
+            }
+            return _userManager.SetEmailAsync(user, newEmail);
+        }
+
+        public Task<IdentityResult> ChangePassword(string username, string currentPassword, string newPassword)
+        {
+            var user = _userManager.FindByNameAsync(username).Result;
+            if (user is null)
+            {
+                return Task.FromResult(IdentityResult.Failed());
+            }
+            return _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        }
+
+        public Task<ApplicationUser?> GetUserByUsernameAsync(string username)
+        {
+            return _userManager.FindByNameAsync(username);
+        }
     }
 }

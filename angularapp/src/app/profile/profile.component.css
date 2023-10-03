@@ -1,0 +1,41 @@
+.row {
+	display: flex;
+}
+
+form {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+}
+
+.personal-details {
+	display: flex;
+}
+
+.personal-details mat-card {
+	flex: 1;
+	margin: 5px;
+	min-height: 150px
+}
+
+.personal-details mat-card-subtitle {
+	margin-bottom: 5px;
+}
+
+.personal-details mat-card-content {
+	flex: 1;
+}
+
+mat-form-field {
+	width: 100%;
+	overflow: auto;
+}
+
+.full-width {
+	width: 100%;
+	margin: 5px;
+}
+
+.password-change {
+	margin: 5px;
+}

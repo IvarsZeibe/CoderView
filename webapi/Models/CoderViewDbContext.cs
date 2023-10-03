@@ -22,8 +22,17 @@ public class CoderViewDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Post>()
             .Property(p => p.CreatedOn)
             .HasDefaultValueSql("getdate()");
+
+        modelBuilder.Entity<ApplicationUser>()
+            .Property(x => x.UserName)
+            .HasMaxLength(15);
+
+        modelBuilder.Entity<ApplicationUser>()
+            .Property(x => x.Email)
+            .HasMaxLength(254);
     }
 }

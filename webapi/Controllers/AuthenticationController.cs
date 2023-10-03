@@ -48,8 +48,37 @@ public class AuthenticationController : ControllerBase
     [HttpPost]
     [Authorize]
     [Route("/api/profile")]
-    public ProfileViewModel GetUserData()
+    public IActionResult GetUserData()
     {
-        return new ProfileViewModel { Username = User.Identity.Name };
+        var user = _authService.GetUserByUsernameAsync(User.Identity.Name).Result;
+        if (user is null)
+        {
+            return BadRequest();
+        }
+        return Ok(new ProfileViewModel { Username = user.UserName, Email = user.Email });
+    }
+
+    [HttpPost]
+    [Authorize]
+    [Route("/api/profile/changeUsername")]
+    public Task<IdentityResult> PostChangeUsername([FromBody]string username)
+    {
+        return _authService.ChangeUsername(User.Identity.Name, username);
+    }
+
+    [HttpPost]
+    [Authorize]
+    [Route("/api/profile/changeEmail")]
+    public Task<IdentityResult> PostChangeEmail([FromBody]string email)
+    {
+        return _authService.ChangeEmail(User.Identity.Name, email);
+    }
+
+    [HttpPost]
+    [Authorize]
+    [Route("/api/profile/changePassword")]
+    public Task<IdentityResult> PostChangeUsername(PasswordChangeViewModel passwordChange)
+    {
+        return _authService.ChangePassword(User.Identity.Name, passwordChange.CurrentPassword, passwordChange.NewPassword);
     }
 }

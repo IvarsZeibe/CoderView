@@ -1,4 +1,104 @@
-<section>
-    <h2>My profile</h2>
-    {{content}}
-</section>
+<div class="container">
+    <h1>My profile</h1>
+
+    <div class="personal-details">
+        <mat-card *ngIf="!isChangingUsername; else usernameChange;">
+            <mat-card-content>
+                <mat-card-subtitle>Username</mat-card-subtitle>
+                <div>{{username}}</div>
+            </mat-card-content>
+            <mat-card-actions (click)="startUsernameChange()">
+                <button mat-stroked-button>Change Username</button>
+            </mat-card-actions>
+        </mat-card>
+        <ng-template #usernameChange>
+            <mat-card>
+                <form>
+                    <mat-card-content>
+                        <mat-form-field>
+                            <mat-label>Username</mat-label>
+                            <input maxlength="15" [formControl]="usernameFormControl" type="text" matInput>
+                            <mat-error>{{usernameError}}</mat-error>
+                        </mat-form-field>
+                    </mat-card-content>
+                    <mat-card-actions>
+                        <button type="button" (click)="cancelUsernameChange()" mat-stroked-button>Cancel</button>
+                        <button type="submit" [disabled]="!usernameFormControl.valid" (click)="saveUsernameChanges()" mat-stroked-button>Save Changes</button>
+                    </mat-card-actions>
+                </form>
+            </mat-card>
+        </ng-template>
+        <mat-card *ngIf="!isChangingEmail; else emailChange;">
+            <mat-card-content>
+                <mat-card-subtitle>Email</mat-card-subtitle>
+                <div>{{email}}</div>
+            </mat-card-content>
+            <mat-card-actions (click)="startEmailChange()">
+                <button mat-stroked-button>Change Username</button>
+            </mat-card-actions>
+        </mat-card>
+        <ng-template #emailChange>
+            <mat-card>
+                <form>
+                    <mat-card-content>
+                        <mat-form-field>
+                            <mat-label>Email</mat-label>
+                            <input [formControl]="emailFormControl" type="email" matInput>
+                            <mat-error>{{emailError}}</mat-error>
+                        </mat-form-field>
+                    </mat-card-content>
+                    <mat-card-actions>
+                        <button type="button" (click)="cancelEmailChange()" mat-stroked-button>Cancel</button>
+                        <button type="submit" [disabled]="!emailFormControl.valid" (click)="saveEmailChanges()" mat-stroked-button>Save Changes</button>
+                    </mat-card-actions>
+                </form>
+            </mat-card>
+        </ng-template>
+    </div>
+    
+    <button class="full-width" mat-flat-button (click)="startPasswordChange()"
+            *ngIf="!isChangingPassword; else passwordChange;">
+        Change Password
+    </button>
+    <ng-template #passwordChange>
+        <mat-card class="password-change">
+            <form>
+                <mat-card-content>
+                    <p>
+                        <mat-form-field>
+                            <mat-label>Old password</mat-label>
+                            <input type="password" [formControl]="oldPasswordFormControl" matInput>
+                            <mat-error *ngIf="!oldPasswordFormControl.valid">Incorrect password</mat-error>
+                        </mat-form-field>
+                    </p>
+                    <p>
+                        <mat-form-field>
+                            <mat-label>New password</mat-label>
+                            <input type="password" [formControl]="newPasswordFormControl" matInput>
+                            <mat-error>
+                                {{passwordError}}
+                            </mat-error>
+                        </mat-form-field>
+                    </p>
+                    <p>
+                        <mat-form-field>
+                            <mat-label>Repeate new password</mat-label>
+                            <input type="password" [formControl]="confirmNewPasswordFormControl" matInput>
+                            <mat-error *ngIf="confirmNewPasswordFormControl.hasError('mustMatch')">
+                                Passwords must match
+                            </mat-error>
+                        </mat-form-field>
+                    </p>
+                </mat-card-content>
+                <mat-card-actions>
+                    <button type="button" (click)="cancelPasswordChange()" mat-stroked-button>Cancel</button>
+                    <button type="submit" [disabled]="!oldPasswordFormControl.valid || !newPasswordFormControl.valid || !confirmNewPasswordFormControl.valid"
+                            (click)="savePasswordChanges()" mat-stroked-button>
+                    Save Changes</button>
+                </mat-card-actions>
+            </form>
+        </mat-card>
+    </ng-template>
+
+    
+</div>
