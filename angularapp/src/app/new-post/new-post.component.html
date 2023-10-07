@@ -3,21 +3,21 @@
         <mat-card-content>
             <mat-form-field class="title">
                 <mat-label>Title</mat-label>
-                <input required maxlength="150" minlength="5" [formControl]="titleFormControl" matInput>
+                <input maxlength="150" [formControl]="titleFormControl" matInput>
                 <mat-error *ngIf="titleFormControl.hasError('required')">
                     Title is required
                 </mat-error>
-                <mat-error *ngIf="titleFormControl.hasError('invalidLength')">
+                <mat-error *ngIf="titleFormControl.hasError('minlength') || titleFormControl.hasError('maxlength')">
                     Title must be 5 to 150 characters long
                 </mat-error>
             </mat-form-field>
             <mat-form-field class="post">
                 <mat-label>Post</mat-label>
-                <textarea required maxlength="40000" [formControl]="contentFormControl" matInput></textarea>
+                <textarea maxlength="40000" [formControl]="contentFormControl" matInput></textarea>
                 <mat-error *ngIf="contentFormControl.hasError('required')">
                     Content is required
                 </mat-error>
-                <mat-error *ngIf="contentFormControl.hasError('invalidLength')">
+                <mat-error *ngIf="contentFormControl.hasError('minlength') || contentFormControl.hasError('maxlength')">
                     Content must be 5 to 40 000 characters long
                 </mat-error>
             </mat-form-field>
