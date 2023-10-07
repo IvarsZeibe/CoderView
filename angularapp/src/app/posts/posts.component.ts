@@ -2,6 +2,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { PostSummary, PostsService } from '../_services/posts.service';
 import { StorageService } from '../_services/storage.service';
 import { Router } from '@angular/router';
+import { getTimePassed } from '../_helpers/date-helper';
 
 @Component({
 	selector: 'app-posts',
@@ -15,6 +16,8 @@ export class PostsComponent implements OnInit {
 	timeStamp: Date | null = null;
 	isTryingToLoadPosts = false;
 	areAllPostsLoaded = false;
+
+	timeOnPageLoad = new Date();
 
 	constructor(private postsService: PostsService, private storageService: StorageService, private router: Router) { }
 
@@ -62,6 +65,14 @@ export class PostsComponent implements OnInit {
 			post.isVotedByUser = true;
 			this.postsService.voteOnPost(post.id);
 		}
+	}
+
+	getTimePassedString(fromDate: Date): string {
+		const { timePassed, unit } = getTimePassed(fromDate, this.timeOnPageLoad);
+		if (unit == "second") {
+			return "Just now";
+		}
+		return `${timePassed.toString()} ${unit}${timePassed > 1 ? 's' : ''} ago`;
 	}
 
 	@HostListener("window:scroll", ["$event"])

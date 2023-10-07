@@ -9,6 +9,6 @@ namespace webapi.Models
         public required string Title { get; set; }
         public required string Content { get; set; }
         public required ApplicationUser Author { get; set; }
-        public DateTimeOffset CreatedOn { get; set; }
+        public DateTime CreatedOn { get; set; }
     }
 }

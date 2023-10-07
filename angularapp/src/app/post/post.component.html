@@ -1,7 +1,7 @@
 <mat-card class="post">
     <mat-card-header>
         <mat-card-title>{{title}}</mat-card-title>
-        <mat-card-subtitle class="user">{{author}}</mat-card-subtitle>
+        <mat-card-subtitle *ngIf="postCreatedOn" class="user">{{author}} • {{getTimePassedString(postCreatedOn)}}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>{{content}}</mat-card-content>
     <mat-card-actions>
@@ -31,7 +31,7 @@
                         <mat-icon>close</mat-icon>
                     </button>
                     <mat-card-header>
-                        <mat-card-subtitle class="user">{{comments[commentId].owner}}</mat-card-subtitle>
+                        <mat-card-subtitle class="user">{{comments[commentId].owner}} • {{getTimePassedString(comments[commentId].createdOn)}}</mat-card-subtitle>
                     </mat-card-header>
                     <mat-card-content #comment>{{comments[commentId].content}}</mat-card-content>
                     <mat-card-actions [style.borderColor]="getCommentColor(comments[commentId].depth)">

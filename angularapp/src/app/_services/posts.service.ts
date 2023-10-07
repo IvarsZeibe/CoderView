@@ -25,14 +25,16 @@ export type PostData = {
 	content: string,
 	author: string,
 	voteCount: number,
-	isVotedByUser: boolean
+	isVotedByUser: boolean,
+	createdOn: Date,
 	comments: {
 		id: number,
 		author: string | null,
 		content: string | null,
 		replyTo: number | null,
 		voteCount: number,
-		isVotedByUser: boolean
+		isVotedByUser: boolean,
+		createdOn: Date
 	}[],
 };
 
@@ -79,6 +81,11 @@ export class PostsService {
 		return this.http.get<PostData>(
 			AUTH_API + 'post/' + id,
 			httpOptions
+		).pipe(
+			map(p => Object.assign(p, {
+				createdOn: new Date(p.createdOn),
+				comments: p.comments.map(c => Object.assign(c, { createdOn: new Date(c.createdOn) }))
+			}))
 		);
 	}
 

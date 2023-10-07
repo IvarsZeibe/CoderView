@@ -5,6 +5,7 @@ import { PostsService } from '../_services/posts.service';
 import { FormControl } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { getTimePassed } from '../_helpers/date-helper';
 
 @Component({
   selector: 'app-post',
@@ -18,7 +19,10 @@ export class PostComponent implements OnInit {
 	content = "";
 	voteCount = 0;
 	isVotedByUser = false;
+	postCreatedOn: Date | null = null;
 	commentDepthColors = ["red", "orange", "green", "purple"];
+
+	timeOnPageLoad = new Date();
 
 	// key is -2 for new comment while the server hasn't returned the id of the newly created comment
 	comments: Record<number | -2, {
@@ -27,7 +31,8 @@ export class PostComponent implements OnInit {
 		replyTo: number | null,
 		depth: number,
 		voteCount: number,
-		isVotedByUser: boolean
+		isVotedByUser: boolean,
+		createdOn: Date
 	}> = {};
 
 	// key is -1 for comment on post
@@ -48,6 +53,7 @@ export class PostComponent implements OnInit {
 			this.content = postData.content;
 			this.voteCount = postData.voteCount;
 			this.isVotedByUser = postData.isVotedByUser;
+			this.postCreatedOn = postData.createdOn;
 			for (const comment of postData.comments) {
 				this.comments[comment.id] = {
 					content: comment.content ?? "[Deleted]",
@@ -55,7 +61,8 @@ export class PostComponent implements OnInit {
 					replyTo: comment.replyTo,
 					depth: comment.replyTo ? this.comments[comment.replyTo].depth + 1 : 0,
 					voteCount: comment.voteCount,
-					isVotedByUser: comment.isVotedByUser
+					isVotedByUser: comment.isVotedByUser,
+					createdOn: comment.createdOn
 				};
 			}
 		})
@@ -120,7 +127,8 @@ export class PostComponent implements OnInit {
 			owner: this.storageService.getUsername(),
 			replyTo: replyTo == -1 ? null : replyTo,
 			voteCount: 0,
-			isVotedByUser: false
+			isVotedByUser: false,
+			createdOn: new Date()
 		}
 		this.postsService.submitComment(this.repliesInProgress[replyTo].value, this.postId, replyTo == -1 ? null : replyTo).subscribe({
 			next: commentId => {
@@ -210,6 +218,15 @@ export class PostComponent implements OnInit {
 				}
 			}
 		});
+	}
+
+
+	getTimePassedString(fromDate: Date): string {
+		const { timePassed, unit } = getTimePassed(fromDate, this.timeOnPageLoad);
+		if (unit == "second") {
+			return "Just now";
+		}
+		return `${timePassed.toString()} ${unit}${timePassed > 1 ? 's' : ''} ago`;
 	}
 }
 

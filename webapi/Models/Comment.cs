@@ -11,5 +11,6 @@ namespace webapi.Models
         public string? Content { get; set; }
         public ApplicationUser? Author { get; set; }
         public List<Comment>? Replies { get; set; }
+        public DateTime CreatedOn { get; set; }
     }
 }

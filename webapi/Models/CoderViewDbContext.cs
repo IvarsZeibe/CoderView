@@ -25,7 +25,11 @@ public class CoderViewDbContext : IdentityDbContext<ApplicationUser>
 
         modelBuilder.Entity<Post>()
             .Property(p => p.CreatedOn)
-            .HasDefaultValueSql("getdate()");
+            .HasDefaultValueSql("GETUTCDATE()");
+
+        modelBuilder.Entity<Comment>()
+            .Property(c => c.CreatedOn)
+            .HasDefaultValueSql("GETUTCDATE()");
 
         modelBuilder.Entity<ApplicationUser>()
             .Property(x => x.UserName)

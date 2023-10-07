@@ -9,6 +9,6 @@
         public int CommentCount { get; set; }
         public int VoteCount { get; set; }
         public bool IsVotedByUser { get; set; }
-        public DateTimeOffset CreatedOn { get; set; }
+        public DateTime CreatedOn { get; set; }
     }
 }

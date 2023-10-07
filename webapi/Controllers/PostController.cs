@@ -55,7 +55,7 @@ namespace webapi.Controllers
                 CommentCount = _context.Comments.Where(c => c.Post == p).Count(),
                 VoteCount = _context.Votes.Where(c => c.PostVotedFor == p).Count(),
                 IsVotedByUser = _context.Votes.Any(v => v.PostVotedFor == p && v.User.UserName == User.Identity.Name),
-                CreatedOn = p.CreatedOn
+                CreatedOn = DateTime.SpecifyKind(p.CreatedOn, DateTimeKind.Utc)
             }
             ).Take(MAX_POSTS_RETURNED).ToList();
         }
@@ -72,6 +72,7 @@ namespace webapi.Controllers
                 Title = post.Title,
                 VoteCount = _context.Votes.Where(v => v.PostVotedFor == post).Count(),
                 IsVotedByUser = _context.Votes.Any(v => v.PostVotedFor == post && v.User.UserName == User.Identity.Name),
+                CreatedOn = DateTime.SpecifyKind(post.CreatedOn, DateTimeKind.Utc),
                 Comments = _context.Comments
                     .Where(c => c.Post == post)
                     .Select(c => new CommentViewModel
@@ -81,7 +82,8 @@ namespace webapi.Controllers
                     Content = c.Content,
                     ReplyTo = c.ReplyTo.CommentId,
                     VoteCount = _context.Votes.Where(v => v.CommentVotedFor == c).Count(),
-                    IsVotedByUser = _context.Votes.Any(v => v.CommentVotedFor == c && v.User.UserName == User.Identity.Name)
+                    IsVotedByUser = _context.Votes.Any(v => v.CommentVotedFor == c && v.User.UserName == User.Identity.Name),
+                    CreatedOn = DateTime.SpecifyKind(c.CreatedOn, DateTimeKind.Utc)
                     }).ToList()
             };
         }
