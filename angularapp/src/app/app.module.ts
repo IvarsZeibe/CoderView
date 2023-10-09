@@ -9,9 +9,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatSelectModule } from '@angular/material/select';
+import { ClipboardModule } from '@angular/cdk/clipboard';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { AppComponent } from './app.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
@@ -23,12 +28,15 @@ import { NewPostComponent } from './new-post/new-post.component';
 import { PostComponent } from './post/post.component';
 import { HomeComponent } from './home/home.component';
 import { ProfileComponent } from './profile/profile.component';
+import { CommentSectionComponent } from './comment-section/comment-section.component';
+import { ClickStopPropagationDirective } from './_helpers/click-stop-propagation.directive';
 
 @NgModule({
 	declarations: [
 		AppComponent, NavMenuComponent, SignInComponent,
 		SignUpComponent, PostsComponent, NewPostComponent,
-		PostComponent, HomeComponent, ProfileComponent
+		PostComponent, HomeComponent, ProfileComponent,
+		CommentSectionComponent, ClickStopPropagationDirective
 	],
 	imports: [
 		BrowserModule,
@@ -41,7 +49,10 @@ import { ProfileComponent } from './profile/profile.component';
 		MatFormFieldModule,
 		FormsModule, ReactiveFormsModule,
 		MatCardModule, MatIconModule,
-		MatProgressBarModule, MatDialogModule
+		MatProgressBarModule, MatDialogModule,
+		MatChipsModule, MatAutocompleteModule,
+		MatSelectModule, ClipboardModule,
+		MatSnackBarModule
 	],
 	providers: [httpInterceptorProviders],
 	bootstrap: [AppComponent],

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using webapi.Data;
@@ -25,14 +26,27 @@ namespace webapi.Controllers
         }
 
         [HttpGet]
-        [Route("/api/posts")]
-        public List<PostOverviewViewModel> GetPosts(DateTime? timeStamp, string? titleSearchFilter, SortOrder sortOrder = SortOrder.Descending)
+        [Route("/api/tags")]
+        public List<string> GetTags()
+        {
+            return _context.Tag.Select(t => t.Name).ToList();
+        }
+
+        [HttpGet]
+        [Route("/api/post/all")]
+        public List<PostOverviewViewModel> GetPosts(
+            string postType,
+            DateTime? timeStamp,
+            string? titleSearchFilter,
+            SortOrder sortOrder = SortOrder.Descending)
         {
             const int MAX_POSTS_RETURNED = 5;
 
             IQueryable<Post> posts = sortOrder == SortOrder.Descending ?
                 _context.Posts.OrderByDescending(p => p.CreatedOn) :
                 _context.Posts.OrderBy(p => p.CreatedOn);
+
+            posts = posts.Where(p => p.Type.Name == postType);
 
             if (timeStamp is not null)
             {
@@ -55,7 +69,8 @@ namespace webapi.Controllers
                 CommentCount = _context.Comments.Where(c => c.Post == p).Count(),
                 VoteCount = _context.Votes.Where(c => c.PostVotedFor == p).Count(),
                 IsVotedByUser = _context.Votes.Any(v => v.PostVotedFor == p && v.User.UserName == User.Identity.Name),
-                CreatedOn = DateTime.SpecifyKind(p.CreatedOn, DateTimeKind.Utc)
+                CreatedOn = DateTime.SpecifyKind(p.CreatedOn, DateTimeKind.Utc),
+                Tags = _context.TagToPost.Where(ttp => ttp.Post == p).Select(ttp => _context.Tag.First(t => t == ttp.Tag).Name).ToList()
             }
             ).Take(MAX_POSTS_RETURNED).ToList();
         }
@@ -64,7 +79,7 @@ namespace webapi.Controllers
         [Route("/api/post/{id}")]
         public PostViewModel GetPost(string id)
         {
-            var post = _context.Posts.Include(p => p.Author).Where(p => ShortGuid.Parse(id) == p.PostId).First();
+            var post = _context.Posts.Include(p => p.Type).Include(p => p.Author).Where(p => ShortGuid.Parse(id) == p.PostId).First();
             return new PostViewModel 
             {
                 Author = post.Author.UserName,
@@ -73,6 +88,10 @@ namespace webapi.Controllers
                 VoteCount = _context.Votes.Where(v => v.PostVotedFor == post).Count(),
                 IsVotedByUser = _context.Votes.Any(v => v.PostVotedFor == post && v.User.UserName == User.Identity.Name),
                 CreatedOn = DateTime.SpecifyKind(post.CreatedOn, DateTimeKind.Utc),
+                PostType = post.Type.Name,
+                Tags = _context.TagToPost
+                    .Where(ttp => ttp.Post == post)
+                    .Select(ttp => _context.Tag.First(t => t == ttp.Tag).Name).ToList(),
                 Comments = _context.Comments
                     .Where(c => c.Post == post)
                     .Select(c => new CommentViewModel
@@ -89,9 +108,9 @@ namespace webapi.Controllers
         }
 
         [HttpPost]
-        [Route("/api/new_post")]
+        [Route("/api/post/create")]
         [Authorize]
-        public IActionResult PostNewPost(NewPostViewModel model)
+        public IActionResult CreateNewPost(NewPostViewModel model)
         {
             model.Title = model.Title.Trim();
             model.Content = model.Content.Trim();
@@ -105,49 +124,37 @@ namespace webapi.Controllers
             {
                 return BadRequest();
             }
+
+            PostType? postType = _context.PostTypes.Where(p => p.Name == model.PostType).FirstOrDefault();
+            if (postType is null)
+            {
+                return BadRequest();
+            }
+
             var post = _context.Posts.Add(new Models.Post
             {
                 Author = user,
                 Content = model.Content,
                 Title = model.Title,
-            });
+                Type = postType,
+            }).Entity;
+
+            foreach (string tagName in model.Tags)
+            {
+                var tag = _context.Tag.Where(t => t.Name == tagName).FirstOrDefault();
+                if (tag is null)
+                {
+                    if (tagName != tagName.Trim())
+                    {
+                        return BadRequest();
+                    }
+                    tag = _context.Tag.Add(new Models.Tag { Name = tagName }).Entity;
+                }
+                _context.TagToPost.Add(new TagToPost { Post = post, Tag = tag });
+            }
+
             _context.SaveChanges();
-            return Ok(Json(new ShortGuid(post.Entity.PostId).ToString()));
-        }
-        [HttpPost]
-        [Route("/api/comment")]
-        [Authorize]
-        public IActionResult PostComment(NewCommentViewModel model)
-        {
-            model.Content = model.Content.Trim();
-            if (!TryValidateModel(model))
-            {
-                return BadRequest(ModelState);
-            }
-
-            ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
-            if (user is null)
-            {
-                return BadRequest();
-            }
-
-            var post = _context.Posts.Find(ShortGuid.Parse(model.PostId).ToGuid());
-            if (post is null)
-            {
-                return BadRequest();
-            }
-
-            var replyTo = _context.Comments.Find(model.ReplyTo);
-            var comment = _context.Comments.Add(new Models.Comment
-            {
-                Author = user,
-                Content = model.Content,
-                Post = post,
-                ReplyTo = replyTo
-            });
-            _context.SaveChanges();
-
-            return Ok(comment.Entity.CommentId);
+            return Ok(Json(new ShortGuid(post.PostId).ToString()));
         }
 
         [HttpPost]
@@ -208,126 +215,6 @@ namespace webapi.Controllers
             _context.Votes.Remove(vote);
             _context.SaveChanges();
 
-            return Ok();
-        }
-
-        [HttpPost]
-        [Route("/api/comment/vote/{id}")]
-        [Authorize]
-        public IActionResult VoteOnComment(int id)
-        {
-            ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
-            if (user is null)
-            {
-                return BadRequest();
-            }
-
-            var comment = _context.Comments.Find(id);
-            if (comment is null)
-            {
-                return BadRequest();
-            }
-
-            if (_context.Votes.Any(v => v.CommentVotedFor == comment && v.User == user))
-            {
-                return BadRequest();
-            }
-
-            _context.Votes.Add(new Vote
-            {
-                CommentVotedFor = comment,
-                User = user,
-            });
-            _context.SaveChanges();
-
-            return Ok();
-        }
-
-        [HttpPost]
-        [Route("/api/comment/unvote/{id}")]
-        [Authorize]
-        public IActionResult UnvoteOnComment(int id)
-        {
-            ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
-            if (user is null)
-            {
-                return BadRequest();
-            }
-
-            var comment = _context.Comments.Find(id);
-            if (comment is null)
-            {
-                return BadRequest();
-            }
-
-            var vote = _context.Votes.Where(v => v.CommentVotedFor == comment && v.User == user).FirstOrDefault();
-            if (vote is null)
-            {
-                return BadRequest();
-            }
-
-            _context.Votes.Remove(vote);
-            _context.SaveChanges();
-
-            return Ok();
-        }
-
-        [HttpDelete]
-        [Route("/api/comment/{id}")]
-        [Authorize]
-        public IActionResult DeleteComment(int id)
-        {
-            ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
-            if (user is null)
-            {
-                return BadRequest();
-            }
-
-            var comment = _context.Comments
-                .Include(c => c.ReplyTo)
-                .Include(c => c.Replies)
-                .FirstOrDefault(c => c.CommentId == id);
-
-            if (comment is null)
-            {
-                return BadRequest();
-            }
-
-            if (comment.Author != user)
-            {
-                return Unauthorized();
-            }
-
-            if (comment.Replies.IsNullOrEmpty())
-            {
-                while (true)
-                {
-                    var parent = _context.Comments
-                        .Include(c => c.ReplyTo)
-                        .Include(c => c.Replies)
-                        .FirstOrDefault(c => c == comment.ReplyTo);
-
-                    _context.Votes.Where(v => v.CommentVotedFor == comment).ExecuteDelete();
-                    _context.Comments.Remove(comment);
-                    if (parent is not null && parent.Content is null && parent.Replies.Count == 1)
-                    {
-                        comment = parent;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                _context.Votes.Where(v => v.CommentVotedFor == comment).ExecuteDelete();
-                _context.Comments.Remove(comment);
-            }
-            else
-            {
-                comment.Author = null;
-                comment.Content = null;
-            }
-
-            _context.SaveChanges();
             return Ok();
         }
     }

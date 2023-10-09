@@ -16,7 +16,8 @@ export type PostSummary = {
 	commentCount: number,
 	voteCount: number,
 	isVotedByUser: boolean,
-	createdOn: Date
+	createdOn: Date,
+	tags: string[]
 };
 
 export type PostData = {
@@ -27,6 +28,8 @@ export type PostData = {
 	voteCount: number,
 	isVotedByUser: boolean,
 	createdOn: Date,
+	postType: 'snippet' | 'discussion',
+	tags: string[],
 	comments: {
 		id: number,
 		author: string | null,
@@ -43,24 +46,28 @@ export enum SortOrder {
 	Descending
 }
 
+export type PostType = 'discussion' | 'snippet';
+
 @Injectable({
   providedIn: 'root'
 })
-export class PostsService {
+export class PostService {
 	constructor(private http: HttpClient) { }
 
-	public createNewPost(title: string, content: string): Observable<any> {
+	public createNew(postType: PostType, title: string, content: string, tags: string[]): Observable<any> {
 		return this.http.post(
-			AUTH_API + 'new_post',
+			AUTH_API + 'post/create',
 			{
 				title,
-				content
+				content,
+				postType,
+				tags
 			},
 			httpOptions
 		);
 	}
 
-	public getPosts(titleSearchFilter = '', timeStamp: Date | null = null, sortOrder: SortOrder = SortOrder.Descending) {
+	public getAll(postType: PostType, titleSearchFilter = '', timeStamp: Date | null = null, sortOrder: SortOrder = SortOrder.Descending) {
 		const urlSearchParams = new URLSearchParams();
 		if (titleSearchFilter != '') {
 			urlSearchParams.append('titleSearchFilter', titleSearchFilter);
@@ -69,15 +76,17 @@ export class PostsService {
 			urlSearchParams.append('timeStamp', timeStamp.toISOString());
 		}
 		urlSearchParams.append('sortOrder', sortOrder.toString());
+
+		urlSearchParams.append('postType', postType);
 		return this.http.get <PostSummary[]>(
-			AUTH_API + 'posts?' + urlSearchParams.toString(),
+			AUTH_API + 'post/all?' + urlSearchParams.toString(),
 			httpOptions
 		).pipe(
 			map(response => response.map(p => Object.assign(p, { createdOn: new Date(p.createdOn) })))
 		);
 	}
 
-	public getPostData(id: string) {
+	public get(id: string) {
 		return this.http.get<PostData>(
 			AUTH_API + 'post/' + id,
 			httpOptions
@@ -89,19 +98,7 @@ export class PostsService {
 		);
 	}
 
-	public submitComment(content: string, postId: string, replyTo: number | null): Observable<any> {
-		return this.http.post(
-			AUTH_API + 'comment',
-			{
-				content,
-				postId,
-				replyTo
-			},
-			httpOptions
-		);
-	}
-
-	public voteOnPost(postId: string) {
+	public voteOn(postId: string) {
 		firstValueFrom(this.http.post(
 			AUTH_API + 'post/vote/' + postId,
 			{},
@@ -109,7 +106,7 @@ export class PostsService {
 		));
 	}
 
-	public unvoteOnPost(postId: string) {
+	public unvoteOn(postId: string) {
 		firstValueFrom(this.http.post(
 			AUTH_API + 'post/unvote/' + postId,
 			{},
@@ -117,26 +114,10 @@ export class PostsService {
 		));
 	}
 
-	public voteOnComment(commentId: number) {
-		firstValueFrom(this.http.post(
-			AUTH_API + 'comment/vote/' + commentId,
-			{},
+	public getAllTags() {
+		return this.http.get<string[]>(
+			AUTH_API + 'tags',
 			httpOptions
-		));
-	}
-
-	public unvoteOnComment(commentId: number) {
-		firstValueFrom(this.http.post(
-			AUTH_API + 'comment/unvote/' + commentId,
-			{},
-			httpOptions
-		));
-	}
-
-	public deleteComment(commentId: number) {
-		firstValueFrom(this.http.delete(
-			AUTH_API + 'comment/' + commentId,
-			httpOptions
-		));
+		);
 	}
 }

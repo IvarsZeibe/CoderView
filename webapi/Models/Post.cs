@@ -8,6 +8,7 @@ namespace webapi.Models
         public Guid PostId { get; set; }
         public required string Title { get; set; }
         public required string Content { get; set; }
+        public required PostType Type { get; set; }
         public required ApplicationUser Author { get; set; }
         public DateTime CreatedOn { get; set; }
     }

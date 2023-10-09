@@ -23,10 +23,31 @@
 }
 
 .search-bar {
+	display: flex;
 	width: 100%;
+}
+
+.search-bar :first-child {
+	flex-grow: 1;
+	margin-right: 20px;
 }
 
 mat-card-content, mat-card-title {
 	white-space: break-spaces;
 	overflow-wrap: anywhere;
+}
+
+code {
+	margin-top: 10px;
+	display: block;
+	background: #2e2b2b;
+	border: #808080 1px solid;
+	border-radius: 5px;
+	padding: 10px;
+	cursor: pointer;
+	min-height: 25px;
+}
+
+code mat-icon {
+	float: right;
 }

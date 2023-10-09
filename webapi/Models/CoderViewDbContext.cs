@@ -9,9 +9,12 @@ namespace webapi.Data;
 public class CoderViewDbContext : IdentityDbContext<ApplicationUser>
 {
     public DbSet<Post> Posts { get; set; }
+    public DbSet<PostType> PostTypes { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<Vote> Votes { get; set; }
     public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+    public DbSet<Tag> Tag { get; set; }
+    public DbSet<TagToPost> TagToPost { get; set; }
 
     public CoderViewDbContext(DbContextOptions options)
         : base(options)
@@ -22,6 +25,10 @@ public class CoderViewDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<PostType>().HasData(
+            new PostType { Name = "discussion" },
+            new PostType { Name = "snippet" });
 
         modelBuilder.Entity<Post>()
             .Property(p => p.CreatedOn)
@@ -38,5 +45,9 @@ public class CoderViewDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<ApplicationUser>()
             .Property(x => x.Email)
             .HasMaxLength(254);
+
+        modelBuilder.Entity<Tag>()
+            .Property(x => x.Name)
+            .HasMaxLength(30);
     }
 }

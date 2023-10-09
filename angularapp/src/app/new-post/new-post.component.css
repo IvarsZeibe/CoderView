@@ -6,3 +6,33 @@
 .post textarea {
 	min-height: 50vh;
 }
+
+.flex-space-between {
+	display: flex;
+	justify-content: space-between;
+}
+
+mat-chip-set {
+	min-height: 50px;
+	margin-bottom: 10px;
+}
+
+#tags {
+	flex-grow: 1;
+	margin-left: 20px;
+}
+
+.row1 {
+	display: flex;
+	width: 100%;
+}
+
+.code {
+	margin-top: 20px;
+	display: block;
+	background: #2e2b2b;
+	border: #808080 1px solid !important;
+	border-radius: 5px;
+	padding: 10px;
+	font-family: monospace !important;
+}

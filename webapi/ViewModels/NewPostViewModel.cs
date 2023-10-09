@@ -11,5 +11,7 @@ namespace webapi.ViewModels
         [StringLength(40000, MinimumLength = 5)]
         [Required]
         public required string Content { get; set; }
+        public required string PostType { get; set; }
+        public required string[] Tags { get; set; }
     }
 }

@@ -1,8 +1,10 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { PostSummary, PostsService } from '../_services/posts.service';
+import { PostSummary, PostService } from '../_services/post.service';
 import { StorageService } from '../_services/storage.service';
-import { Router } from '@angular/router';
-import { getTimePassed } from '../_helpers/date-helper';
+import { ActivatedRoute, Router } from '@angular/router';
+import { DateHelperService } from '../_services/date-helper.service';
+import { FormControl } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
 	selector: 'app-posts',
@@ -19,10 +21,46 @@ export class PostsComponent implements OnInit {
 
 	timeOnPageLoad = new Date();
 
-	constructor(private postsService: PostsService, private storageService: StorageService, private router: Router) { }
+	postTypes = [
+		{ value: "discussion", viewValue: "Discussions" },
+		{ value: "snippet", viewValue: "Code snippets" }
+	];
+	postTypeFormControl: FormControl<"discussion" | "snippet"> = new FormControl("discussion", { nonNullable: true });
+
+	constructor(
+		private route: ActivatedRoute,
+		private postService: PostService,
+		private storageService: StorageService,
+		private router: Router,
+		public dateHelperService: DateHelperService,
+		private snackBar: MatSnackBar
+	) { }
 
 	ngOnInit(): void {
+		const postType = this.route.snapshot.queryParamMap.get('type');
+		if (postType == "snippet") {
+			this.postTypeFormControl.setValue(postType);
+		} else if (postType == "discussion") {
+			this.postTypeFormControl.setValue(postType);
+		} else if (postType) {
+			this.router.navigate(['/posts']);
+		}
+
+		this.postTypeFormControl.valueChanges.subscribe(change => {
+			this.posts = [];
+			this.filterPosts();
+		});
+
 		this.filterPosts();
+	}
+
+	getPostTypeTitle() {
+		for (const type of this.postTypes) {
+			if (type.value == this.postTypeFormControl.value) {
+				return type.viewValue;
+			}
+		}
+		return "Unkown post type";
 	}
 
 	filterPosts(event: Event | null = null): void {
@@ -32,16 +70,17 @@ export class PostsComponent implements OnInit {
 		this.lastSearchFilter = this.titleSearchFilter;
 		this.areAllPostsLoaded = false;
 		this.timeStamp = null;
-		this.postsService.getPosts(this.lastSearchFilter).subscribe(posts => {
+		this.isTryingToLoadPosts = true;
+		this.postService.getAll(this.postTypeFormControl.value, this.lastSearchFilter).subscribe(posts => {
 			this.posts = posts;
 			this.timeStamp = posts[posts.length - 1].createdOn;
-
+			this.isTryingToLoadPosts = false;
 		});
 	}
 
 	loadMorePosts(): void {
 		this.isTryingToLoadPosts = true;
-		this.postsService.getPosts(this.lastSearchFilter, this.timeStamp).subscribe(posts => {
+		this.postService.getAll(this.postTypeFormControl.value, this.lastSearchFilter, this.timeStamp).subscribe(posts => {
 			if (posts.length == 0) {
 				this.areAllPostsLoaded = true;
 			}
@@ -59,20 +98,16 @@ export class PostsComponent implements OnInit {
 		if (post.isVotedByUser) {
 			post.voteCount--;
 			post.isVotedByUser = false;
-			this.postsService.unvoteOnPost(post.id);
+			this.postService.unvoteOn(post.id);
 		} else {
 			post.voteCount++;
 			post.isVotedByUser = true;
-			this.postsService.voteOnPost(post.id);
+			this.postService.voteOn(post.id);
 		}
 	}
 
-	getTimePassedString(fromDate: Date): string {
-		const { timePassed, unit } = getTimePassed(fromDate, this.timeOnPageLoad);
-		if (unit == "second") {
-			return "Just now";
-		}
-		return `${timePassed.toString()} ${unit}${timePassed > 1 ? 's' : ''} ago`;
+	openCopySnackBar() {
+		this.snackBar.open("Saved to clipboard", "Close");
 	}
 
 	@HostListener("window:scroll", ["$event"])
