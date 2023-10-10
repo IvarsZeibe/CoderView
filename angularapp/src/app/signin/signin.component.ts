@@ -3,6 +3,7 @@ import { AuthService } from '../_services/auth-service.service';
 import { StorageService } from '../_services/storage.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
 	selector: 'app-signin',
@@ -13,9 +14,12 @@ export class SignInComponent implements OnInit {
 	loginForm!: FormGroup;
 	isLoginFailed = false;
 	isLoading = false;
-	roles: string[] = [];
 
-	constructor(private authService: AuthService, private storageService: StorageService) { }
+	constructor(
+		private authService: AuthService,
+		private storageService: StorageService,
+		private router: Router
+	) { }
 
 	ngOnInit(): void {
 		this.loginForm = new FormGroup({
@@ -39,17 +43,11 @@ export class SignInComponent implements OnInit {
 					if (hasLoggedIn) {
 						this.storageService.saveUser(username);
 						this.isLoginFailed = false;
-						this.roles = this.storageService.getUsername().roles;
-						this.reloadPage();
+						this.router.navigate(['/']);
 					} else {
-						console.log("Log in failed");
 						this.isLoginFailed = true;
 					}
 				}
 		});
-	}
-
-	reloadPage(): void {
-		window.location.reload();
 	}
 }

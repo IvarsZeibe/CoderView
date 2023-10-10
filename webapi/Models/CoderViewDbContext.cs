@@ -16,11 +16,7 @@ public class CoderViewDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Tag> Tag { get; set; }
     public DbSet<TagToPost> TagToPost { get; set; }
 
-    public CoderViewDbContext(DbContextOptions options)
-        : base(options)
-    {
-        Database.EnsureCreated();
-    }
+    public CoderViewDbContext(DbContextOptions options): base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

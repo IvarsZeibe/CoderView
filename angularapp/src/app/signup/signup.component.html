@@ -2,7 +2,7 @@
     <mat-card-title><h1>Create an account</h1></mat-card-title>
     <mat-card-content>
         <mat-progress-bar color="accent" [style.visibility]="isLoading ? 'visible' : 'hidden'" mode="indeterminate"></mat-progress-bar>
-        <div class="error-message" [style.visibility]="(isLoginFailed && !isLoading) ? 'visible' : 'hidden'">
+        <div class="error-message" [style.visibility]="(isSignupFailed && !isLoading) ? 'visible' : 'hidden'">
             <span [innerHTML]="errorMessage"></span>
         </div>
         <form [formGroup]="registerForm"

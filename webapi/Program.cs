@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using webapi.Data;
 using webapi.Models;
 using webapi.Services;
@@ -15,6 +16,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<CoderViewDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    using (var context = new CoderViewDbContext(options.Options))
+    {
+        context.Database.EnsureCreated();
+    }
 });
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {

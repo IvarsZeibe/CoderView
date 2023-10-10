@@ -14,9 +14,6 @@ export class AppComponent implements OnInit {
 		this.authService.isLoggedIn().subscribe(isLoggedIn => {
 			if (!isLoggedIn && this.storageService.isLoggedIn()) {
 				this.storageService.clean();
-				window.dispatchEvent(new StorageEvent('storage', {
-					storageArea: localStorage
-				}));
 			}
 		})
     }

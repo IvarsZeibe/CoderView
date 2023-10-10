@@ -4,6 +4,7 @@ import { PasswordConfirmationValidatorService } from '../_services/password-conf
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
+import { StorageService } from '../_services/storage.service';
 
 @Component({
 	selector: 'app-signup',
@@ -14,12 +15,15 @@ export class SignUpComponent implements OnInit {
 	registerForm!: FormGroup;
 
 	errorMessage = '';
-	isLoginFailed = false;
+	isSignupFailed = false;
 	isLoading = false;
 
-	constructor(private authService: AuthService,
+	constructor(
+		private authService: AuthService,
+		private storageService: StorageService,
 		private passwordConfirmationValidator: PasswordConfirmationValidatorService,
-		private router: Router) { }
+		private router: Router
+	) { }
 
 	ngOnInit(): void {
 		this.registerForm = new FormGroup({
@@ -36,7 +40,7 @@ export class SignUpComponent implements OnInit {
 	}
 
 	onSubmit(): void {
-		this.isLoginFailed = false;
+		this.isSignupFailed = false;
 		this.isLoading = true;
 		const { username, email, password } = this.registerForm.value;
 
@@ -49,7 +53,16 @@ export class SignUpComponent implements OnInit {
 			.subscribe({
 			next: data => {
 				if (data.succeeded) {
-					this.router.navigate(['/']);
+					this.authService.login(username, password)
+						.pipe(
+							finalize(() => {
+								this.router.navigate(['/']);
+							})
+					).subscribe(isLoginSuccessful => {
+						if (isLoginSuccessful) {
+							this.storageService.saveUser(username)
+						}
+					});
 				} else {
 					this.errorMessage = '';
 					const errors = Object.values(data.errors);
@@ -57,7 +70,7 @@ export class SignUpComponent implements OnInit {
 						this.errorMessage += m.description + '<br>';
 					});
 					this.errorMessage.slice(0, -4);
-					this.isLoginFailed = true;
+					this.isSignupFailed = true;
 				}
 			},
 			error: err => {

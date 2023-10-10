@@ -3,7 +3,7 @@
     <button mat-button [routerLink]="['/posts']">Posts</button>
     <button mat-button [routerLink]="['/about']">About</button>
     <span class="spacer"></span>
-    <button *ngIf="!isLoggedIn" mat-button [routerLink]="['/signin']">Sign In</button>
-    <button *ngIf="isLoggedIn" mat-button [routerLink]="['/profile']">Profile</button>
-    <button *ngIf="isLoggedIn" mat-button (click)="logout()">Sign Out</button>
+    <button *ngIf="!storageService.isLoggedIn()" mat-button [routerLink]="['/signin']">Sign In</button>
+    <button *ngIf="storageService.isLoggedIn()" mat-button [routerLink]="['/profile']">Profile</button>
+    <button *ngIf="storageService.isLoggedIn()" mat-button (click)="logout()">Sign Out</button>
 </mat-toolbar>

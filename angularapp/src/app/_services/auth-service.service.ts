@@ -23,8 +23,8 @@ export class AuthService {
 		);
 	}
 
-	login(username: string, password: string): Observable<any> {
-		return this.http.post(
+	login(username: string, password: string): Observable<boolean> {
+		return this.http.post<boolean>(
 			AUTH_API + 'signin',
 			{
 				username,
