@@ -12,7 +12,7 @@ export class NavMenuComponent implements OnInit {
 
 	ngOnInit(): void {
 		// refreshes login state when it is changed from other tab
-		window.addEventListener('storage', () => null);
+		window.addEventListener('storage', () => this.authService.forceRunAuthGuard());
 	}
 
 	logout(): void {
