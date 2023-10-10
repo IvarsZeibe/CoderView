@@ -2,8 +2,13 @@
 	margin-bottom: 10px;
 }
 
+.post mat-card-title {
+	font-size: x-large;
+}
+
 .post mat-card-content {
 	min-height: 30vh;
+	margin-top: 20px;
 }
 
 .comment {
@@ -51,7 +56,6 @@ mat-card-content, mat-card-title {
 	font-family: monospace !important;
 	cursor: pointer;
 }
-
 
 .code mat-icon {
 	float: right;

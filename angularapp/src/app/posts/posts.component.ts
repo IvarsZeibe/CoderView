@@ -73,7 +73,9 @@ export class PostsComponent implements OnInit {
 		this.isTryingToLoadPosts = true;
 		this.postService.getAll(this.postTypeFormControl.value, this.lastSearchFilter).subscribe(posts => {
 			this.posts = posts;
-			this.timeStamp = posts[posts.length - 1].createdOn;
+			if (posts.length > 0) {
+				this.timeStamp = posts[posts.length - 1].createdOn;
+			}
 			this.isTryingToLoadPosts = false;
 		});
 	}
