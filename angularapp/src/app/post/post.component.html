@@ -9,7 +9,7 @@
     </mat-card-header>
     <mat-card-header>
         <mat-card-title>{{title}}</mat-card-title>
-        <mat-card-subtitle *ngIf="postCreatedOn" class="user">{{author}} • {{dateHelperService.getTimePassedString(postCreatedOn, timeOnPageLoad)}}</mat-card-subtitle>
+        <mat-card-subtitle *ngIf="postCreatedOn" class="user">{{getFormattedAuthor(author)}} • {{dateHelperService.getTimePassedString(postCreatedOn, timeOnPageLoad)}}</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content [cdkCopyToClipboard]="content" class="code" *ngIf="postType == 'snippet'"><mat-icon>content_copy</mat-icon>{{content}}</mat-card-content>

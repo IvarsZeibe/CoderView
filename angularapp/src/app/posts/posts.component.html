@@ -28,7 +28,7 @@
         </mat-card-header>
         <mat-card-header>
             <mat-card-title>{{post.title}}</mat-card-title>
-            <mat-card-subtitle>{{post.author}} • {{dateHelperService.getTimePassedString(post.createdOn, timeOnPageLoad)}}</mat-card-subtitle>
+            <mat-card-subtitle>{{getFormattedAuthor(post.author)}} • {{dateHelperService.getTimePassedString(post.createdOn, timeOnPageLoad)}}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content *ngIf="postTypeFormControl.value == 'discussion'">{{post.content}}</mat-card-content>
         <mat-card-content *ngIf="postTypeFormControl.value == 'snippet'">

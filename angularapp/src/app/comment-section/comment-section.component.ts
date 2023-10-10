@@ -173,6 +173,13 @@ export class CommentSectionComponent {
 			}
 		});
 	}
+
+	getFormattedAuthor(author: string) {
+		if (this.storageService.getUsername() == author) {
+			author += ' (You)';
+		}
+		return author;
+	}
 }
 
 @Component({

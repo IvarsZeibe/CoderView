@@ -123,4 +123,11 @@ export class PostsComponent implements OnInit {
 			}
 		}
 	}
+
+	getFormattedAuthor(author: string) {
+		if (this.storageService.getUsername() == author) {
+			author += ' (You)';
+		}
+		return author;
+	}
 }

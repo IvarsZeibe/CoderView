@@ -75,4 +75,11 @@ export class PostComponent implements OnInit {
 			this.postService.unvoteOn(this.postId);
 		}
 	}
+
+	getFormattedAuthor(author: string) {
+		if (this.storageService.getUsername() == author) {
+			author += ' (You)';
+		}
+		return author;
+	}
 }
