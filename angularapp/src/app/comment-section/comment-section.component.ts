@@ -72,7 +72,7 @@ export class CommentSectionComponent {
 
 	startReply(commentId: number): void {
 		if (!this.storageService.isLoggedIn()) {
-			this.router.navigate(['/signin']);
+			this.router.navigate(['/signin'], { queryParams: { returnUrl: this.router.url } });
 		}
 		this.repliesInProgress[commentId] = new FormControl("", { nonNullable: true });
 	}
@@ -111,7 +111,7 @@ export class CommentSectionComponent {
 
 	voteOnComment(commentId: number) {
 		if (!this.storageService.isLoggedIn()) {
-			this.router.navigate(['/signin']);
+			this.router.navigate(['/signin'], { queryParams: { returnUrl: this.router.url } });
 		}
 		if (!this.comments[commentId].isVotedByUser) {
 			this.comments[commentId].voteCount++;

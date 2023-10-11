@@ -93,6 +93,7 @@ $angularapp-theme: mat.define-dark-theme(
 			accent: $angularapp-accent,
 			warn: $angularapp-warn
 		),
+		typography: mat.define-typography-config(),
 	)
 );
 

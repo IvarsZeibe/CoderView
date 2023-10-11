@@ -34,6 +34,7 @@ const routes: Routes = [
 		canActivate: [AccessGuard]
 	},
 	{ path: 'signup', component: SignUpComponent },
+	{ path: '**', redirectTo: '' },
 ];
 
 @NgModule({

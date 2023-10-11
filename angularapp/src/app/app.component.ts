@@ -14,6 +14,7 @@ export class AppComponent implements OnInit {
 		this.authService.isLoggedIn().subscribe(isLoggedIn => {
 			if (!isLoggedIn && this.storageService.isLoggedIn()) {
 				this.storageService.clean();
+				this.authService.forceRunAuthGuard(); 
 			}
 		})
     }

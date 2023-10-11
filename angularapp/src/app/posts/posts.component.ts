@@ -6,6 +6,8 @@ import { DateHelperService } from '../_services/date-helper.service';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+type PostType = PostsComponent['postTypes'][number]['value'];
+
 @Component({
 	selector: 'app-posts',
 	templateUrl: './posts.component.html',
@@ -24,8 +26,8 @@ export class PostsComponent implements OnInit {
 	postTypes = [
 		{ value: "discussion", viewValue: "Discussions" },
 		{ value: "snippet", viewValue: "Code snippets" }
-	];
-	postTypeFormControl: FormControl<"discussion" | "snippet"> = new FormControl("discussion", { nonNullable: true });
+	] as const;
+	postTypeFormControl: FormControl<PostType> = new FormControl("discussion", { nonNullable: true });
 
 	constructor(
 		private route: ActivatedRoute,
@@ -37,16 +39,18 @@ export class PostsComponent implements OnInit {
 	) { }
 
 	ngOnInit(): void {
-		const postType = this.route.snapshot.queryParamMap.get('type');
-		if (postType == "snippet") {
+		const postType = this.postTypes.find(p =>
+			p.value == this.route.snapshot.queryParamMap.get('type')
+		)?.value;
+
+		if (postType) {
 			this.postTypeFormControl.setValue(postType);
-		} else if (postType == "discussion") {
-			this.postTypeFormControl.setValue(postType);
-		} else if (postType) {
-			this.router.navigate(['/posts']);
+		} else {
+			this.router.navigate([], { queryParams: { type: 'discussion' } });
 		}
 
-		this.postTypeFormControl.valueChanges.subscribe(change => {
+		this.postTypeFormControl.valueChanges.subscribe(postType => {
+			this.router.navigate([], { queryParams: { type: postType } });
 			this.posts = [];
 			this.filterPosts();
 		});
@@ -95,7 +99,7 @@ export class PostsComponent implements OnInit {
 	async voteOnPost(event: Event, post: PostSummary): Promise<void> {
 		event.stopPropagation();
 		if (!this.storageService.isLoggedIn()) {
-			this.router.navigate(['/signin']);
+			this.router.navigate(['/signin'], { queryParams: { returnUrl: this.router.url } });
 		}
 		if (post.isVotedByUser) {
 			post.voteCount--;

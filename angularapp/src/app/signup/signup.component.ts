@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../_services/auth-service.service';
 import { PasswordConfirmationValidatorService } from '../_services/password-confirmation-validator.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { StorageService } from '../_services/storage.service';
 
@@ -22,7 +22,8 @@ export class SignUpComponent implements OnInit {
 		private authService: AuthService,
 		private storageService: StorageService,
 		private passwordConfirmationValidator: PasswordConfirmationValidatorService,
-		private router: Router
+		private router: Router,
+		private route: ActivatedRoute
 	) { }
 
 	ngOnInit(): void {
@@ -56,7 +57,8 @@ export class SignUpComponent implements OnInit {
 					this.authService.login(username, password)
 						.pipe(
 							finalize(() => {
-								this.router.navigate(['/']);
+								const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+								this.router.navigateByUrl(returnUrl);
 							})
 					).subscribe(isLoginSuccessful => {
 						if (isLoginSuccessful) {

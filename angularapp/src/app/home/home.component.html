@@ -7,21 +7,25 @@
     <p>Ready to embark on your coding journey or take your skills to the next level? Join CoderView today and become part of a passionate community dedicated to coding excellence.</p>
     <p>Start exploring, connecting, and coding with CoderView!</p>
 
-    <mat-card [routerLink]="['/posts']" class="card">
-        <mat-card-header>
-            <mat-card-title>Discussions</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <p></p>
-        </mat-card-content>
-    </mat-card>
+    <a [routerLink]="['/posts']" [queryParams]="{type: 'discussion'}">
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>Discussions</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <p></p>
+            </mat-card-content>
+        </mat-card>
+    </a>
 
-    <mat-card [routerLink]="['/posts']" [queryParams]="{type: 'snippet'}" class="card">
-        <mat-card-header>
-            <mat-card-title>Code Snippets</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <p></p>
-        </mat-card-content>
-    </mat-card>
+    <a [routerLink]="['/posts']" [queryParams]="{type: 'snippet'}">
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>Code Snippets</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <p></p>
+            </mat-card-content>
+        </mat-card>
+    </a>
 </section>

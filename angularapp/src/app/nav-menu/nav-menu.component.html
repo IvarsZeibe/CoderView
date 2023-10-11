@@ -1,9 +1,9 @@
 <mat-toolbar color="primary">
-    <button mat-button class="home-button" [routerLink]="['/']">CoderView</button>
-    <button mat-button [routerLink]="['/posts']">Posts</button>
-    <button mat-button [routerLink]="['/about']">About</button>
+    <a mat-button class="home-button" [routerLink]="['/']">CoderView</a>
+    <a mat-button [routerLink]="['/posts']">Posts</a>
+    <a mat-button [routerLink]="['/about']">About</a>
     <span class="spacer"></span>
-    <button *ngIf="!storageService.isLoggedIn()" mat-button [routerLink]="['/signin']">Sign In</button>
-    <button *ngIf="storageService.isLoggedIn()" mat-button [routerLink]="['/profile']">Profile</button>
+    <a *ngIf="!storageService.isLoggedIn()" mat-button [routerLink]="['/signin']">Sign In</a>
+    <a *ngIf="storageService.isLoggedIn()" mat-button [routerLink]="['/profile']">Profile</a>
     <button *ngIf="storageService.isLoggedIn()" mat-button (click)="logout()">Sign Out</button>
 </mat-toolbar>

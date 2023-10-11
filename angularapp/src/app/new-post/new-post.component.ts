@@ -51,7 +51,7 @@ export class NewPostComponent implements OnInit {
 		} else if (postType == "discussion") {
 			this.postTypeFormControl.setValue(postType);
 		} else if (postType) {
-			this.router.navigate(['/posts']);
+			this.router.navigate([]);
 		}
 		this.postService.getAllTags().subscribe(tags => {
 			this.tagOptions = tags;

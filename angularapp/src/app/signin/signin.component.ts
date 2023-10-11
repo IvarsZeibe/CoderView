@@ -3,7 +3,7 @@ import { AuthService } from '../_services/auth-service.service';
 import { StorageService } from '../_services/storage.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
 	selector: 'app-signin',
@@ -18,7 +18,8 @@ export class SignInComponent implements OnInit {
 	constructor(
 		private authService: AuthService,
 		private storageService: StorageService,
-		private router: Router
+		private router: Router,
+		private route: ActivatedRoute
 	) { }
 
 	ngOnInit(): void {
@@ -43,7 +44,8 @@ export class SignInComponent implements OnInit {
 					if (hasLoggedIn) {
 						this.storageService.saveUser(username);
 						this.isLoginFailed = false;
-						this.router.navigate(['/']);
+						const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+						this.router.navigateByUrl(returnUrl);
 					} else {
 						this.isLoginFailed = true;
 					}

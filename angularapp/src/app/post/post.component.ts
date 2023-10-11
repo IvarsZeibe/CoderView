@@ -63,7 +63,7 @@ export class PostComponent implements OnInit {
 
 	voteOnPost() {
 		if (!this.storageService.isLoggedIn()) {
-			this.router.navigate(['/signin']);
+			this.router.navigate(['/signin'], { queryParams: { returnUrl: this.router.url } });
 		}
 		if (!this.isVotedByUser) {
 			this.voteCount++;

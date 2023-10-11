@@ -20,7 +20,7 @@ export class AccessGuard implements CanActivate {
 		const guestOnly = route.data['guestOnly'] || false;
 		if (guestOnly) {
 			if (this.storageService.isLoggedIn()) {
-				this.router.navigate(['/'], { queryParams: { returnUrl: state.url } });
+				this.router.navigate(['/']);
 				return false;
 			}
 		}
