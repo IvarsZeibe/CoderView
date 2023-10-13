@@ -94,4 +94,8 @@ export class PostComponent implements OnInit {
 	savePostInfo() {
 		this.postContentService.savePostContent({ content: this.content, tags: this.postTags, title: this.title, postType: this.postType });
 	}
+
+	filterByTag(tag: string) {
+		this.router.navigate(['/posts'], { queryParams: { tag, type: this.postType } });
+	}
 }

@@ -22,16 +22,6 @@
 	flex-grow: 1;
 }
 
-.search-bar {
-	display: flex;
-	width: 100%;
-}
-
-.search-bar :first-child {
-	flex-grow: 1;
-	margin-right: 20px;
-}
-
 mat-card-content, mat-card-title {
 	white-space: break-spaces;
 	overflow-wrap: anywhere;
@@ -58,4 +48,61 @@ mat-card-title {
 
 mat-card-content {
 	margin-top: 20px;
+}
+
+mat-expansion-panel {
+	pointer-events: none;
+	margin-bottom: 10px;
+}	
+
+mat-expansion-panel:hover{
+	--mat-expansion-header-hover-state-layer-color: transparent;
+}
+
+#advancedSearch, mat-expansion-panel-header mat-form-field {
+	pointer-events: all;
+}
+
+#advancedSearch {
+	padding-right: 8px;
+}
+
+#advancedSearch mat-form-field {
+	width: 100%;
+}
+
+mat-expansion-panel-header {
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
+@media only screen and (max-width: 600px) {
+	::ng-deep mat-expansion-panel-header span {
+		flex-wrap: wrap;
+	}
+	mat-expansion-panel-header {
+		height: 200px;
+	}
+	.post-type-field {
+		flex: 1;
+	}
+	.search-bar {
+		margin-right: 0px !important;
+		margin-bottom: 11px;
+	}
+}
+
+.search-bar {
+	flex: 1;
+	margin-right: 20px;
+	min-width: 300px;
+}
+
+.search-suffix {
+	display: flex;
+	align-items: center;
+}
+
+.post-type-field {
+	min-width: 200px;
 }

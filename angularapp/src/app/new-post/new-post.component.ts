@@ -88,11 +88,11 @@ export class NewPostComponent implements OnInit, OnDestroy {
 
 		this.postService.getAllTags().subscribe(tags => {
 			this.tagOptions = tags;
+			this.filteredOptions = this.tagFormControl.valueChanges.pipe(
+				startWith(''),
+				map(value => this._filter(value || '')),
+			);
 		});
-		this.filteredOptions = this.tagFormControl.valueChanges.pipe(
-			startWith(''),
-			map(value => this._filter(value || '')),
-		);
 	}
 
 	ngOnDestroy() {

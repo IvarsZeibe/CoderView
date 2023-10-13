@@ -31,6 +31,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { CommentSectionComponent } from './comment-section/comment-section.component';
 import { ClickStopPropagationDirective } from './_helpers/click-stop-propagation.directive';
 import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @NgModule({
 	declarations: [
@@ -53,7 +54,7 @@ import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
 		MatProgressBarModule, MatDialogModule,
 		MatChipsModule, MatAutocompleteModule,
 		MatSelectModule, ClipboardModule,
-		MatSnackBarModule
+		MatSnackBarModule, MatExpansionModule
 	],
 	providers: [httpInterceptorProviders],
 	bootstrap: [AppComponent],

@@ -68,10 +68,15 @@ export class PostService {
 		);
 	}
 
-	public getAll(postType: PostType, titleSearchFilter = '', timeStamp: Date | null = null, sortOrder: SortOrder = SortOrder.Descending) {
+	public getAll(postType: PostType, titleSearchFilter = '', filteredTags: string[] = [], timeStamp: Date | null = null, sortOrder: SortOrder = SortOrder.Descending) {
 		const urlSearchParams = new URLSearchParams();
 		if (titleSearchFilter != '') {
 			urlSearchParams.append('titleSearchFilter', titleSearchFilter);
+		}
+		if (filteredTags.length != 0) {
+			for (const tag of filteredTags) {
+				urlSearchParams.append('filteredTags', tag);
+			}
 		}
 		if (timeStamp != null) {
 			urlSearchParams.append('timeStamp', timeStamp.toISOString());

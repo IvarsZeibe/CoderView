@@ -6,7 +6,7 @@
         <mat-card-header>
             <mat-chip-set cdkDropList
                           cdkDropListOrientation="horizontal">
-                <mat-chip cdkDrag *ngFor="let tag of postTags">
+                <mat-chip (click)="filterByTag(tag)" cdkDrag *ngFor="let tag of postTags">
                     {{tag}}
                 </mat-chip>
             </mat-chip-set>

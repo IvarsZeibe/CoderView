@@ -34,8 +34,9 @@ namespace webapi.Controllers
         [Route("/api/post/all")]
         public List<PostOverviewViewModel> GetPosts(
             string postType,
-            DateTime? timeStamp,
-            string? titleSearchFilter,
+            [FromQuery] List<string> filteredTags,
+            DateTime? timeStamp = null,
+            string? titleSearchFilter = null,
             SortOrder sortOrder = SortOrder.Descending)
         {
             const int MAX_POSTS_RETURNED = 5;
@@ -56,6 +57,14 @@ namespace webapi.Controllers
             if (titleSearchFilter is not null)
             {
                 posts = posts.Where(p => p.Title.Contains(titleSearchFilter));
+            }
+
+            if (filteredTags.Count != 0)
+            {
+                posts = posts.Where(p => p.TagToPosts
+                    .Select(ttp => ttp.Tag.Name)
+                    .Where(t => filteredTags.Contains(t))
+                    .Count() == filteredTags.Count());
             }
 
             return posts.Select(p => new PostOverviewViewModel

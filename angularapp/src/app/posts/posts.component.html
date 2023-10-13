@@ -2,26 +2,60 @@
     <h1>{{getPostTypeTitle()}}</h1>
     <a mat-raised-button color="accent" [routerLink]="['/new_post']" [queryParams]="{ type: postTypeFormControl.value }">Create a new post</a>
 </div>
-<div class="search-bar">
-    <mat-form-field>
-        <input [(ngModel)]="titleSearchFilter" matInput placeholder="Search discussion">
-        <button mat-button matSuffix (click)="filterPosts($event)">Search</button>
-    </mat-form-field>
-    <mat-form-field>
-        <mat-label>Post type</mat-label>
-        <mat-select [formControl]="postTypeFormControl">
-            <mat-option *ngFor="let postType of postTypes" [value]="postType.value">
-                {{postType.viewValue}}
-            </mat-option>
-        </mat-select>
-    </mat-form-field>
-</div>
+
+<mat-expansion-panel #searchPanel [hideToggle]="true">
+    <mat-expansion-panel-header [collapsedHeight]="getCollapsedHeight()" [expandedHeight]="getExpandedHeight()">
+        <mat-form-field class="search-bar" appClickStopPropagation subscriptSizing="dynamic">
+            <input (keydown)="handleSearch($event)" [(ngModel)]="titleSearchFilter" matInput placeholder="Search discussion">
+            <div matSuffix class="search-suffix">
+                <button mat-button (click)="filterPosts($event)">Search</button>
+                <button mat-icon-button (click)="toggleAdvancedSearch()">
+                    <mat-icon *ngIf="!searchPanel.expanded">expand_more</mat-icon>
+                    <mat-icon *ngIf="searchPanel.expanded">expand_less</mat-icon>
+                </button>
+            </div>
+        </mat-form-field>
+        <mat-form-field class="post-type-field" appClickStopPropagation subscriptSizing="dynamic">
+            <mat-label>Post type</mat-label>
+            <mat-select [formControl]="postTypeFormControl">
+                <mat-option *ngFor="let postType of postTypes" [value]="postType.value">
+                    {{postType.viewValue}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </mat-expansion-panel-header>
+    <div id="advancedSearch">
+        <mat-form-field subscriptSizing="dynamic">
+            <mat-label>Search by tags</mat-label>
+            <mat-chip-grid #chipGrid aria-label="Enter tags">
+                <mat-chip-row *ngFor="let tag of appliedTagFilters"
+                              (removed)="removeTagFilter(tag)"
+                              [aria-description]="'press enter to edit ' + tag">
+                    {{tag}}
+                    <button matChipRemove [attr.aria-label]="'remove ' + tag">
+                        <mat-icon>cancel</mat-icon>
+                    </button>
+                </mat-chip-row>
+                <input #tagInput maxlength="30" placeholder="New tag..."
+                       [matChipInputFor]="chipGrid"
+                       (matChipInputTokenEnd)="addTagFilter($event)"
+                       [matAutocomplete]="auto"
+                       [formControl]="tagFormControl" />
+                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="tagSelected($event)">
+                    <mat-option *ngFor="let tag of filteredTagOptions | async" [value]="tag">
+                        {{tag}}
+                    </mat-option>
+                </mat-autocomplete>
+            </mat-chip-grid>
+        </mat-form-field>
+    </div>
+</mat-expansion-panel>
 <div>
     <mat-card class="card" *ngFor="let post of posts" [routerLink]="['/post', post.id]">
         <mat-card-header>
             <mat-chip-set cdkDropList
                           cdkDropListOrientation="horizontal">
-                <mat-chip cdkDrag *ngFor="let tag of post.tags">
+                <mat-chip appClickStopPropagation (click)="filterByTag(tag)" cdkDrag *ngFor="let tag of post.tags">
                     {{tag}}
                 </mat-chip>
             </mat-chip-set>
