@@ -1,19 +1,25 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { PostService } from '../_services/post.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormControl, Validators } from '@angular/forms';
 import { Observable, map, startWith } from 'rxjs';
 import { MatChipEditedEvent, MatChipInputEvent } from '@angular/material/chips';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { PostContent, PostContentService } from '../_services/post-content.service';
+import { MatDialog } from '@angular/material/dialog';
+import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
 
-type Tag = { name: string };
+type PostType = NewPostComponent['postTypes'][number]['value'];
 
 @Component({
   selector: 'app-new-post',
   templateUrl: './new-post.component.html',
   styleUrls: ['./new-post.component.css']
 })
-export class NewPostComponent implements OnInit {
+export class NewPostComponent implements OnInit, OnDestroy {
+	isModifyingExistingPost = false;
+	postId: string | null = null;
+
 	titleFormControl = new FormControl("", {
 		nonNullable: true,
 		validators: [Validators.required, Validators.minLength(5), Validators.maxLength(150)]
@@ -31,9 +37,9 @@ export class NewPostComponent implements OnInit {
 	postTypes = [
 		{ value: "discussion", viewValue: "Discussions" },
 		{ value: "snippet", viewValue: "Code snippets" }
-	];
+	] as const;
 
-	postTypeFormControl: FormControl<"discussion" | "snippet"> = new FormControl("discussion", { nonNullable: true });
+	postTypeFormControl: FormControl<PostType> = new FormControl("discussion", { nonNullable: true });
 
 	filteredOptions: Observable<string[]> = new Observable();
 	tagOptions: string[] = [];
@@ -42,17 +48,44 @@ export class NewPostComponent implements OnInit {
 	@ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger | null = null;
 	@ViewChild('tagInput', { static: false }) tagInput: ElementRef<HTMLInputElement> | null = null;
 
-	constructor(private postService: PostService, private router: Router, private route: ActivatedRoute) { }
+	constructor(
+		private postService: PostService,
+		private router: Router,
+		private route: ActivatedRoute,
+		private postContentService: PostContentService,
+		private dialog: MatDialog,
+	) { }
 
 	ngOnInit() {
-		const postType = this.route.snapshot.queryParamMap.get('type');
-		if (postType == "snippet") {
-			this.postTypeFormControl.setValue(postType);
-		} else if (postType == "discussion") {
-			this.postTypeFormControl.setValue(postType);
-		} else if (postType) {
-			this.router.navigate([]);
+		const postId = this.route.snapshot.paramMap.get('id');
+		if (postId) {
+			this.postId = postId;
+			this.isModifyingExistingPost = true;
+			this.postTypeFormControl.disable();
+			const postData = this.postContentService.getPostContent();
+			if (postData) {
+				this.setContent(postData)
+			} else {
+				this.postService.getPostContent(postId).subscribe({
+					next: data => this.setContent(data),
+					error: () => this.router.navigate(['/posts'])
+				});
+			}
+		} else {
+			const postType = this.postTypes.find(p =>
+				p.value === this.route.snapshot.queryParamMap.get('type')
+			)?.value;
+			if (postType) {
+				this.postTypeFormControl.setValue(postType);
+			} else {
+				this.router.navigate([]);
+			}
 		}
+
+		this.postTypeFormControl.valueChanges.subscribe(postType => {
+			this.router.navigate([], { queryParams: { type: postType } });
+		});
+
 		this.postService.getAllTags().subscribe(tags => {
 			this.tagOptions = tags;
 		});
@@ -60,6 +93,17 @@ export class NewPostComponent implements OnInit {
 			startWith(''),
 			map(value => this._filter(value || '')),
 		);
+	}
+
+	ngOnDestroy() {
+		this.postContentService.clear();
+	}
+
+	setContent(postContent: PostContent) {
+		this.titleFormControl.setValue(postContent.title);
+		this.contentFormControl.setValue(postContent.content);
+		this.tags = postContent.tags;
+		this.postTypeFormControl.setValue(postContent.postType);
 	}
 
 	createNewPost(): void {
@@ -141,5 +185,42 @@ export class NewPostComponent implements OnInit {
 			this.tagInput.nativeElement.value = ''
 		}		
 		this.tagFormControl.reset();
+	}
+
+	saveChanges() {
+		this.titleFormControl.setValue(this.titleFormControl.value.trim());
+		this.contentFormControl.setValue(this.contentFormControl.value.trim());
+
+		if (this.contentFormControl.invalid || this.titleFormControl.invalid) {
+			return;
+		}
+		if (this.postId) {
+			this.postService.savePostChanges(
+				this.postId,
+				this.titleFormControl.value,
+				this.contentFormControl.value,
+				this.tags
+			).subscribe({
+				next: response => {
+					this.router.navigate(['/post/' + this.postId]);
+				}
+			});
+		}
+	}
+
+	openDeletePostDialog() {
+		this.dialog.open(DeleteDialogComponent, {
+			data: {
+				deleteAction: () => {
+					if (this.postId) {
+						this.postService.delete(this.postId).subscribe({
+							next: () => this.router.navigate(['/posts']),
+							error: (e) => console.log(e)
+						});
+					}
+				},
+				itemToDelete: 'post'
+			}
+		});
 	}
 }

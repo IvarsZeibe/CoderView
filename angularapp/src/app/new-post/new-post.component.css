@@ -36,3 +36,7 @@ mat-chip-set {
 	padding: 10px;
 	font-family: monospace !important;
 }
+
+mat-card-actions {
+	justify-content: space-between;
+}

@@ -7,5 +7,6 @@ namespace webapi.Models
     {
         public int TagId { get; set; }
         public string Name { get; set; }
+        public List<TagToPost>? TagToPosts { get; set; }
     }
 }

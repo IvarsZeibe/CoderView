@@ -8,7 +8,8 @@ namespace webapi.ViewModels
         [StringLength(5000)]
         [Required]
         public required string Content { get; set; }
-        public string PostId { get; set; }
+        [StringLength(22, MinimumLength = 22)]
+        public required string PostId { get; set; }
         public int? ReplyTo { get; set; }
     }
 }

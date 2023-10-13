@@ -60,3 +60,9 @@ mat-card-content, mat-card-title {
 .code mat-icon {
 	float: right;
 }
+
+#post-edit-button {
+	float: right;
+	width: fit-content;
+	margin: 10px;
+}

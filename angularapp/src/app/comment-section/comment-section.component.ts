@@ -1,11 +1,11 @@
-import { Component, Inject, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { StorageService } from '../_services/storage.service';
 import { Router } from '@angular/router';
 import { DateHelperService } from '../_services/date-helper.service';
 import { CommentService } from '../_services/comment.service';
+import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
 
 export type Comments = Record<number | -2, {
 	owner: string,
@@ -145,31 +145,34 @@ export class CommentSectionComponent {
 	}
 
 	openDeleteCommentDialog(commentId: number) {
-		this.dialog.open(DeleteCommentDialogComponent, {
-			data: () => {
-				this.commentService.delete(commentId);
+		this.dialog.open(DeleteDialogComponent, {
+			data: {
+				deleteAction: () => {
+					this.commentService.delete(commentId);
 
-				if (!Object.values(this.comments).some(c => c.replyTo == commentId)) {
-					// eslint-disable-next-line no-constant-condition
-					while (true) {
-						const parentId: number | null = this.comments[commentId].replyTo;
+					if (!Object.values(this.comments).some(c => c.replyTo == commentId)) {
+						// eslint-disable-next-line no-constant-condition
+						while (true) {
+							const parentId: number | null = this.comments[commentId].replyTo;
 
-						delete this.comments[commentId];
+							delete this.comments[commentId];
 
-						if (parentId !== null &&
-							this.comments[parentId].owner === "[Deleted]" &&
-							!Object.values(this.comments).some(c => c.replyTo == parentId)
-						) {
-							commentId = parentId;
-						} else {
-							break;
+							if (parentId !== null &&
+								this.comments[parentId].owner === "[Deleted]" &&
+								!Object.values(this.comments).some(c => c.replyTo == parentId)
+							) {
+								commentId = parentId;
+							} else {
+								break;
+							}
 						}
+						delete this.comments[commentId];
+					} else {
+						this.comments[commentId].owner = "[Deleted]";
+						this.comments[commentId].content = "";
 					}
-					delete this.comments[commentId];
-				} else {
-					this.comments[commentId].owner = "[Deleted]";
-					this.comments[commentId].content = "";
-				}
+				},
+				itemToDelete: 'comment'
 			}
 		});
 	}
@@ -180,21 +183,4 @@ export class CommentSectionComponent {
 		}
 		return author;
 	}
-}
-
-@Component({
-	selector: 'app-delete-comment-dialog',
-	template: `<h1 mat-dialog-title>Delete comment</h1>
-<div mat-dialog-content>
-  Are you sure you want to delete this comment?
-</div>
-<div mat-dialog-actions>
-  <button mat-button mat-dialog-close cdkFocusInitial>Cancel</button>
-  <button mat-button (click)="deleteComment()" mat-dialog-close cdkFocusInitial>Delete</button>
-</div>`,
-	standalone: true,
-	imports: [MatDialogModule, MatButtonModule],
-})
-export class DeleteCommentDialogComponent {
-	constructor(@Inject(MAT_DIALOG_DATA) public deleteComment: () => void) { }
 }

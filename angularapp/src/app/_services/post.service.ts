@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, firstValueFrom, map } from 'rxjs';
+import { PostContent } from './post-content.service';
 
 const AUTH_API = '/api/';
 
@@ -100,7 +101,7 @@ export class PostService {
 
 	public voteOn(postId: string) {
 		firstValueFrom(this.http.post(
-			AUTH_API + 'post/vote/' + postId,
+			AUTH_API + 'post/' + postId + '/vote',
 			{},
 			httpOptions
 		));
@@ -108,7 +109,7 @@ export class PostService {
 
 	public unvoteOn(postId: string) {
 		firstValueFrom(this.http.post(
-			AUTH_API + 'post/unvote/' + postId,
+			AUTH_API + 'post/' + postId + '/unvote',
 			{},
 			httpOptions
 		));
@@ -118,6 +119,32 @@ export class PostService {
 		return this.http.get<string[]>(
 			AUTH_API + 'tags',
 			httpOptions
+		);
+	}
+
+	public getPostContent(id: string) {
+		return this.http.get<PostContent>(
+			AUTH_API + 'post/' + id + '/content',
+			httpOptions
+		);
+	}
+
+	public savePostChanges(id: string, title: string, content: string, tags: string[]) {
+		return this.http.post(
+			AUTH_API + 'post/' + id + '/edit',
+			{
+				title,
+				content,
+				tags
+			},
+			httpOptions
+		);
+	}
+
+	public delete(id: string) {
+		return this.http.delete(
+			AUTH_API + 'post/' + id + '/delete',
+			{}
 		);
 	}
 }

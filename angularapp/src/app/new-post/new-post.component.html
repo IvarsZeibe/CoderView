@@ -62,8 +62,21 @@
 
         </form>
     </mat-card-content>
-    <mat-card-actions align="end">
-        <button mat-button type="button" [routerLink]="['/']">Cancel</button>
-        <button mat-button type="submit" (click)="createNewPost()">Create Post</button>
+    <mat-card-actions>
+        <div *ngIf="isModifyingExistingPost; then editButtons; else createButtons"></div>
+        <ng-template #editButtons>
+            <button *ngIf="isModifyingExistingPost" mat-button (click)="openDeletePostDialog()">Delete</button>
+            <div>
+                <a mat-button [routerLink]="['../']">Cancel</a>
+                <button mat-button type="submit" (click)="saveChanges()">Save changes</button>
+            </div>
+        </ng-template>
+        <ng-template #createButtons>
+            <div></div>
+            <div>
+                <a mat-button [routerLink]="['/posts']">Cancel</a>
+                <button *ngIf="!isModifyingExistingPost" mat-button type="submit" (click)="createNewPost()">Create Post</button>
+            </div>
+        </ng-template>
     </mat-card-actions>
 </mat-card>

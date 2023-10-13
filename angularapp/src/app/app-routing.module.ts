@@ -16,6 +16,12 @@ const routes: Routes = [
 	{ path: 'posts', component: PostsComponent },
 	{ path: 'post/:id', component: PostComponent },
 	{
+		path: 'post/:id/edit',
+		component: NewPostComponent,
+		data: { requiresLogin: true },
+		canActivate: [AccessGuard]
+	},
+	{
 		path: 'new_post',
 		component: NewPostComponent,
 		data: { requiresLogin: true },

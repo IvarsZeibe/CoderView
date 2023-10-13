@@ -28,7 +28,7 @@ export class CommentService {
 
 	public voteOn(commentId: number) {
 		firstValueFrom(this.http.post(
-			AUTH_API + 'comment/vote/' + commentId,
+			AUTH_API + 'comment/' + commentId + '/vote',
 			{},
 			httpOptions
 		));
@@ -36,7 +36,7 @@ export class CommentService {
 
 	public unvoteOn(commentId: number) {
 		firstValueFrom(this.http.post(
-			AUTH_API + 'comment/unvote/' + commentId,
+			AUTH_API + 'comment/' + commentId + '/unvote',
 			{},
 			httpOptions
 		));

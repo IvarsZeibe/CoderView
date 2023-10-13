@@ -35,7 +35,14 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
-            var post = _context.Posts.Find(ShortGuid.Parse(model.PostId).ToGuid());
+
+            var shortGuid = ShortGuid.ParseOrDefault(model.PostId);
+            if (shortGuid is null)
+            {
+                return BadRequest();
+            }
+
+            var post = _context.Posts.Find(shortGuid.ToGuid());
             if (post is null)
             {
                 return BadRequest();
@@ -55,7 +62,7 @@ namespace webapi.Controllers
         }
 
         [HttpPost]
-        [Route("/api/comment/vote/{id}")]
+        [Route("/api/comment/{id}/vote")]
         [Authorize]
         public IActionResult VoteOnComment(int id)
         {
@@ -87,7 +94,7 @@ namespace webapi.Controllers
         }
 
         [HttpPost]
-        [Route("/api/comment/unvote/{id}")]
+        [Route("/api/comment/{id}/unvote")]
         [Authorize]
         public IActionResult UnvoteOnComment(int id)
         {

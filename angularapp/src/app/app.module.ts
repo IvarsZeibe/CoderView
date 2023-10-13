@@ -30,13 +30,14 @@ import { HomeComponent } from './home/home.component';
 import { ProfileComponent } from './profile/profile.component';
 import { CommentSectionComponent } from './comment-section/comment-section.component';
 import { ClickStopPropagationDirective } from './_helpers/click-stop-propagation.directive';
+import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
 
 @NgModule({
 	declarations: [
 		AppComponent, NavMenuComponent, SignInComponent,
 		SignUpComponent, PostsComponent, NewPostComponent,
 		PostComponent, HomeComponent, ProfileComponent,
-		CommentSectionComponent, ClickStopPropagationDirective
+		CommentSectionComponent, ClickStopPropagationDirective, DeleteDialogComponent
 	],
 	imports: [
 		BrowserModule,

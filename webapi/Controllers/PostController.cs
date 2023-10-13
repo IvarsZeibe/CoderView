@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using webapi.Data;
 using webapi.Helper;
 using webapi.Models;
@@ -77,10 +75,24 @@ namespace webapi.Controllers
 
         [HttpGet]
         [Route("/api/post/{id}")]
-        public PostViewModel GetPost(string id)
+        public IActionResult GetPost(string id)
         {
-            var post = _context.Posts.Include(p => p.Type).Include(p => p.Author).Where(p => ShortGuid.Parse(id) == p.PostId).First();
-            return new PostViewModel 
+            var shortGuid = ShortGuid.ParseOrDefault(id);
+            if (shortGuid is null)
+            {
+                return BadRequest();
+            }
+
+            var post = _context.Posts
+                .Include(p => p.Type).Include(p => p.Author)
+                .Where(p => shortGuid == p.PostId)
+                .FirstOrDefault();
+            if (post is null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(new PostViewModel 
             {
                 Author = post.Author.UserName,
                 Content = post.Content,
@@ -104,7 +116,105 @@ namespace webapi.Controllers
                     IsVotedByUser = _context.Votes.Any(v => v.CommentVotedFor == c && v.User.UserName == User.Identity.Name),
                     CreatedOn = DateTime.SpecifyKind(c.CreatedOn, DateTimeKind.Utc)
                     }).ToList()
-            };
+            });
+        }
+
+        [HttpGet]
+        [Route("/api/post/{id}/content")]
+        public IActionResult GetPostContent(string id)
+        {
+            var shortGuid = ShortGuid.ParseOrDefault(id);
+            if (shortGuid is null)
+            {
+                return BadRequest();
+            }
+
+            var post = _context.Posts
+                .Include(p => p.Type).Include(p => p.Author)
+                .Where(p => shortGuid == p.PostId)
+                .FirstOrDefault(); 
+            if (post is null)
+            {
+                return BadRequest();
+            }
+
+            if (post.Author.UserName != User.Identity.Name)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(new PostContentViewModel
+            {
+                Content = post.Content,
+                Title = post.Title,
+                PostType = post.Type.Name,
+                Tags = _context.TagToPost
+                    .Where(ttp => ttp.Post == post)
+                    .Select(ttp => _context.Tag.First(t => t == ttp.Tag).Name).ToList(),
+            });
+        }
+
+        [HttpPost]
+        [Route("/api/post/{id}/edit")]
+        public IActionResult EditPost(string id, PostEditViewModel model)
+        {
+            var shortGuid = ShortGuid.ParseOrDefault(id);
+            if (shortGuid is null)
+            {
+                return BadRequest();
+            }
+
+            var post = _context.Posts
+                .Include(p => p.Author)
+                .Where(p => shortGuid == p.PostId)
+                .FirstOrDefault();
+            if (post is null)
+            {
+                return BadRequest();
+            }
+
+            if (post.Author.UserName != User.Identity.Name)
+            {
+                return Unauthorized();
+            }
+
+            post.Title = model.Title;
+            post.Content = model.Content;
+
+            var postTagsToRemove = _context.TagToPost
+                .Include(ttp => ttp.Tag)
+                .Where(ttp => ttp.Post == post)
+                .ToList();
+            foreach (string tagName in model.Tags)
+            {
+                var postTagToKeep = postTagsToRemove.FirstOrDefault(ttp => _context.Tag.First(t => t == ttp.Tag).Name == tagName);
+                if (postTagToKeep is not null)
+                {
+                    postTagsToRemove.Remove(postTagToKeep);
+                    continue;
+                }
+
+                var tag = _context.Tag.Where(t => t.Name == tagName).FirstOrDefault();
+                if (tag is null)
+                {
+                    if (tagName != tagName.Trim())
+                    {
+                        return BadRequest();
+                    }
+                    tag = _context.Tag.Add(new Models.Tag { Name = tagName }).Entity;
+                }
+
+                _context.TagToPost.Add(new TagToPost { Post = post, Tag = tag });
+            }
+            
+            foreach (TagToPost tag in postTagsToRemove)
+            {
+                _context.TagToPost.Remove(tag);
+            }
+
+            _context.SaveChanges();
+
+            return Ok();
         }
 
         [HttpPost]
@@ -119,7 +229,7 @@ namespace webapi.Controllers
                 return BadRequest(ModelState);
             }
 
-            ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).First();
+            ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
             if (user is null)
             {
                 return BadRequest();
@@ -157,8 +267,59 @@ namespace webapi.Controllers
             return Ok(Json(new ShortGuid(post.PostId).ToString()));
         }
 
+
+        [HttpDelete]
+        [Route("/api/post/{id}/delete")]
+        [Authorize]
+        public IActionResult DeletePost(string id)
+        {
+            ShortGuid shortGuid = ShortGuid.ParseOrDefault(id);
+            if (shortGuid is null)
+            {
+                return BadRequest();
+            }
+
+            var post = _context.Posts
+                .Include(p => p.Author)
+                .Include(p => p.Comments).ThenInclude(c => c.Votes)
+                .Include(p => p.Votes)
+                .Include(p => p.TagToPosts).ThenInclude(ttp => ttp.Tag)
+                .FirstOrDefault(p => p.PostId == shortGuid);
+            if (post is null)
+            {
+                return NotFound();
+            }
+
+            if (post.Author.UserName != User.Identity.Name)
+            {
+                return Unauthorized();
+            }
+
+            post.Comments?.ForEach(c =>
+            {
+                _context.Comments.Remove(c);
+                c.Votes?.ForEach(v => _context.Votes.Remove(v));
+            });
+
+            post.Votes?.ForEach(v => _context.Votes.Remove(v));
+
+            post.TagToPosts?.ForEach(ttp =>
+            {
+                _context.TagToPost.Remove(ttp);
+                if (ttp.Tag.TagToPosts?.Count == 1)
+                {
+                    _context.Tag.Remove(ttp.Tag);
+                }
+            });
+
+            _context.Posts.Remove(post);
+
+            _context.SaveChanges();
+            return Ok();
+        }
+
         [HttpPost]
-        [Route("/api/post/vote/{id}")]
+        [Route("/api/post/{id}/vote")]
         [Authorize]
         public IActionResult VoteOnPost(string id)
         {
@@ -168,7 +329,13 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
-            var post = _context.Posts.Find(ShortGuid.Parse(id).ToGuid());
+            var shortGuid = ShortGuid.ParseOrDefault(id);
+            if (shortGuid is null)
+            {
+                return BadRequest();
+            }
+
+            var post = _context.Posts.Find(shortGuid.ToGuid());
             if (post is null)
             {
                 return BadRequest();
@@ -190,7 +357,7 @@ namespace webapi.Controllers
         }
 
         [HttpPost]
-        [Route("/api/post/unvote/{id}")]
+        [Route("/api/post/{id}/unvote")]
         [Authorize]
         public IActionResult UnvoteOnPost(string id)
         {
@@ -200,7 +367,13 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
-            var post = _context.Posts.Find(ShortGuid.Parse(id).ToGuid());
+            var shortGuid = ShortGuid.ParseOrDefault(id);
+            if (shortGuid is null)
+            {
+                return BadRequest();
+            }
+
+            var post = _context.Posts.Find(shortGuid.ToGuid());
             if (post is null)
             {
                 return BadRequest();

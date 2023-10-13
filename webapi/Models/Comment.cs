@@ -12,5 +12,6 @@ namespace webapi.Models
         public ApplicationUser? Author { get; set; }
         public List<Comment>? Replies { get; set; }
         public DateTime CreatedOn { get; set; }
+        public List<Vote>? Votes { get; set; }
     }
 }
