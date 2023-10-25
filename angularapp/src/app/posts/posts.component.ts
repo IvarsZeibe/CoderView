@@ -52,15 +52,18 @@ export class PostsComponent implements OnInit, AfterViewInit {
 	) { }
 
 	ngOnInit(): void {
-		const postType = this.postTypes.find(p =>
-			p.value == this.route.snapshot.queryParamMap.get('type')
-		)?.value;
-
-		if (postType) {
-			this.postTypeFormControl.setValue(postType);
-		} else {
-			this.router.navigate([], { queryParams: { type: 'discussion' } });
-		}
+		this.route.queryParamMap.subscribe(queryParamMap => {
+			const postTypeParam = queryParamMap.get('type');
+			const postType = this.postTypes.find(p =>
+				p.value == postTypeParam
+			)?.value;
+			if (postType) {
+				this.postTypeFormControl.setValue(postType);
+			} else {
+				this.postTypeFormControl.setValue('discussion');
+				this.router.navigate([]);
+			}
+		})
 
 		const filterByTag = this.route.snapshot.queryParamMap.get('tag');
 		if (filterByTag) {
@@ -184,6 +187,9 @@ export class PostsComponent implements OnInit, AfterViewInit {
 
 	public toggleAdvancedSearch() {
 		this.searchPanel?.toggle();
+		if (this.autocomplete) {
+			this.autocomplete.closePanel();
+		}
 	}
 
 	private _filterTags(value: string): string[] {

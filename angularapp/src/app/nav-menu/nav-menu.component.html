@@ -1,9 +1,25 @@
-<mat-toolbar color="primary">
-    <a mat-button class="home-button" [routerLink]="['/']">CoderView</a>
-    <a mat-button [routerLink]="['/posts']">Posts</a>
-    <a mat-button [routerLink]="['/about']">About</a>
+<mat-toolbar>
+    <a mat-button class="home-button" [routerLink]="['/posts']"><span class="logo-start">Coder</span><span class="logo-end">View</span></a>
+    <a mat-button [routerLink]="['/posts']" [queryParams]="{type: 'discussion'}">Discussions</a>
+    <a mat-button [routerLink]="['/posts']" [queryParams]="{type: 'snippet'}">Code Snippets</a>
     <span class="spacer"></span>
-    <a *ngIf="!storageService.isLoggedIn()" mat-button [routerLink]="['/signin']">Sign In</a>
-    <a *ngIf="storageService.isLoggedIn()" mat-button [routerLink]="['/profile']">Profile</a>
-    <button *ngIf="storageService.isLoggedIn()" mat-button (click)="logout()">Sign Out</button>
+    <a *ngIf="!storageService.isLoggedIn()" mat-button [routerLink]="['/signin']">
+        <div class="center">
+            Sign In
+            <mat-icon style="margin-left: 5px;" svgIcon="profile"></mat-icon>
+        </div>
+    </a>
+    <button [matMenuTriggerFor]="menu" *ngIf="storageService.isLoggedIn()" [@.disabled]="isAnimationDisabled" [@expand] mat-icon-button>
+        <mat-icon style="transform: scale(1.5)" svgIcon="profile"></mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+        <a mat-menu-item [routerLink]="['/profile']">
+            <mat-icon>person</mat-icon>
+            <span>View Profile</span>
+        </a>
+        <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Sign Out</span>
+        </button>
+    </mat-menu>
 </mat-toolbar>

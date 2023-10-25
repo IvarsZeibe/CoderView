@@ -34,7 +34,7 @@
 }
 
 .button-pressed {
-	background-color: #393939;
+	background-color: #292a45;
 }
 
 mat-card-content, mat-card-title {
@@ -49,9 +49,9 @@ mat-card-content, mat-card-title {
 .code {
 	margin-top: 20px;
 	display: block;
-	background: #2e2b2b;
-	border: #808080 1px solid !important;
-	border-radius: 5px;
+	background: #1f2133;
+	border: #4d527b 1px solid !important;
+	border-radius: 10px;
 	padding: 10px;
 	font-family: monospace !important;
 	cursor: pointer;

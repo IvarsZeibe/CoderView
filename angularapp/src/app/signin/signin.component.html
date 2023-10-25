@@ -1,7 +1,7 @@
 <mat-card>
     <mat-card-title><h1>Sign in</h1></mat-card-title>
     <mat-card-content>
-        <mat-progress-bar color="accent" [style.visibility]="isLoading ? 'visible' : 'hidden'" mode="indeterminate"></mat-progress-bar>
+        <mat-progress-bar [style.visibility]="isLoading ? 'visible' : 'hidden'" mode="indeterminate"></mat-progress-bar>
         <div class="error-message" [style.visibility]="(isLoginFailed && !isLoading) ? 'visible' : 'hidden'">
             Username or Password incorrect!
         </div>
@@ -16,7 +16,7 @@
                 <input required type="password" formControlName="password" matInput>
             </mat-form-field>
             <a mat-button [routerLink]="['/signup']" queryParamsHandling="preserve">Create an account</a>
-            <button class="login-button" [disabled]="!loginForm.valid" mat-raised-button>Sign In</button>
+            <button color="primary" class="login-button" [disabled]="!loginForm.valid" mat-raised-button>Sign In</button>
         </form>
     </mat-card-content>
 </mat-card>

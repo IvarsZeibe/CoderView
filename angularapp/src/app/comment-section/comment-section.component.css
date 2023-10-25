@@ -1,8 +1,14 @@
 .comment {
-	background-color: #565656;
+	background-color: #363a5b;
 	margin-bottom: 5px;
 	display: block;
 	border-left: solid 5px red;
+}
+
+.comment::after {
+	border: #4d527b 1px solid;
+	border-radius: 10px;
+	border-left: none;
 }
 
 .comment mat-card-content {
@@ -21,7 +27,7 @@
 }
 
 .button-pressed {
-	background-color: #393939;
+	background-color: #292a45;
 }
 
 mat-card-content, mat-card-title {

@@ -1,6 +1,6 @@
 <div class="heading">
     <h1>{{getPostTypeTitle()}}</h1>
-    <a mat-raised-button color="accent" [routerLink]="['/new_post']" [queryParams]="{ type: postTypeFormControl.value }">Create a new post</a>
+    <a mat-raised-button color="primary" [routerLink]="['/new_post']" [queryParams]="{ type: postTypeFormControl.value }">Create a new post</a>
 </div>
 
 <mat-expansion-panel #searchPanel [hideToggle]="true">
@@ -52,7 +52,7 @@
 </mat-expansion-panel>
 <div>
     <mat-card class="card" *ngFor="let post of posts" [routerLink]="['/post', post.id]">
-        <mat-card-header>
+        <mat-card-header *ngIf="post.tags.length > 0">
             <mat-chip-set cdkDropList
                           cdkDropListOrientation="horizontal">
                 <mat-chip appClickStopPropagation (click)="filterByTag(tag)" cdkDrag *ngFor="let tag of post.tags">
@@ -73,5 +73,5 @@
             <button mat-button [class.button-pressed]="post.isVotedByUser" (click)="voteOnPost($event, post)">Vote ({{post.voteCount}})</button>
         </mat-card-actions>
 </mat-card>
-    <mat-progress-bar color="accent" [style.visibility]="isTryingToLoadPosts ? 'visible' : 'hidden'" mode="indeterminate"></mat-progress-bar>
+    <mat-progress-bar [style.visibility]="isTryingToLoadPosts ? 'visible' : 'hidden'" mode="indeterminate"></mat-progress-bar>
 </div>

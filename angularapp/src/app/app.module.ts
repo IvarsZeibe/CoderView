@@ -17,6 +17,8 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatMenuModule } from '@angular/material/menu';
 
 import { AppComponent } from './app.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
@@ -26,18 +28,16 @@ import { httpInterceptorProviders } from './_helpers/http.interceptor';
 import { PostsComponent } from './posts/posts.component';
 import { NewPostComponent } from './new-post/new-post.component';
 import { PostComponent } from './post/post.component';
-import { HomeComponent } from './home/home.component';
 import { ProfileComponent } from './profile/profile.component';
 import { CommentSectionComponent } from './comment-section/comment-section.component';
 import { ClickStopPropagationDirective } from './_helpers/click-stop-propagation.directive';
 import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
-import { MatExpansionModule } from '@angular/material/expansion';
 
 @NgModule({
 	declarations: [
 		AppComponent, NavMenuComponent, SignInComponent,
 		SignUpComponent, PostsComponent, NewPostComponent,
-		PostComponent, HomeComponent, ProfileComponent,
+		PostComponent, ProfileComponent,
 		CommentSectionComponent, ClickStopPropagationDirective, DeleteDialogComponent
 	],
 	imports: [
@@ -54,7 +54,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 		MatProgressBarModule, MatDialogModule,
 		MatChipsModule, MatAutocompleteModule,
 		MatSelectModule, ClipboardModule,
-		MatSnackBarModule, MatExpansionModule
+		MatSnackBarModule, MatExpansionModule,
+		MatMenuModule
 	],
 	providers: [httpInterceptorProviders],
 	bootstrap: [AppComponent],
