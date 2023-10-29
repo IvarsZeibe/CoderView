@@ -1,6 +1,6 @@
 .card {
-    cursor: pointer;
-    margin: 20px 0px;
+	cursor: pointer;
+	margin: 20px 0px;
 }
 
 .create-post-button {
@@ -65,10 +65,17 @@ mat-expansion-panel:hover{
 
 #advancedSearch {
 	padding-right: 8px;
+	display: flex;
 }
 
-#advancedSearch mat-form-field {
-	width: 100%;
+#tagSearch {
+	flex-grow: 1;
+	display: block;
+}
+
+#languageSearch {
+	margin-left: 20px;
+	flex-grow: 1;
 }
 
 mat-expansion-panel-header {
@@ -105,4 +112,14 @@ mat-expansion-panel-header {
 
 .post-type-field {
 	min-width: 200px;
+}
+
+.editor {
+	border-radius: 10px;
+	border: 10px solid #1e1e1e;
+}
+
+::ng-deep .editor-container {
+	height: 100% !important;
+	background: #1e1e1e;
 }

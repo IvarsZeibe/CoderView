@@ -4,7 +4,8 @@ export type PostContent = {
 	title: string,
 	content: string,
 	tags: string[],
-	postType: 'discussion' | 'snippet'
+	postType: 'discussion' | 'snippet',
+	programmingLanguage: string | null
 };
 
 @Injectable({

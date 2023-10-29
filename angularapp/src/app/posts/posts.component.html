@@ -25,7 +25,7 @@
         </mat-form-field>
     </mat-expansion-panel-header>
     <div id="advancedSearch">
-        <mat-form-field subscriptSizing="dynamic">
+        <mat-form-field id="tagSearch" subscriptSizing="dynamic">
             <mat-label>Search by tags</mat-label>
             <mat-chip-grid #chipGrid aria-label="Enter tags">
                 <mat-chip-row *ngFor="let tag of appliedTagFilters"
@@ -48,6 +48,14 @@
                 </mat-autocomplete>
             </mat-chip-grid>
         </mat-form-field>
+        <mat-form-field id="languageSearch" subscriptSizing="dynamic" *ngIf="postTypeFormControl.value == 'snippet'">
+            <mat-label>Programming Language</mat-label>
+            <mat-select [(value)]="programmingLanguageFilter" (selectionChange)="filterByProgrammingLanguage()">
+                <mat-option *ngFor="let language of programmingLanguages" [value]="language">
+                    {{language}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
     </div>
 </mat-expansion-panel>
 <div>
@@ -59,19 +67,21 @@
                     {{tag}}
                 </mat-chip>
             </mat-chip-set>
-        </mat-card-header>        
+        </mat-card-header>
         <mat-card-header>
             <mat-card-title><a [routerLink]="['/post', post.id]">{{post.title}}</a></mat-card-title>
             <mat-card-subtitle>{{getFormattedAuthor(post.author)}} • {{dateHelperService.getTimePassedString(post.createdOn, timeOnPageLoad)}}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content *ngIf="postTypeFormControl.value == 'discussion'">{{post.content}}</mat-card-content>
-        <mat-card-content *ngIf="postTypeFormControl.value == 'snippet'">
-            <code appClickStopPropagation (click)="openCopySnackBar()" [cdkCopyToClipboard]="post.content" cli><mat-icon>content_copy</mat-icon>{{post.content}}</code>
+        <mat-card-content appClickStopPropagation style="cursor: default" *ngIf="postTypeFormControl.value == 'snippet'">
+            <mat-icon (click)="openCopySnackBar()" [cdkCopyToClipboard]="post.content" style="position: absolute; float: right; z-index: 10; margin: 10px; cursor: pointer">content_copy</mat-icon>
+            <ngx-monaco-editor class="editor" [options]="{ theme: 'vs-dark', language: post.programmingLanguage, readOnly: true, automaticLayout: true }" [(ngModel)]="post.content"></ngx-monaco-editor>
+            <span style="position: absolute;margin-top: -25px;margin-left: 5px;color: #8b8b8b">{{post.programmingLanguage}}</span>
         </mat-card-content>
         <mat-card-actions>
             <a [routerLink]="['/post', post.id]" mat-button>Comment ({{post.commentCount}})</a>
             <button mat-button [class.button-pressed]="post.isVotedByUser" (click)="voteOnPost($event, post)">Vote ({{post.voteCount}})</button>
         </mat-card-actions>
-</mat-card>
+    </mat-card>
     <mat-progress-bar [style.visibility]="isTryingToLoadPosts ? 'visible' : 'hidden'" mode="indeterminate"></mat-progress-bar>
 </div>

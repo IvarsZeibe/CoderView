@@ -6,7 +6,7 @@ import { DateHelperService } from '../_services/date-helper.service';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatExpansionPanel } from '@angular/material/expansion';
-import { Observable, map, startWith } from 'rxjs';
+import { Observable, finalize, map, retry, startWith } from 'rxjs';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 
@@ -41,6 +41,9 @@ export class PostsComponent implements OnInit, AfterViewInit {
 	tagOptions: string[] = [];
 	filteredTagOptions: Observable<string[]> = new Observable()
 	appliedTagFilters: string[] = [];
+	programmingLanguageFilter: string | null = null;
+
+	programmingLanguages = ['plaintext', 'abap', 'apex', 'azcli', 'bat', 'bicep', 'cameligo', 'clojure', 'coffeescript', 'c', 'cpp', 'csharp', 'csp', 'css', 'cypher', 'dart', 'dockerfile', 'ecl', 'elixir', 'flow9', 'fsharp', 'freemarker2', 'freemarker2.tag-angle.interpolation-dollar', 'freemarker2.tag-bracket.interpolation-dollar', 'freemarker2.tag-angle.interpolation-bracket', 'freemarker2.tag-bracket.interpolation-bracket', 'freemarker2.tag-auto.interpolation-dollar', 'freemarker2.tag-auto.interpolation-bracket', 'go', 'graphql', 'handlebars', 'hcl', 'html', 'ini', 'java', 'javascript', 'julia', 'kotlin', 'less', 'lexon', 'lua', 'liquid', 'm3', 'markdown', 'mdx', 'mips', 'msdax', 'mysql', 'objective-c', 'pascal', 'pascaligo', 'perl', 'pgsql', 'php', 'pla', 'postiats', 'powerquery', 'powershell', 'proto', 'pug', 'python', 'qsharp', 'r', 'razor', 'redis', 'redshift', 'restructuredtext', 'ruby', 'rust', 'sb', 'scala', 'scheme', 'scss', 'shell', 'sol', 'aes', 'sparql', 'sql', 'st', 'swift', 'systemverilog', 'verilog', 'tcl', 'twig', 'typescript', 'vb', 'wgsl', 'xml', 'yaml', 'json'];
 
 	constructor(
 		private route: ActivatedRoute,
@@ -117,18 +120,23 @@ export class PostsComponent implements OnInit, AfterViewInit {
 		this.areAllPostsLoaded = false;
 		this.timeStamp = null;
 		this.isTryingToLoadPosts = true;
-		this.postService.getAll(this.postTypeFormControl.value, this.appliedSearchFilter, this.appliedTagFilters).subscribe(posts => {
-			this.posts = posts;
-			if (posts.length > 0) {
-				this.timeStamp = posts[posts.length - 1].createdOn;
+		const programmingLanguageFilter = this.postTypeFormControl.value == "snippet" ? this.programmingLanguageFilter : null;
+		this.postService
+			.getAll(this.postTypeFormControl.value, this.appliedSearchFilter, this.appliedTagFilters, programmingLanguageFilter)
+			.pipe(finalize(() => this.isTryingToLoadPosts = false))
+			.subscribe(posts => {
+				this.posts = posts;
+				if (posts.length > 0) {
+					this.timeStamp = posts[posts.length - 1].createdOn;
+				}
 			}
-			this.isTryingToLoadPosts = false;
-		});
+		);
 	}
 
 	loadMorePosts(): void {
 		this.isTryingToLoadPosts = true;
-		this.postService.getAll(this.postTypeFormControl.value, this.appliedSearchFilter, this.appliedTagFilters, this.timeStamp).subscribe(posts => {
+		const programmingLanguageFilter = this.postTypeFormControl.value == "snippet" ? this.programmingLanguageFilter : null;
+		this.postService.getAll(this.postTypeFormControl.value, this.appliedSearchFilter, this.appliedTagFilters, programmingLanguageFilter, this.timeStamp).subscribe(posts => {
 			if (posts.length == 0) {
 				this.areAllPostsLoaded = true;
 			}
@@ -252,6 +260,13 @@ export class PostsComponent implements OnInit, AfterViewInit {
 
 	filterByTag(tag: string) {
 		this.appliedTagFilters = [tag];
+		this.filterPosts();
+		if (!this.searchPanel?.expanded) {
+			this.toggleAdvancedSearch();
+		}
+	}
+
+	filterByProgrammingLanguage() {
 		this.filterPosts();
 		if (!this.searchPanel?.expanded) {
 			this.toggleAdvancedSearch();

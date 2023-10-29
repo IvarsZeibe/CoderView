@@ -8,13 +8,14 @@ import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/m
 import { PostContent, PostContentService } from '../_services/post-content.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
+import { MatSelectChange } from '@angular/material/select';
 
 type PostType = NewPostComponent['postTypes'][number]['value'];
 
 @Component({
-  selector: 'app-new-post',
-  templateUrl: './new-post.component.html',
-  styleUrls: ['./new-post.component.css']
+	selector: 'app-new-post',
+	templateUrl: './new-post.component.html',
+	styleUrls: ['./new-post.component.css']
 })
 export class NewPostComponent implements OnInit, OnDestroy {
 	isModifyingExistingPost = false;
@@ -48,12 +49,17 @@ export class NewPostComponent implements OnInit, OnDestroy {
 	@ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger | null = null;
 	@ViewChild('tagInput', { static: false }) tagInput: ElementRef<HTMLInputElement> | null = null;
 
+	editorOptions = { theme: 'vs-dark', language: 'javascript', automaticLayout: true };
+
+	programmingLanguages = ['plaintext', 'abap', 'apex', 'azcli', 'bat', 'bicep', 'cameligo', 'clojure', 'coffeescript', 'c', 'cpp', 'csharp', 'csp', 'css', 'cypher', 'dart', 'dockerfile', 'ecl', 'elixir', 'flow9', 'fsharp', 'freemarker2', 'freemarker2.tag-angle.interpolation-dollar', 'freemarker2.tag-bracket.interpolation-dollar', 'freemarker2.tag-angle.interpolation-bracket', 'freemarker2.tag-bracket.interpolation-bracket', 'freemarker2.tag-auto.interpolation-dollar', 'freemarker2.tag-auto.interpolation-bracket', 'go', 'graphql', 'handlebars', 'hcl', 'html', 'ini', 'java', 'javascript', 'julia', 'kotlin', 'less', 'lexon', 'lua', 'liquid', 'm3', 'markdown', 'mdx', 'mips', 'msdax', 'mysql', 'objective-c', 'pascal', 'pascaligo', 'perl', 'pgsql', 'php', 'pla', 'postiats', 'powerquery', 'powershell', 'proto', 'pug', 'python', 'qsharp', 'r', 'razor', 'redis', 'redshift', 'restructuredtext', 'ruby', 'rust', 'sb', 'scala', 'scheme', 'scss', 'shell', 'sol', 'aes', 'sparql', 'sql', 'st', 'swift', 'systemverilog', 'verilog', 'tcl', 'twig', 'typescript', 'vb', 'wgsl', 'xml', 'yaml', 'json'];
+	selectedProgrammingLanguage = 'javascript';
+
 	constructor(
 		private postService: PostService,
 		private router: Router,
 		private route: ActivatedRoute,
 		private postContentService: PostContentService,
-		private dialog: MatDialog,
+		private dialog: MatDialog
 	) { }
 
 	ngOnInit() {
@@ -104,21 +110,34 @@ export class NewPostComponent implements OnInit, OnDestroy {
 		this.contentFormControl.setValue(postContent.content);
 		this.tags = postContent.tags;
 		this.postTypeFormControl.setValue(postContent.postType);
+		if (postContent.programmingLanguage) {
+			this.editorOptions = {
+				language: postContent.programmingLanguage,
+				theme: this.editorOptions.theme,
+				automaticLayout: this.editorOptions.automaticLayout
+			};
+			this.selectedProgrammingLanguage = postContent.programmingLanguage;
+		}
 	}
 
 	createNewPost(): void {
 		this.titleFormControl.setValue(this.titleFormControl.value.trim());
 		this.contentFormControl.setValue(this.contentFormControl.value.trim());
+		this.titleFormControl.markAsTouched();
+		this.contentFormControl.markAsTouched();
 
 		if (this.contentFormControl.invalid || this.titleFormControl.invalid) {
 			return;
 		}	
 
+		const programmingLanguage = this.postTypeFormControl.value == "snippet" ? this.editorOptions.language : null;
+
 		this.postService.createNew(
 			this.postTypeFormControl.value,
 			this.titleFormControl.value,
 			this.contentFormControl.value,
-			this.tags
+			this.tags,
+			programmingLanguage
 		).subscribe({
 			next: response => {
 				this.router.navigate(['/post/' + response.value]);
@@ -195,11 +214,13 @@ export class NewPostComponent implements OnInit, OnDestroy {
 			return;
 		}
 		if (this.postId) {
+			const programmingLanguage = this.postTypeFormControl.value == "snippet" ? this.editorOptions.language : null;
 			this.postService.savePostChanges(
 				this.postId,
 				this.titleFormControl.value,
 				this.contentFormControl.value,
-				this.tags
+				this.tags,
+				programmingLanguage
 			).subscribe({
 				next: response => {
 					this.router.navigate(['/post/' + this.postId]);
@@ -222,5 +243,13 @@ export class NewPostComponent implements OnInit, OnDestroy {
 				itemToDelete: 'post'
 			}
 		});
+	}
+
+	selectLanguage(event: MatSelectChange) {
+		this.editorOptions = {
+			language: event.value,
+			theme: this.editorOptions.theme,
+			automaticLayout: this.editorOptions.automaticLayout
+		};
 	}
 }

@@ -13,5 +13,6 @@ namespace webapi.ViewModels
         public required string Content { get; set; }
         public required string PostType { get; set; }
         public required string[] Tags { get; set; }
+        public string? ProgrammingLanguage { get; set; }
     }
 }

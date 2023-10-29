@@ -5,6 +5,7 @@ import { PostService } from '../_services/post.service';
 import { Comments } from '../comment-section/comment-section.component';
 import { DateHelperService } from '../_services/date-helper.service';
 import { PostContentService } from '../_services/post-content.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
 	selector: 'app-post',
@@ -22,6 +23,7 @@ export class PostComponent implements OnInit {
 	timeOnPageLoad = new Date();
 	postType: 'snippet' | 'discussion' = 'discussion';
 	postTags: string[] = [];
+	editorOptions = { theme: 'vs-dark', language: '', readOnly: true, automaticLayout: true };
 
 	comments: Comments = {};
 
@@ -33,7 +35,8 @@ export class PostComponent implements OnInit {
 		private router: Router,
 		private postService: PostService,
 		public dateHelperService: DateHelperService,
-		private postContentService: PostContentService
+		private postContentService: PostContentService,
+		private snackBar: MatSnackBar
 	) { }
 
 	ngOnInit(): void {
@@ -49,6 +52,7 @@ export class PostComponent implements OnInit {
 				this.postCreatedOn = postData.createdOn;
 				this.postType = postData.postType;
 				this.postTags = postData.tags;
+				this.editorOptions.language = postData.programmingLanguage || '';
 				for (const comment of postData.comments) {
 					this.comments[comment.id] = {
 						owner: comment.author ?? "[Deleted]",
@@ -92,10 +96,20 @@ export class PostComponent implements OnInit {
 	}
 
 	savePostInfo() {
-		this.postContentService.savePostContent({ content: this.content, tags: this.postTags, title: this.title, postType: this.postType });
+		this.postContentService.savePostContent({
+			content: this.content,
+			tags: this.postTags,
+			title: this.title,
+			postType: this.postType,
+			programmingLanguage: this.editorOptions.language
+		});
 	}
 
 	filterByTag(tag: string) {
 		this.router.navigate(['/posts'], { queryParams: { tag, type: this.postType } });
+	}
+
+	openCopySnackBar() {
+		this.snackBar.open("Saved to clipboard", "Close");
 	}
 }

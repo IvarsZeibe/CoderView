@@ -40,3 +40,14 @@ mat-chip-set {
 mat-card-actions {
 	justify-content: space-between;
 }
+
+.editor {
+	border-radius: 10px;
+	border: 10px solid #1e1e1e;
+	height: 50vh;
+}
+
+::ng-deep .editor-container {
+	height: 100% !important;
+	background: #1e1e1e;
+}

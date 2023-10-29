@@ -34,6 +34,14 @@
                     </mat-autocomplete>
                 </mat-chip-grid>
             </mat-form-field>
+            <mat-form-field style="margin-left: 20px" *ngIf="postTypeFormControl.value == 'snippet'">
+                <mat-label>Programming Language</mat-label>
+                <mat-select [(value)]="selectedProgrammingLanguage" (selectionChange)="selectLanguage($event)">
+                    <mat-option *ngFor="let language of programmingLanguages" [value]="language">
+                        {{language}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
         </div>
         <form>
             <mat-form-field class="title">
@@ -46,11 +54,9 @@
                     Title must be 5 to 150 characters long
                 </mat-error>
             </mat-form-field>
-            <mat-form-field class="post">
+            <mat-form-field *ngIf="postTypeFormControl.value == 'discussion' else codeEditor" class="post">
                 <mat-label>Content</mat-label>
-                <textarea maxlength="40000" [formControl]="contentFormControl" matInput
-                          [class.code]="postTypeFormControl.value == 'snippet'"
-                          [spellcheck]="postTypeFormControl.value != 'snippet'"></textarea>
+                <textarea #content maxlength="40000" [formControl]="contentFormControl" matInput></textarea>
                 <mat-error *ngIf="contentFormControl.hasError('required')">
                     Content is required
                 </mat-error>
@@ -58,6 +64,13 @@
                     Content must be 5 to 40 000 characters long
                 </mat-error>
             </mat-form-field>
+            <ng-template #codeEditor>
+                <ngx-monaco-editor class="editor" [formControl]="contentFormControl" [options]="editorOptions"></ngx-monaco-editor>
+                <span style="position: absolute;margin-top: -25px;margin-left: 5px;color: #8b8b8b">{{editorOptions.language}}</span>
+                <mat-error *ngIf="contentFormControl.hasError('minlength') || contentFormControl.hasError('maxlength')">
+                    Content must be 5 to 40 000 characters long
+                </mat-error>
+            </ng-template>
 
         </form>
     </mat-card-content>

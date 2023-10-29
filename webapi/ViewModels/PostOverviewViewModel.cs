@@ -11,5 +11,6 @@
         public bool IsVotedByUser { get; set; }
         public DateTime CreatedOn { get; set; }
         public List<string>? Tags { get; set; }
+        public string? ProgrammingLanguage { get; set; }
     }
 }

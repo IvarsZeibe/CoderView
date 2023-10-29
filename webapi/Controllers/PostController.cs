@@ -27,7 +27,7 @@ namespace webapi.Controllers
         [Route("/api/tags")]
         public List<string> GetTags()
         {
-            return _context.Tag.Select(t => t.Name).ToList();
+            return _context.Tags.Select(t => t.Name).ToList();
         }
 
         [HttpGet]
@@ -37,13 +37,14 @@ namespace webapi.Controllers
             [FromQuery] List<string> filteredTags,
             DateTime? timeStamp = null,
             string? titleSearchFilter = null,
-            SortOrder sortOrder = SortOrder.Descending)
+            SortOrder sortOrder = SortOrder.Descending,
+            string? programmingLanguageFilter = null)
         {
             const int MAX_POSTS_RETURNED = 5;
-
-            IQueryable<Post> posts = sortOrder == SortOrder.Descending ?
-                _context.Posts.OrderByDescending(p => p.CreatedOn) :
-                _context.Posts.OrderBy(p => p.CreatedOn);
+            IQueryable<Post> posts = _context.Posts.Include(p => p.ProgrammingLanguage);
+            posts = sortOrder == SortOrder.Descending ?
+                posts.OrderByDescending(p => p.CreatedOn) :
+                posts.OrderBy(p => p.CreatedOn);
 
             posts = posts.Where(p => p.Type.Name == postType);
 
@@ -67,6 +68,11 @@ namespace webapi.Controllers
                     .Count() == filteredTags.Count());
             }
 
+            if (programmingLanguageFilter is not null)
+            {
+                posts = posts.Where(p => p.ProgrammingLanguage.Name == programmingLanguageFilter);
+            }
+
             return posts.Select(p => new PostOverviewViewModel
             {
                 Id = new ShortGuid(p.PostId),
@@ -77,7 +83,8 @@ namespace webapi.Controllers
                 VoteCount = _context.Votes.Where(c => c.PostVotedFor == p).Count(),
                 IsVotedByUser = _context.Votes.Any(v => v.PostVotedFor == p && v.User.UserName == User.Identity.Name),
                 CreatedOn = DateTime.SpecifyKind(p.CreatedOn, DateTimeKind.Utc),
-                Tags = _context.TagToPost.Where(ttp => ttp.Post == p).Select(ttp => _context.Tag.First(t => t == ttp.Tag).Name).ToList()
+                Tags = _context.TagToPost.Where(ttp => ttp.Post == p).Select(ttp => _context.Tags.First(t => t == ttp.Tag).Name).ToList(),
+                ProgrammingLanguage = p.Type.Name == "snippet" ? p.ProgrammingLanguage.Name : null
             }
             ).Take(MAX_POSTS_RETURNED).ToList();
         }
@@ -94,6 +101,7 @@ namespace webapi.Controllers
 
             var post = _context.Posts
                 .Include(p => p.Type).Include(p => p.Author)
+                .Include(p => p.ProgrammingLanguage)
                 .Where(p => shortGuid == p.PostId)
                 .FirstOrDefault();
             if (post is null)
@@ -112,7 +120,7 @@ namespace webapi.Controllers
                 PostType = post.Type.Name,
                 Tags = _context.TagToPost
                     .Where(ttp => ttp.Post == post)
-                    .Select(ttp => _context.Tag.First(t => t == ttp.Tag).Name).ToList(),
+                    .Select(ttp => _context.Tags.First(t => t == ttp.Tag).Name).ToList(),
                 Comments = _context.Comments
                     .Where(c => c.Post == post)
                     .Select(c => new CommentViewModel
@@ -124,7 +132,8 @@ namespace webapi.Controllers
                     VoteCount = _context.Votes.Where(v => v.CommentVotedFor == c).Count(),
                     IsVotedByUser = _context.Votes.Any(v => v.CommentVotedFor == c && v.User.UserName == User.Identity.Name),
                     CreatedOn = DateTime.SpecifyKind(c.CreatedOn, DateTimeKind.Utc)
-                    }).ToList()
+                    }).ToList(),
+                ProgrammingLanguage = post.Type.Name == "snippet" ? post.ProgrammingLanguage.Name : null
             });
         }
 
@@ -140,6 +149,7 @@ namespace webapi.Controllers
 
             var post = _context.Posts
                 .Include(p => p.Type).Include(p => p.Author)
+                .Include(p => p.ProgrammingLanguage)
                 .Where(p => shortGuid == p.PostId)
                 .FirstOrDefault(); 
             if (post is null)
@@ -159,7 +169,8 @@ namespace webapi.Controllers
                 PostType = post.Type.Name,
                 Tags = _context.TagToPost
                     .Where(ttp => ttp.Post == post)
-                    .Select(ttp => _context.Tag.First(t => t == ttp.Tag).Name).ToList(),
+                    .Select(ttp => _context.Tags.First(t => t == ttp.Tag).Name).ToList(),
+                ProgrammingLanguage = post.Type.Name == "snippet" ? post.ProgrammingLanguage.Name : null
             });
         }
 
@@ -175,6 +186,7 @@ namespace webapi.Controllers
 
             var post = _context.Posts
                 .Include(p => p.Author)
+                .Include(p => p.Type)
                 .Where(p => shortGuid == p.PostId)
                 .FirstOrDefault();
             if (post is null)
@@ -190,27 +202,36 @@ namespace webapi.Controllers
             post.Title = model.Title;
             post.Content = model.Content;
 
+            if (model.ProgrammingLanguage is not null)
+            {
+                if (post.Type.Name != "snippet")
+                {
+                    return BadRequest();
+                }
+                post.ProgrammingLanguage = _context.ProgrammingLanguages.FirstOrDefault(p => p.Name == model.ProgrammingLanguage);
+            }
+
             var postTagsToRemove = _context.TagToPost
-                .Include(ttp => ttp.Tag)
+                .Include(ttp => ttp.Tag).ThenInclude(t => t.TagToPosts)
                 .Where(ttp => ttp.Post == post)
                 .ToList();
             foreach (string tagName in model.Tags)
             {
-                var postTagToKeep = postTagsToRemove.FirstOrDefault(ttp => _context.Tag.First(t => t == ttp.Tag).Name == tagName);
+                var postTagToKeep = postTagsToRemove.FirstOrDefault(ttp => _context.Tags.First(t => t == ttp.Tag).Name == tagName);
                 if (postTagToKeep is not null)
                 {
                     postTagsToRemove.Remove(postTagToKeep);
                     continue;
                 }
 
-                var tag = _context.Tag.Where(t => t.Name == tagName).FirstOrDefault();
+                var tag = _context.Tags.Where(t => t.Name == tagName).FirstOrDefault();
                 if (tag is null)
                 {
                     if (tagName != tagName.Trim())
                     {
                         return BadRequest();
                     }
-                    tag = _context.Tag.Add(new Models.Tag { Name = tagName }).Entity;
+                    tag = _context.Tags.Add(new Models.Tag { Name = tagName }).Entity;
                 }
 
                 _context.TagToPost.Add(new TagToPost { Post = post, Tag = tag });
@@ -219,6 +240,10 @@ namespace webapi.Controllers
             foreach (TagToPost tag in postTagsToRemove)
             {
                 _context.TagToPost.Remove(tag);
+                if (tag.Tag.TagToPosts.Count == 1)
+                {
+                    _context.Tags.Remove(tag.Tag);
+                }
             }
 
             _context.SaveChanges();
@@ -250,24 +275,35 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
+            ProgrammingLanguage? programmingLanguage = null;
+            if (model.ProgrammingLanguage is not null)
+            {
+                if (postType.Name != "snippet")
+                {
+                    return BadRequest();
+                }
+                programmingLanguage = _context.ProgrammingLanguages.FirstOrDefault(p => p.Name == model.ProgrammingLanguage);
+            } 
+
             var post = _context.Posts.Add(new Models.Post
             {
                 Author = user,
                 Content = model.Content,
                 Title = model.Title,
                 Type = postType,
+                ProgrammingLanguage = programmingLanguage
             }).Entity;
 
             foreach (string tagName in model.Tags)
             {
-                var tag = _context.Tag.Where(t => t.Name == tagName).FirstOrDefault();
+                var tag = _context.Tags.Where(t => t.Name == tagName).FirstOrDefault();
                 if (tag is null)
                 {
                     if (tagName != tagName.Trim())
                     {
                         return BadRequest();
                     }
-                    tag = _context.Tag.Add(new Models.Tag { Name = tagName }).Entity;
+                    tag = _context.Tags.Add(new Models.Tag { Name = tagName }).Entity;
                 }
                 _context.TagToPost.Add(new TagToPost { Post = post, Tag = tag });
             }
@@ -317,7 +353,7 @@ namespace webapi.Controllers
                 _context.TagToPost.Remove(ttp);
                 if (ttp.Tag.TagToPosts?.Count == 1)
                 {
-                    _context.Tag.Remove(ttp.Tag);
+                    _context.Tags.Remove(ttp.Tag);
                 }
             });
 

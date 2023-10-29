@@ -20,8 +20,14 @@ export class AppComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
-		this.authService.isLoggedIn().subscribe(isLoggedIn => {
-			if (!isLoggedIn && this.storageService.isLoggedIn()) {
+		this.authService.isLoggedIn().subscribe({
+			next: isLoggedIn => {
+				if (!isLoggedIn && this.storageService.isLoggedIn()) {
+					this.storageService.clean();
+					this.authService.forceRunAuthGuard();
+				}
+			},
+			error: () => {
 				this.storageService.clean();
 				this.authService.forceRunAuthGuard();
 			}

@@ -18,7 +18,8 @@ export type PostSummary = {
 	voteCount: number,
 	isVotedByUser: boolean,
 	createdOn: Date,
-	tags: string[]
+	tags: string[],
+	programmingLanguage: string | null
 };
 
 export type PostData = {
@@ -40,6 +41,7 @@ export type PostData = {
 		isVotedByUser: boolean,
 		createdOn: Date
 	}[],
+	programmingLanguage: string | null
 };
 
 export enum SortOrder {
@@ -55,20 +57,27 @@ export type PostType = 'discussion' | 'snippet';
 export class PostService {
 	constructor(private http: HttpClient) { }
 
-	public createNew(postType: PostType, title: string, content: string, tags: string[]): Observable<any> {
+	public createNew(postType: PostType, title: string, content: string, tags: string[], programmingLanguage: string | null = null): Observable<any> {
 		return this.http.post(
 			AUTH_API + 'post/create',
 			{
 				title,
 				content,
 				postType,
-				tags
+				tags,
+				programmingLanguage
 			},
 			httpOptions
 		);
 	}
 
-	public getAll(postType: PostType, titleSearchFilter = '', filteredTags: string[] = [], timeStamp: Date | null = null, sortOrder: SortOrder = SortOrder.Descending) {
+	public getAll(
+		postType: PostType, titleSearchFilter = '',
+		filteredTags: string[] = [],
+		programmingLanguageFilter: string | null,
+		timeStamp: Date | null = null,
+		sortOrder: SortOrder = SortOrder.Descending
+	) {
 		const urlSearchParams = new URLSearchParams();
 		if (titleSearchFilter != '') {
 			urlSearchParams.append('titleSearchFilter', titleSearchFilter);
@@ -82,6 +91,9 @@ export class PostService {
 			urlSearchParams.append('timeStamp', timeStamp.toISOString());
 		}
 		urlSearchParams.append('sortOrder', sortOrder.toString());
+		if (programmingLanguageFilter != null) {
+			urlSearchParams.append('programmingLanguageFilter', programmingLanguageFilter);
+		}
 
 		urlSearchParams.append('postType', postType);
 		return this.http.get <PostSummary[]>(
@@ -134,13 +146,14 @@ export class PostService {
 		);
 	}
 
-	public savePostChanges(id: string, title: string, content: string, tags: string[]) {
+	public savePostChanges(id: string, title: string, content: string, tags: string[], programmingLanguage: string | null = null) {
 		return this.http.post(
 			AUTH_API + 'post/' + id + '/edit',
 			{
 				title,
 				content,
-				tags
+				tags,
+				programmingLanguage
 			},
 			httpOptions
 		);

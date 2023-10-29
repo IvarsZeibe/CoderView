@@ -14,5 +14,6 @@ namespace webapi.Models
         public List<Comment>? Comments { get; set; }
         public List<Vote>? Votes { get; set; }
         public List<TagToPost>? TagToPosts { get; set; }
+        public ProgrammingLanguage? ProgrammingLanguage { get; set; }
     }
 }
