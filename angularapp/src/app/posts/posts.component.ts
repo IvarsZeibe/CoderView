@@ -1,16 +1,15 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
-import { PostSummary, PostService } from '../_services/post.service';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { PostSummary, PostService, PostType } from '../_services/post.service';
 import { StorageService } from '../_services/storage.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DateHelperService } from '../_services/date-helper.service';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatExpansionPanel } from '@angular/material/expansion';
-import { Observable, finalize, map, retry, startWith } from 'rxjs';
+import { Observable, Subscription, finalize, map, startWith } from 'rxjs';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
-
-type PostType = PostsComponent['postTypes'][number]['value'];
+import { ProgrammingLanguagesService } from '../_services/programming-languages.service';
 
 @Component({
 	selector: 'app-posts',
@@ -19,45 +18,44 @@ type PostType = PostsComponent['postTypes'][number]['value'];
 })
 export class PostsComponent implements OnInit, AfterViewInit {
 	posts: PostSummary[] = [];
-	titleSearchFilter = "";
-	appliedSearchFilter = "";
-	timeStamp: Date | null = null;
+
+	unappliedTitleFilter = "";
+	appliedTitleFilter = "";
+	timeStamp?: Date;
+	postTypeFormControl: FormControl<PostType> = new FormControl("discussion", { nonNullable: true });
+	tagFormControl = new FormControl();
+	programmingLanguageFilter?: string;
+	appliedTagFilters: string[] = [];
+
 	isTryingToLoadPosts = false;
 	areAllPostsLoaded = false;
 
 	timeOnPageLoad = new Date();
 
-	postTypes = [
-		{ value: "discussion", viewValue: "Discussions" },
-		{ value: "snippet", viewValue: "Code snippets" }
-	] as const;
-	postTypeFormControl: FormControl<PostType> = new FormControl("discussion", { nonNullable: true });
-	tagFormControl = new FormControl();
-	chipFormControl = new FormControl();
+	@ViewChild('searchPanel') searchPanel?: MatExpansionPanel;
+	@ViewChild(MatAutocompleteTrigger) tagAutocomplete?: MatAutocompleteTrigger;
+	@ViewChild('tagInput', { static: false }) tagInput?: ElementRef<HTMLInputElement>;
 
-	@ViewChild('searchPanel') searchPanel: MatExpansionPanel | undefined;
-	@ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger | null = null;
-	@ViewChild('tagInput', { static: false }) tagInput: ElementRef<HTMLInputElement> | null = null;
-	tagOptions: string[] = [];
-	filteredTagOptions: Observable<string[]> = new Observable()
-	appliedTagFilters: string[] = [];
-	programmingLanguageFilter: string | null = null;
+	allTagOptions: string[] = [];
+	availableTagOptions: Observable<string[]> = new Observable()
 
-	programmingLanguages = ['plaintext', 'abap', 'apex', 'azcli', 'bat', 'bicep', 'cameligo', 'clojure', 'coffeescript', 'c', 'cpp', 'csharp', 'csp', 'css', 'cypher', 'dart', 'dockerfile', 'ecl', 'elixir', 'flow9', 'fsharp', 'freemarker2', 'freemarker2.tag-angle.interpolation-dollar', 'freemarker2.tag-bracket.interpolation-dollar', 'freemarker2.tag-angle.interpolation-bracket', 'freemarker2.tag-bracket.interpolation-bracket', 'freemarker2.tag-auto.interpolation-dollar', 'freemarker2.tag-auto.interpolation-bracket', 'go', 'graphql', 'handlebars', 'hcl', 'html', 'ini', 'java', 'javascript', 'julia', 'kotlin', 'less', 'lexon', 'lua', 'liquid', 'm3', 'markdown', 'mdx', 'mips', 'msdax', 'mysql', 'objective-c', 'pascal', 'pascaligo', 'perl', 'pgsql', 'php', 'pla', 'postiats', 'powerquery', 'powershell', 'proto', 'pug', 'python', 'qsharp', 'r', 'razor', 'redis', 'redshift', 'restructuredtext', 'ruby', 'rust', 'sb', 'scala', 'scheme', 'scss', 'shell', 'sol', 'aes', 'sparql', 'sql', 'st', 'swift', 'systemverilog', 'verilog', 'tcl', 'twig', 'typescript', 'vb', 'wgsl', 'xml', 'yaml', 'json'];
+	getPostsRequest?: Subscription;
 
 	constructor(
 		private route: ActivatedRoute,
-		private postService: PostService,
+		public postService: PostService,
 		private storageService: StorageService,
 		private router: Router,
 		public dateHelperService: DateHelperService,
-		private snackBar: MatSnackBar
+		private snackBar: MatSnackBar,
+		public programmingLanguagesService: ProgrammingLanguagesService,
+		private changeDetector: ChangeDetectorRef
 	) { }
 
 	ngOnInit(): void {
 		this.route.queryParamMap.subscribe(queryParamMap => {
 			const postTypeParam = queryParamMap.get('type');
-			const postType = this.postTypes.find(p =>
+			const postType = this.postService.postTypes.find(p =>
 				p.value == postTypeParam
 			)?.value;
 			if (postType) {
@@ -71,7 +69,6 @@ export class PostsComponent implements OnInit, AfterViewInit {
 		const filterByTag = this.route.snapshot.queryParamMap.get('tag');
 		if (filterByTag) {
 			this.appliedTagFilters.push(filterByTag);
-			this.searchPanel?.toggle();
 		}
 
 		this.postTypeFormControl.valueChanges.subscribe(postType => {
@@ -83,18 +80,24 @@ export class PostsComponent implements OnInit, AfterViewInit {
 		this.filterPosts();
 
 		this.postService.getAllTags().subscribe(tags => {
-			this.tagOptions = tags;
-			this.filteredTagOptions = this.tagFormControl.valueChanges.pipe(
+			this.allTagOptions = tags;
+			this.availableTagOptions = this.tagFormControl.valueChanges.pipe(
 				startWith(''),
 				map(value => this._filterTags(value || '')),
 			);
 		});
+
+		new ResizeObserver(() => {
+			if (this.isNearPageBottom()) {
+				this.loadMorePosts();
+			}
+		}).observe(document.documentElement);
 	}
 
 	ngAfterViewInit() {
 		const filterByTag = this.route.snapshot.queryParamMap.get('tag');
 		if (filterByTag) {
-			this.searchPanel?.toggle();
+			this.searchPanel?.open();
 			this.router.navigate([], {
 				queryParams: { tag: null },
 				queryParamsHandling: 'merge'
@@ -103,7 +106,7 @@ export class PostsComponent implements OnInit, AfterViewInit {
 	}
 
 	getPostTypeTitle() {
-		for (const type of this.postTypes) {
+		for (const type of this.postService.postTypes) {
 			if (type.value == this.postTypeFormControl.value) {
 				return type.viewValue;
 			}
@@ -111,39 +114,74 @@ export class PostsComponent implements OnInit, AfterViewInit {
 		return "Unkown post type";
 	}
 
-	filterPosts(event: Event | null = null): void {
-		if (event) {
-			event.stopPropagation();
-		}
+	filterPosts(): void {
 		this.posts = [];
-		this.appliedSearchFilter = this.titleSearchFilter;
 		this.areAllPostsLoaded = false;
-		this.timeStamp = null;
+		this.timeStamp = undefined;
+
+		this.getPostsRequest?.unsubscribe();
 		this.isTryingToLoadPosts = true;
-		const programmingLanguageFilter = this.postTypeFormControl.value == "snippet" ? this.programmingLanguageFilter : null;
-		this.postService
-			.getAll(this.postTypeFormControl.value, this.appliedSearchFilter, this.appliedTagFilters, programmingLanguageFilter)
-			.pipe(finalize(() => this.isTryingToLoadPosts = false))
-			.subscribe(posts => {
-				this.posts = posts;
-				if (posts.length > 0) {
-					this.timeStamp = posts[posts.length - 1].createdOn;
+		this.getPostsRequest = this.postService
+			.getAll({
+				postType: this.postTypeFormControl.value,
+				title: this.appliedTitleFilter,
+				programmingLanguage: this.postTypeFormControl.value == "snippet" ? this.programmingLanguageFilter : undefined,
+				tags: this.appliedTagFilters
+
+			})
+			.pipe(finalize(() => {
+				this.isTryingToLoadPosts = false;
+				if (this.isNearPageBottom()) {
+					this.loadMorePosts();
+				}
+			}))
+			.subscribe({
+				next: posts => {
+					this.posts = posts;
+					if (posts.length > 0) {
+						this.timeStamp = posts[posts.length - 1].createdOn;
+					}
+				}, error: () => {
+					this.areAllPostsLoaded = true;
+					console.log("Unable to get posts");
 				}
 			}
 		);
 	}
 
 	loadMorePosts(): void {
+		if (this.isTryingToLoadPosts || this.areAllPostsLoaded) {
+			return;
+		}
 		this.isTryingToLoadPosts = true;
-		const programmingLanguageFilter = this.postTypeFormControl.value == "snippet" ? this.programmingLanguageFilter : null;
-		this.postService.getAll(this.postTypeFormControl.value, this.appliedSearchFilter, this.appliedTagFilters, programmingLanguageFilter, this.timeStamp).subscribe(posts => {
-			if (posts.length == 0) {
-				this.areAllPostsLoaded = true;
+		this.getPostsRequest = this.postService
+			.getAll({
+				postType: this.postTypeFormControl.value,
+				title: this.appliedTitleFilter,
+				tags: this.appliedTagFilters,
+				programmingLanguage: this.postTypeFormControl.value == "snippet" ? this.programmingLanguageFilter : undefined,
+				timeStamp: this.timeStamp
+			})
+			.pipe(finalize(() => {
+				this.isTryingToLoadPosts = false;
+				if (this.isNearPageBottom()) {
+					this.loadMorePosts();
+				}
+			}))
+			.subscribe({
+				next: posts => {
+					if (posts.length == 0) {
+						this.areAllPostsLoaded = true;
+					}
+					this.posts = this.posts.concat(posts);
+					this.timeStamp = this.posts[this.posts.length - 1].createdOn;
+				},
+				error: () => {
+					this.areAllPostsLoaded = true;
+					console.log("Unable to get posts");
+				}
 			}
-			this.posts = this.posts.concat(posts);
-			this.timeStamp = this.posts[this.posts.length - 1].createdOn;
-			this.isTryingToLoadPosts = false;
-		});
+		);
 	}
 
 	async voteOnPost(event: Event, post: PostSummary): Promise<void> {
@@ -168,14 +206,17 @@ export class PostsComponent implements OnInit, AfterViewInit {
 
 	@HostListener("window:scroll", ["$event"])
 	onWindowScroll() {
+		if (this.isNearPageBottom()) {
+			this.loadMorePosts();
+		}
+	}
+
+	isNearPageBottom() {
+		this.changeDetector.detectChanges();
 		//In chrome and some browser scroll is given to body tag
 		const position = (document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.offsetHeight;
 		const max = document.documentElement.scrollHeight;
-		if (max - position < 100) {
-			if (!this.isTryingToLoadPosts && !this.areAllPostsLoaded) {
-				this.loadMorePosts();
-			}
-		}
+		return max - position < 100;
 	}
 
 	getFormattedAuthor(author: string) {
@@ -189,31 +230,27 @@ export class PostsComponent implements OnInit, AfterViewInit {
 		if (event.code == 'Space') {
 			event.stopPropagation();
 		} else if (event.code == "Enter") {
-			this.filterPosts(event);
+			event.stopPropagation();
+			this.applyTitleFilter();
 		}
 	}
 
 	public toggleAdvancedSearch() {
 		this.searchPanel?.toggle();
-		if (this.autocomplete) {
-			this.autocomplete.closePanel();
+		if (this.tagAutocomplete) {
+			this.tagAutocomplete.closePanel();
 		}
 	}
 
 	private _filterTags(value: string): string[] {
 		const filterValue = value.toLowerCase();
 
-		return this.tagOptions.filter(tag => tag.toLowerCase().includes(filterValue) && !this.appliedTagFilters.includes(tag));
+		return this.allTagOptions.filter(tag => tag.toLowerCase().includes(filterValue) && !this.appliedTagFilters.includes(tag));
 	}
 
 	addTagFilter(event: MatChipInputEvent): void {
 		let value: string | undefined = (event.value || '').trim();
-		value = this.tagOptions.find(t => t.toLowerCase() == value?.toLowerCase());
-		if (!value) {
-			this.chipFormControl.markAsTouched();
-			this.chipFormControl.setErrors({});
-			return;
-		}
+		value = this.allTagOptions.find(t => t.toLowerCase() == value?.toLowerCase());
 
 		if (value) {
 			if (this.appliedTagFilters.every(t => t != value)) {
@@ -221,12 +258,11 @@ export class PostsComponent implements OnInit, AfterViewInit {
 			}
 		}
 
-		if (this.autocomplete) {
-			this.autocomplete.closePanel();
+		if (this.tagAutocomplete) {
+			this.tagAutocomplete.closePanel();
 		}
 
 		this.tagFormControl.reset();
-		this.chipFormControl.reset();
 		event.chipInput!.clear();
 		this.filterPosts();
 	}
@@ -260,16 +296,13 @@ export class PostsComponent implements OnInit, AfterViewInit {
 
 	filterByTag(tag: string) {
 		this.appliedTagFilters = [tag];
+		this.searchPanel?.open();
+		this.tagAutocomplete?.closePanel();
 		this.filterPosts();
-		if (!this.searchPanel?.expanded) {
-			this.toggleAdvancedSearch();
-		}
 	}
 
-	filterByProgrammingLanguage() {
+	applyTitleFilter() {
+		this.appliedTitleFilter = this.unappliedTitleFilter;
 		this.filterPosts();
-		if (!this.searchPanel?.expanded) {
-			this.toggleAdvancedSearch();
-		}
 	}
 }

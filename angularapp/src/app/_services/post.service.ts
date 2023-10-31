@@ -49,12 +49,17 @@ export enum SortOrder {
 	Descending
 }
 
-export type PostType = 'discussion' | 'snippet';
+export type PostType = PostService['postTypes'][number]['value'];
 
 @Injectable({
-  providedIn: 'root'
+	providedIn: 'root'
 })
 export class PostService {
+	postTypes = [
+		{ value: "discussion", viewValue: "Discussions" },
+		{ value: "snippet", viewValue: "Code snippets" }
+	] as const;
+
 	constructor(private http: HttpClient) { }
 
 	public createNew(postType: PostType, title: string, content: string, tags: string[], programmingLanguage: string | null = null): Observable<any> {
@@ -71,31 +76,40 @@ export class PostService {
 		);
 	}
 
-	public getAll(
-		postType: PostType, titleSearchFilter = '',
-		filteredTags: string[] = [],
-		programmingLanguageFilter: string | null,
-		timeStamp: Date | null = null,
-		sortOrder: SortOrder = SortOrder.Descending
-	) {
+	public getAll(filters: {
+		postType: PostType,
+		title?: string,
+		tags?: string[],
+		programmingLanguage?: string,
+		timeStamp?: Date,
+		sortOrder?: SortOrder
+	}) {
 		const urlSearchParams = new URLSearchParams();
-		if (titleSearchFilter != '') {
-			urlSearchParams.append('titleSearchFilter', titleSearchFilter);
+		if (filters.title) {
+			urlSearchParams.append('titleSearchFilter', filters.title);
 		}
-		if (filteredTags.length != 0) {
-			for (const tag of filteredTags) {
+
+		if (filters.tags) {
+			for (const tag of filters.tags) {
 				urlSearchParams.append('filteredTags', tag);
 			}
 		}
-		if (timeStamp != null) {
-			urlSearchParams.append('timeStamp', timeStamp.toISOString());
-		}
-		urlSearchParams.append('sortOrder', sortOrder.toString());
-		if (programmingLanguageFilter != null) {
-			urlSearchParams.append('programmingLanguageFilter', programmingLanguageFilter);
+
+		if (filters.timeStamp) {
+			urlSearchParams.append('timeStamp', filters.timeStamp.toISOString());
 		}
 
-		urlSearchParams.append('postType', postType);
+		if (!filters.sortOrder) {
+			filters.sortOrder = SortOrder.Descending;
+		}
+		urlSearchParams.append('sortOrder', filters.sortOrder.toString());
+
+		if (filters.programmingLanguage) {
+			urlSearchParams.append('programmingLanguageFilter', filters.programmingLanguage);
+		}
+
+		urlSearchParams.append('postType', filters.postType);
+
 		return this.http.get <PostSummary[]>(
 			AUTH_API + 'post/all?' + urlSearchParams.toString(),
 			httpOptions

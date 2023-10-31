@@ -6,9 +6,9 @@
 <mat-expansion-panel #searchPanel [hideToggle]="true">
     <mat-expansion-panel-header [collapsedHeight]="getCollapsedHeight()" [expandedHeight]="getExpandedHeight()">
         <mat-form-field class="search-bar" appClickStopPropagation subscriptSizing="dynamic">
-            <input (keydown)="handleSearch($event)" [(ngModel)]="titleSearchFilter" matInput placeholder="Search discussion">
+            <input (keydown)="handleSearch($event)" [(ngModel)]="unappliedTitleFilter" matInput placeholder="Search discussion">
             <div matSuffix class="search-suffix">
-                <button mat-button (click)="filterPosts($event)">Search</button>
+                <button mat-button (click)="applyTitleFilter()">Search</button>
                 <button mat-icon-button (click)="toggleAdvancedSearch()">
                     <mat-icon *ngIf="!searchPanel.expanded">expand_more</mat-icon>
                     <mat-icon *ngIf="searchPanel.expanded">expand_less</mat-icon>
@@ -18,7 +18,7 @@
         <mat-form-field class="post-type-field" appClickStopPropagation subscriptSizing="dynamic">
             <mat-label>Post type</mat-label>
             <mat-select [formControl]="postTypeFormControl">
-                <mat-option *ngFor="let postType of postTypes" [value]="postType.value">
+                <mat-option *ngFor="let postType of postService.postTypes" [value]="postType.value">
                     {{postType.viewValue}}
                 </mat-option>
             </mat-select>
@@ -42,7 +42,7 @@
                        [matAutocomplete]="auto"
                        [formControl]="tagFormControl" />
                 <mat-autocomplete #auto="matAutocomplete" (optionSelected)="tagSelected($event)">
-                    <mat-option *ngFor="let tag of filteredTagOptions | async" [value]="tag">
+                    <mat-option *ngFor="let tag of availableTagOptions | async" [value]="tag">
                         {{tag}}
                     </mat-option>
                 </mat-autocomplete>
@@ -50,8 +50,8 @@
         </mat-form-field>
         <mat-form-field id="languageSearch" subscriptSizing="dynamic" *ngIf="postTypeFormControl.value == 'snippet'">
             <mat-label>Programming Language</mat-label>
-            <mat-select [(value)]="programmingLanguageFilter" (selectionChange)="filterByProgrammingLanguage()">
-                <mat-option *ngFor="let language of programmingLanguages" [value]="language">
+            <mat-select [(value)]="programmingLanguageFilter" (selectionChange)="filterPosts()">
+                <mat-option *ngFor="let language of programmingLanguagesService.programmingLanguages" [value]="language">
                     {{language}}
                 </mat-option>
             </mat-select>

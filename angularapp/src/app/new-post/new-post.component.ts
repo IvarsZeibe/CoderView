@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { PostService } from '../_services/post.service';
+import { PostService, PostType } from '../_services/post.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormControl, Validators } from '@angular/forms';
 import { Observable, map, startWith } from 'rxjs';
@@ -9,8 +9,7 @@ import { PostContent, PostContentService } from '../_services/post-content.servi
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
 import { MatSelectChange } from '@angular/material/select';
-
-type PostType = NewPostComponent['postTypes'][number]['value'];
+import { ProgrammingLanguagesService } from '../_services/programming-languages.service';
 
 @Component({
 	selector: 'app-new-post',
@@ -35,31 +34,26 @@ export class NewPostComponent implements OnInit, OnDestroy {
 	});
 	chipFormControl = new FormControl("");
 
-	postTypes = [
-		{ value: "discussion", viewValue: "Discussions" },
-		{ value: "snippet", viewValue: "Code snippets" }
-	] as const;
-
 	postTypeFormControl: FormControl<PostType> = new FormControl("discussion", { nonNullable: true });
 
-	filteredOptions: Observable<string[]> = new Observable();
-	tagOptions: string[] = [];
-	tags: string[] = [];
+	availableTagOptions: Observable<string[]> = new Observable();
+	allTagOptions: string[] = [];
+	appliedTags: string[] = [];
 
-	@ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger | null = null;
-	@ViewChild('tagInput', { static: false }) tagInput: ElementRef<HTMLInputElement> | null = null;
+	@ViewChild(MatAutocompleteTrigger) autocomplete?: MatAutocompleteTrigger;
+	@ViewChild('tagInput', { static: false }) tagInput?: ElementRef<HTMLInputElement>;
 
 	editorOptions = { theme: 'vs-dark', language: 'javascript', automaticLayout: true };
 
-	programmingLanguages = ['plaintext', 'abap', 'apex', 'azcli', 'bat', 'bicep', 'cameligo', 'clojure', 'coffeescript', 'c', 'cpp', 'csharp', 'csp', 'css', 'cypher', 'dart', 'dockerfile', 'ecl', 'elixir', 'flow9', 'fsharp', 'freemarker2', 'freemarker2.tag-angle.interpolation-dollar', 'freemarker2.tag-bracket.interpolation-dollar', 'freemarker2.tag-angle.interpolation-bracket', 'freemarker2.tag-bracket.interpolation-bracket', 'freemarker2.tag-auto.interpolation-dollar', 'freemarker2.tag-auto.interpolation-bracket', 'go', 'graphql', 'handlebars', 'hcl', 'html', 'ini', 'java', 'javascript', 'julia', 'kotlin', 'less', 'lexon', 'lua', 'liquid', 'm3', 'markdown', 'mdx', 'mips', 'msdax', 'mysql', 'objective-c', 'pascal', 'pascaligo', 'perl', 'pgsql', 'php', 'pla', 'postiats', 'powerquery', 'powershell', 'proto', 'pug', 'python', 'qsharp', 'r', 'razor', 'redis', 'redshift', 'restructuredtext', 'ruby', 'rust', 'sb', 'scala', 'scheme', 'scss', 'shell', 'sol', 'aes', 'sparql', 'sql', 'st', 'swift', 'systemverilog', 'verilog', 'tcl', 'twig', 'typescript', 'vb', 'wgsl', 'xml', 'yaml', 'json'];
 	selectedProgrammingLanguage = 'javascript';
 
 	constructor(
-		private postService: PostService,
+		public postService: PostService,
 		private router: Router,
 		private route: ActivatedRoute,
 		private postContentService: PostContentService,
-		private dialog: MatDialog
+		private dialog: MatDialog,
+		public programmingLanguagesService: ProgrammingLanguagesService
 	) { }
 
 	ngOnInit() {
@@ -78,8 +72,9 @@ export class NewPostComponent implements OnInit, OnDestroy {
 				});
 			}
 		} else {
-			const postType = this.postTypes.find(p =>
-				p.value === this.route.snapshot.queryParamMap.get('type')
+			const postTypeParam = this.route.snapshot.queryParamMap.get('type');
+			const postType = this.postService.postTypes.find(p =>
+				p.value == postTypeParam
 			)?.value;
 			if (postType) {
 				this.postTypeFormControl.setValue(postType);
@@ -93,8 +88,8 @@ export class NewPostComponent implements OnInit, OnDestroy {
 		});
 
 		this.postService.getAllTags().subscribe(tags => {
-			this.tagOptions = tags;
-			this.filteredOptions = this.tagFormControl.valueChanges.pipe(
+			this.allTagOptions = tags;
+			this.availableTagOptions = this.tagFormControl.valueChanges.pipe(
 				startWith(''),
 				map(value => this._filter(value || '')),
 			);
@@ -108,7 +103,7 @@ export class NewPostComponent implements OnInit, OnDestroy {
 	setContent(postContent: PostContent) {
 		this.titleFormControl.setValue(postContent.title);
 		this.contentFormControl.setValue(postContent.content);
-		this.tags = postContent.tags;
+		this.appliedTags = postContent.tags;
 		this.postTypeFormControl.setValue(postContent.postType);
 		if (postContent.programmingLanguage) {
 			this.editorOptions = {
@@ -136,7 +131,7 @@ export class NewPostComponent implements OnInit, OnDestroy {
 			this.postTypeFormControl.value,
 			this.titleFormControl.value,
 			this.contentFormControl.value,
-			this.tags,
+			this.appliedTags,
 			programmingLanguage
 		).subscribe({
 			next: response => {
@@ -148,7 +143,7 @@ export class NewPostComponent implements OnInit, OnDestroy {
 	private _filter(value: string): string[] {
 		const filterValue = value.toLowerCase();
 
-		return this.tagOptions.filter(tag => tag.toLowerCase().includes(filterValue) && !this.tags.includes(tag));
+		return this.allTagOptions.filter(tag => tag.toLowerCase().includes(filterValue) && !this.appliedTags.includes(tag));
 	}
 
 	addTag(event: MatChipInputEvent): void {
@@ -160,8 +155,8 @@ export class NewPostComponent implements OnInit, OnDestroy {
 		}
 
 		if (value) {
-			if (this.tags.every(t => t != value)) {
-				this.tags.push(value);
+			if (this.appliedTags.every(t => t != value)) {
+				this.appliedTags.push(value);
 			}
 		}
 		
@@ -175,10 +170,10 @@ export class NewPostComponent implements OnInit, OnDestroy {
 	}
 
 	removeTag(tag: string): void {
-		const index = this.tags.indexOf(tag);
+		const index = this.appliedTags.indexOf(tag);
 
 		if (index >= 0) {
-			this.tags.splice(index, 1);
+			this.appliedTags.splice(index, 1);
 		}
 		this.tagFormControl.updateValueAndValidity();
 	}
@@ -191,15 +186,15 @@ export class NewPostComponent implements OnInit, OnDestroy {
 			return;
 		}
 
-		const index = this.tags.indexOf(tag);
+		const index = this.appliedTags.indexOf(tag);
 		if (index >= 0) {
-			this.tags[index] = value;
+			this.appliedTags[index] = value;
 		}
 		this.tagFormControl.updateValueAndValidity();
 	}
 
 	tagSelected(event: MatAutocompleteSelectedEvent): void {
-		this.tags.push(event.option.viewValue);
+		this.appliedTags.push(event.option.viewValue);
 		if (this.tagInput) {
 			this.tagInput.nativeElement.value = ''
 		}		
@@ -219,7 +214,7 @@ export class NewPostComponent implements OnInit, OnDestroy {
 				this.postId,
 				this.titleFormControl.value,
 				this.contentFormControl.value,
-				this.tags,
+				this.appliedTags,
 				programmingLanguage
 			).subscribe({
 				next: response => {

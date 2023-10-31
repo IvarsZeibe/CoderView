@@ -4,7 +4,7 @@
             <mat-form-field>
                 <mat-label>Post type</mat-label>
                 <mat-select [formControl]="postTypeFormControl">
-                    <mat-option *ngFor="let postType of postTypes" [value]="postType.value">
+                    <mat-option *ngFor="let postType of postService.postTypes" [value]="postType.value">
                         {{postType.viewValue}}
                     </mat-option>
                 </mat-select>
@@ -12,7 +12,7 @@
             <mat-form-field id="tags">
                 <mat-label>Tags</mat-label>
                 <mat-chip-grid [formControl]="chipFormControl" #chipGrid aria-label="Enter tags">
-                    <mat-chip-row *ngFor="let tag of tags"
+                    <mat-chip-row *ngFor="let tag of appliedTags"
                                   (removed)="removeTag(tag)"
                                   [editable]="true"
                                   (edited)="editTag(tag, $event)"
@@ -28,7 +28,7 @@
                            [matAutocomplete]="auto"
                            [formControl]="tagFormControl" />
                     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="tagSelected($event)">
-                        <mat-option *ngFor="let tag of filteredOptions | async" [value]="tag">
+                        <mat-option *ngFor="let tag of availableTagOptions | async" [value]="tag">
                             {{tag}}
                         </mat-option>
                     </mat-autocomplete>
@@ -37,7 +37,7 @@
             <mat-form-field style="margin-left: 20px" *ngIf="postTypeFormControl.value == 'snippet'">
                 <mat-label>Programming Language</mat-label>
                 <mat-select [(value)]="selectedProgrammingLanguage" (selectionChange)="selectLanguage($event)">
-                    <mat-option *ngFor="let language of programmingLanguages" [value]="language">
+                    <mat-option *ngFor="let language of programmingLanguagesService.programmingLanguages" [value]="language">
                         {{language}}
                     </mat-option>
                 </mat-select>
