@@ -129,14 +129,14 @@ export class PostsComponent implements OnInit, AfterViewInit {
 			})
 			.subscribe({
 				next: posts => {
+					this.isTryingToLoadPosts = false;
 					this.posts = posts;
 					if (posts.length > 0) {
 						this.timeStamp = posts[posts.length - 1].createdOn;
-					}
 
-					this.isTryingToLoadPosts = false;
-					if (this.isNearPageBottom()) {
-						this.loadMorePosts();
+						if (this.isNearPageBottom()) {
+							this.loadMorePosts();
+						}
 					}
 				}, error: () => {
 					this.isTryingToLoadPosts = false;
@@ -148,7 +148,7 @@ export class PostsComponent implements OnInit, AfterViewInit {
 	}
 
 	loadMorePosts(): void {
-		if (this.isTryingToLoadPosts || this.areAllPostsLoaded) {
+		if (this.isTryingToLoadPosts || this.areAllPostsLoaded || !this.timeStamp) {
 			return;
 		}
 		this.getPostsRequest?.unsubscribe();
@@ -163,16 +163,18 @@ export class PostsComponent implements OnInit, AfterViewInit {
 			})
 			.subscribe({
 				next: posts => {
+					this.isTryingToLoadPosts = false;
+					this.posts = this.posts.concat(posts);
+
 					if (posts.length == 0) {
 						this.areAllPostsLoaded = true;
+					} else {
+						this.timeStamp = this.posts[this.posts.length - 1].createdOn;
+						if (this.isNearPageBottom()) {
+							this.loadMorePosts();
+						}
 					}
-					this.posts = this.posts.concat(posts);
-					this.timeStamp = this.posts[this.posts.length - 1].createdOn;
 
-					this.isTryingToLoadPosts = false;
-					if (this.isNearPageBottom()) {
-						this.loadMorePosts();
-					}
 				},
 				error: () => {
 					this.isTryingToLoadPosts = false;
