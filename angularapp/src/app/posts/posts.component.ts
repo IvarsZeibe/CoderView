@@ -64,6 +64,7 @@ export class PostsComponent implements OnInit, AfterViewInit {
 				this.postTypeFormControl.setValue('discussion');
 				this.router.navigate([]);
 			}
+			this.filterPosts();
 		})
 
 		const filterByTag = this.route.snapshot.queryParamMap.get('tag');
@@ -73,11 +74,7 @@ export class PostsComponent implements OnInit, AfterViewInit {
 
 		this.postTypeFormControl.valueChanges.subscribe(postType => {
 			this.router.navigate([], { queryParams: { type: postType } });
-			this.posts = [];
-			this.filterPosts();
 		});
-
-		this.filterPosts();
 
 		this.postService.getAllTags().subscribe(tags => {
 			this.allTagOptions = tags;
@@ -115,12 +112,13 @@ export class PostsComponent implements OnInit, AfterViewInit {
 	}
 
 	filterPosts(): void {
+		this.getPostsRequest?.unsubscribe();
+
 		this.posts = [];
 		this.areAllPostsLoaded = false;
+		this.isTryingToLoadPosts = true;
 		this.timeStamp = undefined;
 
-		this.getPostsRequest?.unsubscribe();
-		this.isTryingToLoadPosts = true;
 		this.getPostsRequest = this.postService
 			.getAll({
 				postType: this.postTypeFormControl.value,
@@ -129,19 +127,19 @@ export class PostsComponent implements OnInit, AfterViewInit {
 				tags: this.appliedTagFilters
 
 			})
-			.pipe(finalize(() => {
-				this.isTryingToLoadPosts = false;
-				if (this.isNearPageBottom()) {
-					this.loadMorePosts();
-				}
-			}))
 			.subscribe({
 				next: posts => {
 					this.posts = posts;
 					if (posts.length > 0) {
 						this.timeStamp = posts[posts.length - 1].createdOn;
 					}
+
+					this.isTryingToLoadPosts = false;
+					if (this.isNearPageBottom()) {
+						this.loadMorePosts();
+					}
 				}, error: () => {
+					this.isTryingToLoadPosts = false;
 					this.areAllPostsLoaded = true;
 					console.log("Unable to get posts");
 				}
@@ -153,6 +151,7 @@ export class PostsComponent implements OnInit, AfterViewInit {
 		if (this.isTryingToLoadPosts || this.areAllPostsLoaded) {
 			return;
 		}
+		this.getPostsRequest?.unsubscribe();
 		this.isTryingToLoadPosts = true;
 		this.getPostsRequest = this.postService
 			.getAll({
@@ -162,12 +161,6 @@ export class PostsComponent implements OnInit, AfterViewInit {
 				programmingLanguage: this.postTypeFormControl.value == "snippet" ? this.programmingLanguageFilter : undefined,
 				timeStamp: this.timeStamp
 			})
-			.pipe(finalize(() => {
-				this.isTryingToLoadPosts = false;
-				if (this.isNearPageBottom()) {
-					this.loadMorePosts();
-				}
-			}))
 			.subscribe({
 				next: posts => {
 					if (posts.length == 0) {
@@ -175,8 +168,14 @@ export class PostsComponent implements OnInit, AfterViewInit {
 					}
 					this.posts = this.posts.concat(posts);
 					this.timeStamp = this.posts[this.posts.length - 1].createdOn;
+
+					this.isTryingToLoadPosts = false;
+					if (this.isNearPageBottom()) {
+						this.loadMorePosts();
+					}
 				},
 				error: () => {
+					this.isTryingToLoadPosts = false;
 					this.areAllPostsLoaded = true;
 					console.log("Unable to get posts");
 				}
