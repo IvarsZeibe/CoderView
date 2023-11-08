@@ -33,6 +33,12 @@
                         </mat-option>
                     </mat-autocomplete>
                 </mat-chip-grid>
+                <mat-error *ngIf="chipFormControl.hasError('isMaxCountReached')">
+                    Cannot have more than 20 tags
+                </mat-error>
+                <mat-error *ngIf="chipFormControl.hasError('invalidTag')">
+                    Invalid tag
+                </mat-error>
             </mat-form-field>
             <mat-form-field style="margin-left: 20px" *ngIf="postTypeFormControl.value == 'snippet'">
                 <mat-label>Programming Language</mat-label>

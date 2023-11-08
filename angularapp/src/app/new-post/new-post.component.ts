@@ -30,7 +30,7 @@ export class NewPostComponent implements OnInit, OnDestroy {
 	});
 	tagFormControl = new FormControl("", {
 		nonNullable: true,
-		validators: [Validators.required, Validators.maxLength(30)]
+		validators: [Validators.required, Validators.maxLength(30), Validators.pattern("^[a-zA-Z0-9_ ]*$")]
 	});
 	chipFormControl = new FormControl("");
 
@@ -150,7 +150,11 @@ export class NewPostComponent implements OnInit, OnDestroy {
 		const value = (event.value || '').trim();
 		if (this.tagFormControl.invalid) {
 			this.chipFormControl.markAsTouched();
-			this.chipFormControl.setErrors({});
+			this.chipFormControl.setErrors({ invalidTag: true});
+			return;
+		}
+
+		if (this.validateMaxTagCount()) {
 			return;
 		}
 
@@ -167,6 +171,27 @@ export class NewPostComponent implements OnInit, OnDestroy {
 		this.tagFormControl.reset();
 		this.chipFormControl.reset();
 		event.chipInput!.clear();
+	}
+
+	tagSelected(event: MatAutocompleteSelectedEvent): void {
+		if (this.validateMaxTagCount()) {
+			return;
+		}
+
+		this.appliedTags.push(event.option.viewValue);
+		if (this.tagInput) {
+			this.tagInput.nativeElement.value = ''
+		}
+		this.tagFormControl.reset();
+	}
+
+	validateMaxTagCount(): boolean {
+		if (this.appliedTags.length >= 20) {
+			this.chipFormControl.markAsTouched();
+			this.chipFormControl.setErrors({ isMaxCountReached: true });
+			return true;
+		}
+		return false
 	}
 
 	removeTag(tag: string): void {
@@ -186,19 +211,18 @@ export class NewPostComponent implements OnInit, OnDestroy {
 			return;
 		}
 
+		this.tagFormControl.setValue(value);
+		this.tagFormControl.updateValueAndValidity();
+		if (this.tagFormControl.invalid) {
+			this.chipFormControl.markAsTouched();
+			this.chipFormControl.setErrors({ invalidTag: true });
+			return;
+		}		
+
 		const index = this.appliedTags.indexOf(tag);
 		if (index >= 0) {
 			this.appliedTags[index] = value;
 		}
-		this.tagFormControl.updateValueAndValidity();
-	}
-
-	tagSelected(event: MatAutocompleteSelectedEvent): void {
-		this.appliedTags.push(event.option.viewValue);
-		if (this.tagInput) {
-			this.tagInput.nativeElement.value = ''
-		}		
-		this.tagFormControl.reset();
 	}
 
 	saveChanges() {

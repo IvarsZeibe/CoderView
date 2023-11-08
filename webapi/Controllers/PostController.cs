@@ -215,7 +215,7 @@ namespace webapi.Controllers
                 .Include(ttp => ttp.Tag).ThenInclude(t => t.TagToPosts)
                 .Where(ttp => ttp.Post == post)
                 .ToList();
-            foreach (string tagName in model.Tags)
+            foreach (string tagName in model.Tags ?? Enumerable.Empty<string>())
             {
                 var postTagToKeep = postTagsToRemove.FirstOrDefault(ttp => _context.Tags.First(t => t == ttp.Tag).Name == tagName);
                 if (postTagToKeep is not null)
@@ -294,7 +294,7 @@ namespace webapi.Controllers
                 ProgrammingLanguage = programmingLanguage
             }).Entity;
 
-            foreach (string tagName in model.Tags)
+            foreach (string tagName in model.Tags ?? Enumerable.Empty<string>())
             {
                 var tag = _context.Tags.Where(t => t.Name == tagName).FirstOrDefault();
                 if (tag is null)
@@ -303,7 +303,7 @@ namespace webapi.Controllers
                     {
                         return BadRequest();
                     }
-                    tag = _context.Tags.Add(new Models.Tag { Name = tagName }).Entity;
+                    tag = _context.Tags.Add(new Tag { Name = tagName }).Entity;
                 }
                 _context.TagToPost.Add(new TagToPost { Post = post, Tag = tag });
             }

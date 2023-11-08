@@ -21,7 +21,7 @@ public class AuthenticationController : ControllerBase
     [Route("/api/isAuthenticated")]
     public bool IsAuthenticated()
     {
-        return User.Identity.IsAuthenticated;
+        return User.Identity?.IsAuthenticated ?? false;
     }
 
     [HttpPost]
@@ -40,9 +40,9 @@ public class AuthenticationController : ControllerBase
 
     [HttpPost]
     [Route("/api/signout")]
-    public void SignOut()
+    public Task SignOutRoute()
     {
-        _authService.SignOutAsync();
+        return _authService.SignOutAsync();
     }
 
     [HttpPost]
