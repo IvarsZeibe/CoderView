@@ -10,6 +10,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
 import { MatSelectChange } from '@angular/material/select';
 import { ProgrammingLanguagesService } from '../_services/programming-languages.service';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { GuideContent } from '../_services/guide-formatting.service';
 
 @Component({
 	selector: 'app-new-post',
@@ -24,9 +26,13 @@ export class NewPostComponent implements OnInit, OnDestroy {
 		nonNullable: true,
 		validators: [Validators.required, Validators.minLength(5), Validators.maxLength(150)]
 	});
+	descriptionFormControl = new FormControl("", {
+		nonNullable: true,
+		validators: [Validators.required, Validators.minLength(5), Validators.maxLength(1000)]
+	});
 	contentFormControl = new FormControl("", {
 		nonNullable: true,
-		validators: [Validators.required, Validators.minLength(5), Validators.maxLength(40000)]
+		validators: [Validators.required, Validators.minLength(5), Validators.maxLength(20000)]
 	});
 	tagFormControl = new FormControl("", {
 		nonNullable: true,
@@ -46,6 +52,16 @@ export class NewPostComponent implements OnInit, OnDestroy {
 	editorOptions = { theme: 'vs-dark', language: 'javascript', automaticLayout: true };
 
 	selectedProgrammingLanguage = 'javascript';
+
+	editedSectionIndex?: number;
+	sections: {
+		title: string,
+		content: string,
+		titleFormControl: FormControl<string>,
+		contentFormControl: FormControl<string>
+	}[] = [];
+
+	errors = "";
 
 	constructor(
 		public postService: PostService,
@@ -81,9 +97,12 @@ export class NewPostComponent implements OnInit, OnDestroy {
 			} else {
 				this.router.navigate([]);
 			}
+
+			this.addNewSection();
 		}
 
 		this.postTypeFormControl.valueChanges.subscribe(postType => {
+			this.titleFormControl.updateValueAndValidity();
 			this.router.navigate([], { queryParams: { type: postType } });
 		});
 
@@ -102,9 +121,28 @@ export class NewPostComponent implements OnInit, OnDestroy {
 
 	setContent(postContent: PostContent) {
 		this.titleFormControl.setValue(postContent.title);
-		this.contentFormControl.setValue(postContent.content);
 		this.appliedTags = postContent.tags;
 		this.postTypeFormControl.setValue(postContent.postType);
+		if (postContent.postType != 'guide') {
+			this.contentFormControl.setValue(postContent.content);
+		} else {
+			const guideSections: GuideContent = JSON.parse(postContent.content)
+			for (const s of guideSections) {
+				this.sections.push(
+					{
+						...s,
+						titleFormControl: new FormControl(s.title, {
+							nonNullable: true,
+							validators: [Validators.required, Validators.maxLength(150)]
+						}),
+						contentFormControl: new FormControl(s.content, {
+							nonNullable: true,
+							validators: [Validators.required, Validators.maxLength(100000)]
+						})
+					}
+				);
+			}
+		}
 		if (postContent.programmingLanguage) {
 			this.editorOptions = {
 				language: postContent.programmingLanguage,
@@ -113,31 +151,72 @@ export class NewPostComponent implements OnInit, OnDestroy {
 			};
 			this.selectedProgrammingLanguage = postContent.programmingLanguage;
 		}
+
+		if (postContent.description) {
+			this.descriptionFormControl.setValue(postContent.description);
+		}
 	}
 
-	createNewPost(): void {
+	savePost(): void {
 		this.titleFormControl.setValue(this.titleFormControl.value.trim());
 		this.contentFormControl.setValue(this.contentFormControl.value.trim());
+		this.descriptionFormControl.setValue(this.descriptionFormControl.value.trim());
 		this.titleFormControl.markAsTouched();
 		this.contentFormControl.markAsTouched();
+		this.descriptionFormControl.markAsTouched();
 
-		if (this.contentFormControl.invalid || this.titleFormControl.invalid) {
+		if (this.titleFormControl.invalid ||
+			(this.contentFormControl.invalid && this.postTypeFormControl.value != "guide") ||
+			(this.descriptionFormControl.invalid && this.postTypeFormControl.value == "guide")) {
 			return;
-		}	
+		}
 
-		const programmingLanguage = this.postTypeFormControl.value == "snippet" ? this.editorOptions.language : null;
-
-		this.postService.createNew(
-			this.postTypeFormControl.value,
-			this.titleFormControl.value,
-			this.contentFormControl.value,
-			this.appliedTags,
-			programmingLanguage
-		).subscribe({
-			next: response => {
-				this.router.navigate(['/post/' + response.value]);
+		if (this.postTypeFormControl.value == "guide") {
+			if (this.editedSectionIndex !== undefined) {
+				this.titleFormControl.setErrors({ edittingSection: true });
+			} else if (this.sections.length == 0) {
+				this.titleFormControl.setErrors({ noSections: true });
 			}
-		});
+			if (this.titleFormControl.invalid) {
+				return;
+			}
+			const sections = this.sections.map((s => { return { title: s.title, content: s.content } }));
+			this.contentFormControl.setValue(JSON.stringify(sections));
+		}
+
+		const programmingLanguage = this.postTypeFormControl.value == "snippet" ? this.editorOptions.language : undefined;
+		const description = this.postTypeFormControl.value == "guide" ? this.descriptionFormControl.value : undefined;
+
+		if (this.isModifyingExistingPost) {
+			if (!this.postId) {
+				return;
+			}
+			this.postService.savePostChanges(
+				this.postId,
+				this.titleFormControl.value,
+				this.contentFormControl.value,
+				this.appliedTags,
+				programmingLanguage,
+				description
+			).subscribe({
+				complete: () => {
+					this.router.navigate(['/post/' + this.postId]);
+				}
+			});
+		} else {
+			this.postService.createNew(
+				this.postTypeFormControl.value,
+				this.titleFormControl.value,
+				this.contentFormControl.value,
+				this.appliedTags,
+				programmingLanguage,
+				description
+			).subscribe({
+				next: response => {
+					this.router.navigate(['/post/' + response.value]);
+				}
+			});
+		}
 	}
 
 	private _filter(value: string): string[] {
@@ -225,29 +304,6 @@ export class NewPostComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	saveChanges() {
-		this.titleFormControl.setValue(this.titleFormControl.value.trim());
-		this.contentFormControl.setValue(this.contentFormControl.value.trim());
-
-		if (this.contentFormControl.invalid || this.titleFormControl.invalid) {
-			return;
-		}
-		if (this.postId) {
-			const programmingLanguage = this.postTypeFormControl.value == "snippet" ? this.editorOptions.language : null;
-			this.postService.savePostChanges(
-				this.postId,
-				this.titleFormControl.value,
-				this.contentFormControl.value,
-				this.appliedTags,
-				programmingLanguage
-			).subscribe({
-				next: response => {
-					this.router.navigate(['/post/' + this.postId]);
-				}
-			});
-		}
-	}
-
 	openDeletePostDialog() {
 		this.dialog.open(DeleteDialogComponent, {
 			data: {
@@ -270,5 +326,101 @@ export class NewPostComponent implements OnInit, OnDestroy {
 			theme: this.editorOptions.theme,
 			automaticLayout: this.editorOptions.automaticLayout
 		};
+	}
+
+	drop(event: CdkDragDrop<string[]>) {
+		moveItemInArray(this.sections, event.previousIndex, event.currentIndex);
+		if (this.editedSectionIndex !== undefined) {
+			if (event.previousIndex < this.editedSectionIndex && event.currentIndex >= this.editedSectionIndex) {
+				this.editedSectionIndex--;
+			} else if (event.previousIndex > this.editedSectionIndex && event.currentIndex <= this.editedSectionIndex) {
+				this.editedSectionIndex++;
+			} else if (event.previousIndex == this.editedSectionIndex) {
+				this.editedSectionIndex = event.currentIndex;
+			}
+		}
+	}
+
+	addNewSection() {
+		if (!this.isCurrentlyEditedSectionValid()) {
+			return;
+		}
+		this.editedSectionIndex = this.sections.length;
+		this.sections.push({
+			title: "",
+			content: "",
+			titleFormControl: new FormControl("", {
+				nonNullable: true,
+				validators: [Validators.required, Validators.maxLength(150)]
+			}),
+			contentFormControl: new FormControl("", {
+				nonNullable: true,
+				validators: [Validators.required, Validators.maxLength(100000)]
+			})
+		});
+		this.titleFormControl.updateValueAndValidity();
+	}
+
+	isCurrentlyEditedSectionValid(): boolean {
+		if (this.editedSectionIndex !== undefined) {
+			const editedSection = this.sections[this.editedSectionIndex]
+			editedSection.titleFormControl.markAsTouched();
+			editedSection.titleFormControl.updateValueAndValidity();
+			editedSection.contentFormControl.markAsTouched();
+			editedSection.contentFormControl.updateValueAndValidity();
+			if (editedSection.titleFormControl.invalid || editedSection.contentFormControl.invalid) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	editSection(index: number) {
+		if (!this.isCurrentlyEditedSectionValid()) {
+			return;
+		}
+		this.editedSectionIndex = index;
+	}
+
+	cancelSectionEditing() {
+		if (this.editedSectionIndex === undefined) {
+			return;
+		}
+
+		const editedSection = this.sections[this.editedSectionIndex]
+		if (editedSection.title == "") {
+			this.sections.splice(this.editedSectionIndex, 1);
+		} else {
+			editedSection.titleFormControl.setValue(editedSection.title);
+			editedSection.contentFormControl.setValue(editedSection.content);
+		}
+		this.editedSectionIndex = undefined;
+		this.titleFormControl.updateValueAndValidity();
+	}
+
+	saveSectionEditing() {
+		if (this.editedSectionIndex === undefined || !this.isCurrentlyEditedSectionValid()) {
+			return;
+		}
+		const editedSection = this.sections[this.editedSectionIndex]
+		editedSection.title = editedSection.titleFormControl.value;
+		editedSection.content = editedSection.contentFormControl.value;
+		this.editedSectionIndex = undefined;
+		this.titleFormControl.updateValueAndValidity();
+	}
+	openDeleteSectionDialog(index: number) {
+		this.dialog.open(DeleteDialogComponent, {
+			data: {
+				deleteAction: () => {
+					if (this.editedSectionIndex !== undefined) {
+						if (index < this.editedSectionIndex) {
+							this.editedSectionIndex--;
+						}
+					}
+					this.sections.splice(index, 1);
+				},
+				itemToDelete: 'section'
+			}
+		});
 	}
 }

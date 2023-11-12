@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { StorageService } from '../_services/storage.service';
@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { DateHelperService } from '../_services/date-helper.service';
 import { CommentService } from '../_services/comment.service';
 import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
+import { PostService } from '../_services/post.service';
 
 export type Comments = Record<number | -2, {
 	owner: string,
@@ -22,24 +23,72 @@ export type Comments = Record<number | -2, {
   templateUrl: './comment-section.component.html',
   styleUrls: ['./comment-section.component.css']
 })
-export class CommentSectionComponent {
+export class CommentSectionComponent implements OnInit {
 	@Input({ required: true }) postId!: string;
 	@Input() timeOnPageLoad: Date = new Date();
 	commentDepthColors = ["red", "orange", "green", "purple"];
 
+	@Output() commentCount = new EventEmitter<number>();
+
 	// key is -2 for new comment while the server hasn't returned the id of the newly created comment
-	@Input({ required: true }) comments: Comments = {};
+	comments: Comments = {};
 
 	// key is -1 for comment on post
 	repliesInProgress: Record<number | -1, FormControl<string>> = {};
 
+	isLoading = true;
+	hasFailedToLoadComments = false;
+
 	constructor(
 		private storageService: StorageService,
 		private router: Router,
+		private postService: PostService,
 		private commentService: CommentService,
 		private dialog: MatDialog,
-		public dateHelperService: DateHelperService
+		public dateHelperService: DateHelperService,
+		private changeDetector: ChangeDetectorRef
 	) { }
+
+	ngOnInit(): void {
+		this.postService.getComments(this.postId).subscribe({
+			next: (c) => {
+				for (const comment of c) {
+					this.comments[comment.id] = {
+						owner: comment.author ?? "[Deleted]",
+						content: comment.content ?? "",
+						replyTo: comment.replyTo,
+						depth: comment.replyTo ? this.comments[comment.replyTo].depth + 1 : 0,
+						voteCount: comment.voteCount,
+						isVotedByUser: comment.isVotedByUser,
+						createdOn: comment.createdOn
+					};
+				}
+				this.commentCount.emit(this.getCommentCount());
+				this.isLoading = false;
+				this.changeDetector.detectChanges();
+				queueMicrotask(() => {
+					const commentElements = document.getElementsByClassName('comment-content');
+					for (let i = 0; i < commentElements.length; i++) {
+						const element = commentElements.item(i) as HTMLElement;
+						if (element && element.offsetHeight < element.scrollHeight) {
+							element.classList.add("long-comment");
+						}
+					}
+				});
+			}, error: () => {
+				this.hasFailedToLoadComments = true;
+				this.isLoading = false;
+			}
+		})
+	}
+
+	getCommentCount(): number {
+		return Object.keys(this.comments).length;
+	}
+
+	shouldShowNoCommentText(): boolean {
+		return this.getCommentCount() == 0 && !this.isLoading && !this.hasFailedToLoadComments && Object.keys(this.repliesInProgress).length == 0;
+	}
 
 	getCommentColor(depth: number): string {
 		depth = depth % this.commentDepthColors.length;
@@ -99,11 +148,25 @@ export class CommentSectionComponent {
 			isVotedByUser: false,
 			createdOn: new Date()
 		}
+		this.commentCount.emit(this.getCommentCount());
+
+		this.changeDetector.detectChanges();
+		const element = document.getElementById('comment-2') as HTMLElement;
+		if (element && element.offsetHeight < element.scrollHeight) {
+			element.classList.add("long-comment");
+		}
+
 		this.commentService.create(this.repliesInProgress[replyTo].value, this.postId, replyTo == -1 ? null : replyTo).subscribe({
 			next: commentId => {
 				const id = commentId.toString();
 				this.comments[id] = this.comments[-2];
 				delete this.comments[-2];
+
+				this.changeDetector.detectChanges();
+				const element = document.getElementById('comment' + id) as HTMLElement;
+				if (element && element.offsetHeight < element.scrollHeight) {
+					element.classList.add("long-comment");
+				}
 			}
 		})
 		delete this.repliesInProgress[replyTo];
@@ -125,7 +188,7 @@ export class CommentSectionComponent {
 	}
 
 	isCommentShortened(element: HTMLElement) {
-		return element.offsetHeight < element.scrollHeight && element.style.display == "";
+		return element.classList.contains("long-comment") && element.style.display == "";
 	}
 
 	isCommentExpanded(element: HTMLElement) {
@@ -141,7 +204,7 @@ export class CommentSectionComponent {
 	}
 
 	isCommentedByCurrentUser(commentId: number) {
-		return this.comments[commentId].owner == this.storageService.getUsername();
+		return this.comments[commentId].owner.toLowerCase() == this.storageService.getUsername();
 	}
 
 	openDeleteCommentDialog(commentId: number) {
@@ -156,6 +219,7 @@ export class CommentSectionComponent {
 							const parentId: number | null = this.comments[commentId].replyTo;
 
 							delete this.comments[commentId];
+							this.commentCount.emit(this.getCommentCount());
 
 							if (parentId !== null &&
 								this.comments[parentId].owner === "[Deleted]" &&

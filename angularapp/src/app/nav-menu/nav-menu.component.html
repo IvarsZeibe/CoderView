@@ -2,6 +2,7 @@
     <a mat-button class="home-button" [routerLink]="['/posts']"><span class="logo-start">Coder</span><span class="logo-end">View</span></a>
     <a mat-button [routerLink]="['/posts']" [queryParams]="{type: 'discussion'}">Discussions</a>
     <a mat-button [routerLink]="['/posts']" [queryParams]="{type: 'snippet'}">Code Snippets</a>
+    <a mat-button [routerLink]="['/posts']" [queryParams]="{type: 'guide'}">Guides</a>
     <span class="spacer"></span>
     <a *ngIf="!storageService.isLoggedIn()" mat-button [routerLink]="['/signin']">
         <div class="center">

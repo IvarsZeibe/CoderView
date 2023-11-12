@@ -13,7 +13,7 @@ export class StorageService {
 
 	public saveUser(user: any): void {
 		window.localStorage.removeItem(USER_KEY);
-		window.localStorage.setItem(USER_KEY, user);
+		window.localStorage.setItem(USER_KEY, user.toLowerCase());
 	}
 
 	public getUsername(): any {

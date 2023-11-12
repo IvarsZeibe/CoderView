@@ -1,57 +1,69 @@
 <mat-card>
+    <div style="margin-top: 10px;" [style.display]="isLoading ? 'block' : 'none'">
+        <div style="text-align: center">Loading Comments</div>
+        <mat-progress-bar style="margin-top: 10px;" mode="indeterminate"></mat-progress-bar>
+    </div>
+
+    <div style="margin-top: 10px;" [style.display]="hasFailedToLoadComments ? 'block' : 'none'">
+        <div style="text-align: center; color: red;">Failed to load comments</div>
+    </div>
+
+
+    <div style="margin-top: 10px;" [style.display]="shouldShowNoCommentText() ? 'block' : 'none'">
+        <div style="display: flex; justify-content: center; align-items: center;">Be the first to <button mat-button (click)="startReply(-1)">Comment</button>!</div>
+        
+    </div>
     <mat-card-content>
-        <form>
-            <mat-form-field class="comment" *ngIf="repliesInProgress.hasOwnProperty(-1)">
-                <textarea maxlength="5000" type="text" [formControl]="repliesInProgress[-1]" matInput></textarea>
-                <mat-error *ngIf="repliesInProgress[-1].hasError('required')">
+        <mat-form-field class="comment-input" *ngIf="repliesInProgress.hasOwnProperty(-1)" subscriptSizing="dynamic">
+            <textarea maxlength="5000" type="text" [formControl]="repliesInProgress[-1]" matInput></textarea>
+            <mat-error *ngIf="repliesInProgress[-1].hasError('required')">
+                Comment cannot be empty
+            </mat-error>
+            <mat-error *ngIf="repliesInProgress[-1].hasError('tooLong')">
+                Max comment length is 5000 characters
+            </mat-error>
+            <button matSuffix mat-button (click)="cancelReply(-1)">Cancel</button>
+            <button matSuffix mat-button (click)="submitReply(-1)">Comment</button>
+        </mat-form-field>
+        <div *ngFor="let commentId of getOrderedCommentIds()">
+            <mat-card [style.marginLeft]="15 * comments[commentId].depth + 'px'" [style.borderColor]="getCommentColor(comments[commentId].depth)" class="comment">
+                <button *ngIf="isCommentedByCurrentUser(commentId)"
+                        class="delete-button" matSuffix mat-icon-button aria-label="Clear"
+                        (click)="openDeleteCommentDialog(commentId)">
+                    <mat-icon>close</mat-icon>
+                </button>
+                <mat-card-header>
+                    <mat-card-subtitle class="user">
+                        {{getFormattedAuthor(comments[commentId].owner)}} • {{dateHelperService.getTimePassedString(comments[commentId].createdOn, timeOnPageLoad)}}
+                    </mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content class="comment-content" id="comment{{commentId}}" #comment>{{comments[commentId].content}}</mat-card-content>
+                <mat-card-actions [style.borderColor]="getCommentColor(comments[commentId].depth)">
+                    <div>
+                        <button mat-button *ngIf="isCommentShortened(comment)" (click)="expandComment(comment)">Read more</button>
+                        <button mat-button *ngIf="isCommentExpanded(comment)" (click)="shortenComment(comment)">Show less</button>
+                    </div>
+                    <div>
+                        <button mat-button
+                                [class.button-pressed]="comments[commentId].isVotedByUser"
+                                (click)="voteOnComment(commentId)">
+                            Vote ({{comments[commentId].voteCount}})
+                        </button>
+                        <button mat-button (click)="startReply(commentId)">Reply</button>
+                    </div>
+                </mat-card-actions>
+            </mat-card>
+            <mat-form-field class="comment-input" *ngIf="repliesInProgress.hasOwnProperty(commentId)" subscriptSizing="dynamic">
+                <textarea maxlength="5000" type="text" [formControl]="repliesInProgress[commentId]" matInput></textarea>
+                <mat-error *ngIf="repliesInProgress[commentId].hasError('required')">
                     Comment cannot be empty
                 </mat-error>
-                <mat-error *ngIf="repliesInProgress[-1].hasError('tooLong')">
+                <mat-error *ngIf="repliesInProgress[commentId].hasError('tooLong')">
                     Max comment length is 5000 characters
                 </mat-error>
-                <button matSuffix mat-button (click)="cancelReply(-1)">Cancel</button>
-                <button matSuffix mat-button (click)="submitReply(-1)">Comment</button>
+                <button matSuffix mat-button (click)="cancelReply(commentId)">Cancel</button>
+                <button matSuffix mat-button (click)="submitReply(commentId)">Comment</button>
             </mat-form-field>
-            <div *ngFor="let commentId of getOrderedCommentIds()">
-                <mat-card [style.marginLeft]="15 * comments[commentId].depth + 'px'" [style.borderColor]="getCommentColor(comments[commentId].depth)" class="comment">
-                    <button *ngIf="isCommentedByCurrentUser(commentId)"
-                            class="delete-button" matSuffix mat-icon-button aria-label="Clear"
-                            (click)="openDeleteCommentDialog(commentId)">
-                        <mat-icon>close</mat-icon>
-                    </button>
-                    <mat-card-header>
-                        <mat-card-subtitle class="user"
-                            >{{getFormattedAuthor(comments[commentId].owner)}} • {{dateHelperService.getTimePassedString(comments[commentId].createdOn, timeOnPageLoad)}}
-                        </mat-card-subtitle>
-                    </mat-card-header>
-                    <mat-card-content #comment>{{comments[commentId].content}}</mat-card-content>
-                    <mat-card-actions [style.borderColor]="getCommentColor(comments[commentId].depth)">
-                        <div>
-                            <button mat-button *ngIf="isCommentShortened(comment)" (click)="expandComment(comment)">Read more</button>
-                            <button mat-button *ngIf="isCommentExpanded(comment)" (click)="shortenComment(comment)">Show less</button>
-                        </div>
-                        <div>
-                            <button mat-button
-                                    [class.button-pressed]="comments[commentId].isVotedByUser"
-                                    (click)="voteOnComment(commentId)">
-                                Vote ({{comments[commentId].voteCount}})
-                            </button>
-                            <button mat-button (click)="startReply(commentId)">Reply</button>
-                        </div>
-                    </mat-card-actions>
-                </mat-card>
-                <mat-form-field class="comment-input" *ngIf="repliesInProgress.hasOwnProperty(commentId)">
-                    <textarea maxlength="5000" type="text" [formControl]="repliesInProgress[commentId]" matInput></textarea>
-                    <mat-error *ngIf="repliesInProgress[commentId].hasError('required')">
-                        Comment cannot be empty
-                    </mat-error>
-                    <mat-error *ngIf="repliesInProgress[commentId].hasError('tooLong')">
-                        Max comment length is 5000 characters
-                    </mat-error>
-                    <button matSuffix mat-button (click)="cancelReply(commentId)">Cancel</button>
-                    <button matSuffix mat-button (click)="submitReply(commentId)">Comment</button>
-                </mat-form-field>
-            </div>
-        </form>
+        </div>
     </mat-card-content>
 </mat-card>

@@ -77,7 +77,7 @@ namespace webapi.Controllers
             {
                 Id = new ShortGuid(p.PostId),
                 Author = p.Author.UserName,
-                Content = p.Content,
+                Content = p.Type.Name == "guide" ? p.Description : p.Content,
                 Title = p.Title,
                 CommentCount = _context.Comments.Where(c => c.Post == p).Count(),
                 VoteCount = _context.Votes.Where(c => c.PostVotedFor == p).Count(),
@@ -112,6 +112,7 @@ namespace webapi.Controllers
             return Ok(new PostViewModel 
             {
                 Author = post.Author.UserName,
+                Description = post.Description,
                 Content = post.Content,
                 Title = post.Title,
                 VoteCount = _context.Votes.Where(v => v.PostVotedFor == post).Count(),
@@ -121,20 +122,32 @@ namespace webapi.Controllers
                 Tags = _context.TagToPost
                     .Where(ttp => ttp.Post == post)
                     .Select(ttp => _context.Tags.First(t => t == ttp.Tag).Name).ToList(),
-                Comments = _context.Comments
-                    .Where(c => c.Post == post)
-                    .Select(c => new CommentViewModel
-                {
-                    Id = c.CommentId,
-                    Author = c.Author.UserName,
-                    Content = c.Content,
-                    ReplyTo = c.ReplyTo.CommentId,
-                    VoteCount = _context.Votes.Where(v => v.CommentVotedFor == c).Count(),
-                    IsVotedByUser = _context.Votes.Any(v => v.CommentVotedFor == c && v.User.UserName == User.Identity.Name),
-                    CreatedOn = DateTime.SpecifyKind(c.CreatedOn, DateTimeKind.Utc)
-                    }).ToList(),
                 ProgrammingLanguage = post.Type.Name == "snippet" ? post.ProgrammingLanguage.Name : null
             });
+        }
+
+        [HttpGet]
+        [Route("/api/post/{id}/comments")]
+        public IActionResult GetPostComments(string id)
+        {
+            var shortGuid = ShortGuid.ParseOrDefault(id);
+            if (shortGuid is null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(_context.Comments
+                .Where(c => c.Post.PostId == shortGuid)
+                .Select(c => new CommentViewModel
+            {
+                Id = c.CommentId,
+                Author = c.Author.UserName,
+                Content = c.Content,
+                ReplyTo = c.ReplyTo.CommentId,
+                VoteCount = _context.Votes.Where(v => v.CommentVotedFor == c).Count(),
+                IsVotedByUser = _context.Votes.Any(v => v.CommentVotedFor == c && v.User.UserName == User.Identity.Name),
+                CreatedOn = DateTime.SpecifyKind(c.CreatedOn, DateTimeKind.Utc)
+            }).ToList());
         }
 
         [HttpGet]
@@ -165,6 +178,7 @@ namespace webapi.Controllers
             return Ok(new PostContentViewModel
             {
                 Content = post.Content,
+                Description = post.Description,
                 Title = post.Title,
                 PostType = post.Type.Name,
                 Tags = _context.TagToPost
@@ -200,6 +214,16 @@ namespace webapi.Controllers
             }
 
             post.Title = model.Title;
+            if (post.Type.Name == "guide")
+            {
+                post.Description = model.Description;
+            }
+
+            if (post.Type.Name != "guide" && model.Content.Length > 20000 || post.Type.Name == "guide" && model.Content.Length > 100000)
+            {
+                return BadRequest("Content too long");
+            }
+
             post.Content = model.Content;
 
             if (model.ProgrammingLanguage is not null)
@@ -258,6 +282,10 @@ namespace webapi.Controllers
         {
             model.Title = model.Title.Trim();
             model.Content = model.Content.Trim();
+            if (model.Description is not null)
+            {
+                model.Description = model.Description.Trim();
+            }
             if (!TryValidateModel(model))
             {
                 return BadRequest(ModelState);
@@ -273,6 +301,11 @@ namespace webapi.Controllers
             if (postType is null)
             {
                 return BadRequest();
+            }
+
+            if (postType.Name != "guide" && model.Content.Length > 20000 || postType.Name == "guide" && model.Content.Length > 100000)
+            {
+                return BadRequest("Content too long");
             }
 
             ProgrammingLanguage? programmingLanguage = null;
@@ -291,6 +324,7 @@ namespace webapi.Controllers
                 Content = model.Content,
                 Title = model.Title,
                 Type = postType,
+                Description = postType.Name == "guide" ? model.Description : null,
                 ProgrammingLanguage = programmingLanguage
             }).Entity;
 

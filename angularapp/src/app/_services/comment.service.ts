@@ -9,7 +9,7 @@ const httpOptions = {
 };
 
 @Injectable({
-  providedIn: 'root'
+	providedIn: 'root'
 })
 export class CommentService {
 	constructor(private http: HttpClient) { }
@@ -23,7 +23,7 @@ export class CommentService {
 				replyTo
 			},
 			httpOptions
-		);		
+		);
 	}
 
 	public voteOn(commentId: number) {

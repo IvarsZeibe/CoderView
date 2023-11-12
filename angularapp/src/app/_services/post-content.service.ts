@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
+import { PostType } from './post.service';
 
 export type PostContent = {
 	title: string,
+	description?: string,
 	content: string,
 	tags: string[],
-	postType: 'discussion' | 'snippet',
+	postType: PostType,
 	programmingLanguage: string | null
 };
 

@@ -5,7 +5,7 @@
         </a>
         <mat-card-header *ngIf="postTags.length > 0">
             <mat-chip-set cdkDropList
-                          cdkDropListOrientation="horizontal">
+                            cdkDropListOrientation="horizontal">
                 <mat-chip (click)="filterByTag(tag)" cdkDrag *ngFor="let tag of postTags">
                     {{tag}}
                 </mat-chip>
@@ -18,17 +18,27 @@
                 {{dateHelperService.getTimePassedString(postCreatedOn, timeOnPageLoad)}}
             </mat-card-subtitle>
         </mat-card-header>
+        <mat-card-header *ngIf="postType == 'guide'">
+            {{description}}
+        </mat-card-header>
     </div>
 
+    <mat-card-content *ngIf="postType == 'discussion'">{{content}}</mat-card-content>
     <mat-card-content appClickStopPropagation style="cursor: default" *ngIf="postType == 'snippet'">
         <mat-icon (click)="openCopySnackBar()" [cdkCopyToClipboard]="content" style="position: absolute; float: right; z-index: 10; margin: 10px; cursor: pointer">content_copy</mat-icon>
         <ngx-monaco-editor class="editor" [options]="editorOptions" [(ngModel)]="content"></ngx-monaco-editor>
         <span style="position: absolute;margin-top: -25px;margin-left: 5px;color: #8b8b8b">{{editorOptions.language}}</span>
     </mat-card-content>
-    <mat-card-content *ngIf="postType == 'discussion'">{{content}}</mat-card-content>
+    <mat-card-content *ngIf="postType == 'guide'" class="guide-content">
+        <div *ngFor="let section of guideFormattingService.stringToObject(content); index as i">
+            <div class="divider"></div>
+            <h1 id="{{i}}">{{section.title}}</h1>
+            <div>{{section.content}}</div>
+        </div>
+    </mat-card-content>
     <mat-card-actions>
-        <button mat-button (click)="commentsSection.startReply(-1)">Comment ({{getCommentCount()}})</button>
+        <button mat-button (click)="commentsSection.startReply(-1)">Comment ({{commentCount}})</button>
         <button mat-button [class.button-pressed]="isVotedByUser" (click)="voteOnPost()">Vote ({{voteCount}})</button>
     </mat-card-actions>
 </mat-card>
-<app-comment-section #commentsSection [postId]="postId" [timeOnPageLoad]="timeOnPageLoad" [comments]="comments" />
+<app-comment-section id="comments" #commentsSection [postId]="postId" [timeOnPageLoad]="timeOnPageLoad" (commentCount)="updateCommentCount($event)" />

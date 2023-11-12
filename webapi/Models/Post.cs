@@ -15,5 +15,6 @@ namespace webapi.Models
         public List<Vote>? Votes { get; set; }
         public List<TagToPost>? TagToPosts { get; set; }
         public ProgrammingLanguage? ProgrammingLanguage { get; set; }
+        public string? Description { get; set; }
     }
 }

@@ -25,7 +25,8 @@ public class CoderViewDbContext : IdentityDbContext<ApplicationUser>
 
         modelBuilder.Entity<PostType>().HasData(
             new PostType { Name = "discussion" },
-            new PostType { Name = "snippet" });
+            new PostType { Name = "snippet" },
+            new PostType { Name = "guide" });
 
         modelBuilder.Entity<Post>()
             .Property(p => p.CreatedOn)

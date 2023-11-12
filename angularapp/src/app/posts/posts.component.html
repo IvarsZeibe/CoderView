@@ -72,7 +72,7 @@
             <mat-card-title><a [routerLink]="['/post', post.id]">{{post.title}}</a></mat-card-title>
             <mat-card-subtitle>{{getFormattedAuthor(post.author)}} • {{dateHelperService.getTimePassedString(post.createdOn, timeOnPageLoad)}}</mat-card-subtitle>
         </mat-card-header>
-        <mat-card-content *ngIf="postTypeFormControl.value == 'discussion'">{{post.content}}</mat-card-content>
+        <mat-card-content *ngIf="postTypeFormControl.value == 'discussion' || postTypeFormControl.value == 'guide'">{{post.content}}</mat-card-content>
         <mat-card-content appClickStopPropagation style="cursor: default" *ngIf="postTypeFormControl.value == 'snippet'">
             <mat-icon (click)="openCopySnackBar()" [cdkCopyToClipboard]="post.content" style="position: absolute; float: right; z-index: 10; margin: 10px; cursor: pointer">content_copy</mat-icon>
             <ngx-monaco-editor class="editor" [options]="{ theme: 'vs-dark', language: post.programmingLanguage, readOnly: true, automaticLayout: true }" [(ngModel)]="post.content"></ngx-monaco-editor>

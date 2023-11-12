@@ -25,24 +25,26 @@ export type PostSummary = {
 export type PostData = {
 	id: string,
 	title: string,
+	description?: string,
 	content: string,
 	author: string,
 	voteCount: number,
 	isVotedByUser: boolean,
 	createdOn: Date,
-	postType: 'snippet' | 'discussion',
+	postType: PostType,
 	tags: string[],
-	comments: {
-		id: number,
-		author: string | null,
-		content: string | null,
-		replyTo: number | null,
-		voteCount: number,
-		isVotedByUser: boolean,
-		createdOn: Date
-	}[],
 	programmingLanguage: string | null
 };
+
+export type Comments = {
+	id: number,
+	author: string | null,
+	content: string | null,
+	replyTo: number | null,
+	voteCount: number,
+	isVotedByUser: boolean,
+	createdOn: Date
+}[];
 
 export enum SortOrder {
 	Ascending,
@@ -57,17 +59,19 @@ export type PostType = PostService['postTypes'][number]['value'];
 export class PostService {
 	postTypes = [
 		{ value: "discussion", viewValue: "Discussions" },
-		{ value: "snippet", viewValue: "Code snippets" }
+		{ value: "snippet", viewValue: "Code snippets" },
+		{ value: "guide", viewValue: "Guide" }
 	] as const;
 
 	constructor(private http: HttpClient) { }
 
-	public createNew(postType: PostType, title: string, content: string, tags: string[], programmingLanguage: string | null = null): Observable<any> {
+	public createNew(postType: PostType, title: string, content: string, tags: string[], programmingLanguage: string | null = null, description?: string): Observable<any> {
 		return this.http.post(
 			AUTH_API + 'post/create',
 			{
 				title,
 				content,
+				description,
 				postType,
 				tags,
 				programmingLanguage
@@ -124,8 +128,7 @@ export class PostService {
 			httpOptions
 		).pipe(
 			map(p => Object.assign(p, {
-				createdOn: new Date(p.createdOn),
-				comments: p.comments.map(c => Object.assign(c, { createdOn: new Date(c.createdOn) }))
+				createdOn: new Date(p.createdOn)
 			}))
 		);
 	}
@@ -160,14 +163,15 @@ export class PostService {
 		);
 	}
 
-	public savePostChanges(id: string, title: string, content: string, tags: string[], programmingLanguage: string | null = null) {
+	public savePostChanges(id: string, title: string, content: string, tags: string[], programmingLanguage?: string, description?: string) {
 		return this.http.post(
 			AUTH_API + 'post/' + id + '/edit',
 			{
 				title,
 				content,
 				tags,
-				programmingLanguage
+				programmingLanguage,
+				description
 			},
 			httpOptions
 		);
@@ -177,6 +181,15 @@ export class PostService {
 		return this.http.delete(
 			AUTH_API + 'post/' + id + '/delete',
 			{}
+		);
+	}
+
+	public getComments(postId: string) {
+		return this.http.get<Comments>(
+			AUTH_API + 'post/' + postId + '/comments',
+			httpOptions
+		).pipe(
+			map(response => response.map(c => Object.assign(c, { createdOn: new Date(c.createdOn) })))
 		);
 	}
 }

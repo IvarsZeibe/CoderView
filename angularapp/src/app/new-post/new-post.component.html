@@ -50,7 +50,7 @@
             </mat-form-field>
         </div>
         <form>
-            <mat-form-field class="title">
+            <mat-form-field class="full-width">
                 <mat-label>Title</mat-label>
                 <input maxlength="150" [formControl]="titleFormControl" matInput>
                 <mat-error *ngIf="titleFormControl.hasError('required')">
@@ -59,10 +59,16 @@
                 <mat-error *ngIf="titleFormControl.hasError('minlength') || titleFormControl.hasError('maxlength')">
                     Title must be 5 to 150 characters long
                 </mat-error>
+                <mat-error *ngIf="titleFormControl.hasError('edittingSection')">
+                    Cannot submit while editting a section
+                </mat-error>
+                <mat-error *ngIf="titleFormControl.hasError('noSections')">
+                    Must have atleast one section
+                </mat-error>
             </mat-form-field>
-            <mat-form-field *ngIf="postTypeFormControl.value == 'discussion' else codeEditor" class="post">
+            <mat-form-field *ngIf="postTypeFormControl.value == 'discussion'" class="full-width">
                 <mat-label>Content</mat-label>
-                <textarea #content maxlength="40000" [formControl]="contentFormControl" matInput></textarea>
+                <textarea #content maxlength="20000" [formControl]="contentFormControl" matInput></textarea>
                 <mat-error *ngIf="contentFormControl.hasError('required')">
                     Content is required
                 </mat-error>
@@ -70,14 +76,64 @@
                     Content must be 5 to 40 000 characters long
                 </mat-error>
             </mat-form-field>
-            <ng-template #codeEditor>
+            <div *ngIf="postTypeFormControl.value == 'snippet'">
                 <ngx-monaco-editor class="editor" [formControl]="contentFormControl" [options]="editorOptions"></ngx-monaco-editor>
                 <span style="position: absolute;margin-top: -25px;margin-left: 5px;color: #8b8b8b">{{editorOptions.language}}</span>
                 <mat-error *ngIf="contentFormControl.hasError('minlength') || contentFormControl.hasError('maxlength')">
                     Content must be 5 to 40 000 characters long
                 </mat-error>
-            </ng-template>
-
+            </div>
+            <div *ngIf="postTypeFormControl.value == 'guide'" class="guide">
+                <mat-form-field class="full-width">
+                    <mat-label>Description</mat-label>
+                    <textarea #content maxlength="1000" [formControl]="descriptionFormControl" matInput></textarea>
+                    <mat-error *ngIf="contentFormControl.hasError('required')">
+                        Description is required
+                    </mat-error>
+                    <mat-error *ngIf="contentFormControl.hasError('minlength') || contentFormControl.hasError('maxlength')">
+                        Description must be 5 to 1000 characters long
+                    </mat-error>
+                </mat-form-field>
+                <div cdkDropList class="sections" (cdkDropListDropped)="drop($event)">
+                    <div class="section" *ngFor="let section of sections; let sectionIndex = index" cdkDrag>
+                        <mat-icon style="cursor: move; margin-right: 5px;" cdkDragHandle>menu</mat-icon>
+                        <div style="flex-direction: column; flex: 1; overflow: hidden;">
+                            <div style="display: flex; width: 100%; align-items: center; min-height: 50px;" *ngIf="editedSectionIndex != sectionIndex;else editedSection">
+                                <div style="flex-grow: 1; text-overflow: ellipsis; overflow: hidden;">{{section.title}}</div>
+                                <button style="flex-shrink: 0;" type="button" mat-button (click)="editSection(sectionIndex)" [disabled]="editedSectionIndex !== undefined">Edit</button>
+                                <button style="flex-shrink: 0;" type="button" mat-button (click)="openDeleteSectionDialog(sectionIndex)">Remove</button>
+                            </div>
+                            <ng-template #editedSection>
+                                <mat-form-field subscriptSizing="dynamic" style="width: 100%; margin-bottom: 5px;">
+                                    <mat-label>Section title</mat-label>
+                                    <input maxlength="150" [formControl]="section.titleFormControl" matInput>
+                                    <mat-error *ngIf="section.titleFormControl.hasError('required')">
+                                        Section title is required
+                                    </mat-error>
+                                    <mat-error *ngIf="section.titleFormControl.hasError('maxlength')">
+                                        Section title cannot be longer than 150 characters
+                                    </mat-error>
+                                </mat-form-field>
+                                <mat-form-field subscriptSizing="dynamic" style="width: 100%; min-height: 200px;">
+                                    <mat-label>Section Content</mat-label>
+                                    <textarea maxlength="100000" style="min-height: 200px;" [formControl]="section.contentFormControl" matInput></textarea>
+                                    <mat-error *ngIf="section.contentFormControl.hasError('required')">
+                                        Section content is required
+                                    </mat-error>
+                                    <mat-error *ngIf="section.contentFormControl.hasError('maxlength')">
+                                        Section content cannot be longer than 100000 characters
+                                    </mat-error>
+                                </mat-form-field>
+                                <div style="width: 100%; text-align: right;">
+                                    <button type="button" mat-button (click)="saveSectionEditing()">Save</button>
+                                    <button type="button" mat-button (click)="cancelSectionEditing()">Cancel</button>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" style="width: 100%; --mdc-filled-button-container-color: #24263c;" mat-flat-button (click)="addNewSection();" [disabled]="editedSectionIndex !== undefined">Add new section</button>
+            </div>
         </form>
     </mat-card-content>
     <mat-card-actions>
@@ -86,14 +142,14 @@
             <button *ngIf="isModifyingExistingPost" mat-button (click)="openDeletePostDialog()">Delete</button>
             <div>
                 <a mat-button [routerLink]="['../']">Cancel</a>
-                <button mat-button type="submit" (click)="saveChanges()">Save changes</button>
+                <button color="primary" mat-flat-button type="submit" (click)="savePost()">Save changes</button>
             </div>
         </ng-template>
         <ng-template #createButtons>
             <div></div>
             <div>
                 <a mat-button [routerLink]="['/posts']">Cancel</a>
-                <button *ngIf="!isModifyingExistingPost" mat-button type="submit" (click)="createNewPost()">Create Post</button>
+                <button color="primary" *ngIf="!isModifyingExistingPost" mat-flat-button type="submit" (click)="savePost()">Create Post</button>
             </div>
         </ng-template>
     </mat-card-actions>

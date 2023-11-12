@@ -20,6 +20,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatMenuModule } from '@angular/material/menu';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { AppComponent } from './app.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
@@ -56,7 +57,8 @@ import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
 		MatChipsModule, MatAutocompleteModule,
 		MatSelectModule, ClipboardModule,
 		MatSnackBarModule, MatExpansionModule,
-		MatMenuModule, MonacoEditorModule.forRoot()
+		MatMenuModule, MonacoEditorModule.forRoot(),
+		DragDropModule
 	],
 	providers: [httpInterceptorProviders],
 	bootstrap: [AppComponent],

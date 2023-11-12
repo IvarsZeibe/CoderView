@@ -8,9 +8,11 @@ namespace webapi.ViewModels
         [StringLength(150, MinimumLength = 5)]
         [Required]
         public required string Title { get; set; }
+        [MinLength(5), MaxLength(1000)]
+        public string? Description { get; set; }
 
-        [StringLength(40000, MinimumLength = 5)]
         [Required]
+        [MinLength(5)]
         public required string Content { get; set; }
         public required string PostType { get; set; }
         [MaxLength(20), RegularExpressionList("^[a-zA-Z0-9_ ]{1,30}$")]
