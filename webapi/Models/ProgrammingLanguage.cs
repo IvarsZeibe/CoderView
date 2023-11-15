@@ -2,7 +2,7 @@
 {
     public class ProgrammingLanguage
     {
-        public int ProgrammingLanguageId { get; set; }
+        public int Id { get; set; }
         public required string Name { get; set; }
     }
 }

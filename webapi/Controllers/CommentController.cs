@@ -58,7 +58,7 @@ namespace webapi.Controllers
             });
             _context.SaveChanges();
 
-            return Ok(comment.Entity.CommentId);
+            return Ok(comment.Entity.Id);
         }
 
         [HttpPost]
@@ -136,7 +136,7 @@ namespace webapi.Controllers
             var comment = _context.Comments
                 .Include(c => c.ReplyTo)
                 .Include(c => c.Replies)
-                .FirstOrDefault(c => c.CommentId == id);
+                .FirstOrDefault(c => c.Id == id);
 
             if (comment is null)
             {

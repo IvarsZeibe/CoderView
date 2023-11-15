@@ -5,7 +5,7 @@ namespace webapi.Models
 {
     public class Post
     {
-        public Guid PostId { get; set; }
+        public Guid Id { get; set; }
         public required string Title { get; set; }
         public required string Content { get; set; }
         public required PostType Type { get; set; }

@@ -75,7 +75,7 @@ namespace webapi.Controllers
 
             return posts.Select(p => new PostOverviewViewModel
             {
-                Id = new ShortGuid(p.PostId),
+                Id = new ShortGuid(p.Id),
                 Author = p.Author.UserName,
                 Content = p.Type.Name == "guide" ? p.Description : p.Content,
                 Title = p.Title,
@@ -102,7 +102,7 @@ namespace webapi.Controllers
             var post = _context.Posts
                 .Include(p => p.Type).Include(p => p.Author)
                 .Include(p => p.ProgrammingLanguage)
-                .Where(p => shortGuid == p.PostId)
+                .Where(p => shortGuid == p.Id)
                 .FirstOrDefault();
             if (post is null)
             {
@@ -137,13 +137,13 @@ namespace webapi.Controllers
             }
 
             return Ok(_context.Comments
-                .Where(c => c.Post.PostId == shortGuid)
+                .Where(c => c.Post.Id == shortGuid)
                 .Select(c => new CommentViewModel
             {
-                Id = c.CommentId,
+                Id = c.Id,
                 Author = c.Author.UserName,
                 Content = c.Content,
-                ReplyTo = c.ReplyTo.CommentId,
+                ReplyTo = c.ReplyTo.Id,
                 VoteCount = _context.Votes.Where(v => v.CommentVotedFor == c).Count(),
                 IsVotedByUser = _context.Votes.Any(v => v.CommentVotedFor == c && v.User.UserName == User.Identity.Name),
                 CreatedOn = DateTime.SpecifyKind(c.CreatedOn, DateTimeKind.Utc)
@@ -163,7 +163,7 @@ namespace webapi.Controllers
             var post = _context.Posts
                 .Include(p => p.Type).Include(p => p.Author)
                 .Include(p => p.ProgrammingLanguage)
-                .Where(p => shortGuid == p.PostId)
+                .Where(p => shortGuid == p.Id)
                 .FirstOrDefault(); 
             if (post is null)
             {
@@ -201,7 +201,7 @@ namespace webapi.Controllers
             var post = _context.Posts
                 .Include(p => p.Author)
                 .Include(p => p.Type)
-                .Where(p => shortGuid == p.PostId)
+                .Where(p => shortGuid == p.Id)
                 .FirstOrDefault();
             if (post is null)
             {
@@ -343,7 +343,7 @@ namespace webapi.Controllers
             }
 
             _context.SaveChanges();
-            return Ok(Json(new ShortGuid(post.PostId).ToString()));
+            return Ok(Json(new ShortGuid(post.Id).ToString()));
         }
 
 
@@ -363,7 +363,7 @@ namespace webapi.Controllers
                 .Include(p => p.Comments).ThenInclude(c => c.Votes)
                 .Include(p => p.Votes)
                 .Include(p => p.TagToPosts).ThenInclude(ttp => ttp.Tag)
-                .FirstOrDefault(p => p.PostId == shortGuid);
+                .FirstOrDefault(p => p.Id == shortGuid);
             if (post is null)
             {
                 return NotFound();

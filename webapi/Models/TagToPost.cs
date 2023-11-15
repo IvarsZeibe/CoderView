@@ -5,7 +5,7 @@ namespace webapi.Models
 {
     public class TagToPost
     {
-        public int TagToPostId { get; set; }
+        public int Id { get; set; }
         public required Post Post { get; set; }
         public required Tag Tag { get; set; }
     }
