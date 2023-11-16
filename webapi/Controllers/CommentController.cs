@@ -78,14 +78,14 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
-            if (_context.Votes.Any(v => v.CommentVotedFor == comment && v.User == user))
+            if (_context.CommentVotes.Any(v => v.Comment == comment && v.User == user))
             {
                 return BadRequest();
             }
 
-            _context.Votes.Add(new Vote
+            _context.CommentVotes.Add(new CommentVote
             {
-                CommentVotedFor = comment,
+                Comment = comment,
                 User = user,
             });
             _context.SaveChanges();
@@ -110,13 +110,13 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
-            var vote = _context.Votes.Where(v => v.CommentVotedFor == comment && v.User == user).FirstOrDefault();
+            var vote = _context.CommentVotes.Where(v => v.Comment == comment && v.User == user).FirstOrDefault();
             if (vote is null)
             {
                 return BadRequest();
             }
 
-            _context.Votes.Remove(vote);
+            _context.CommentVotes.Remove(vote);
             _context.SaveChanges();
 
             return Ok();
@@ -157,7 +157,7 @@ namespace webapi.Controllers
                         .Include(c => c.Replies)
                         .FirstOrDefault(c => c == comment.ReplyTo);
 
-                    _context.Votes.Where(v => v.CommentVotedFor == comment).ExecuteDelete();
+                    _context.CommentVotes.Where(v => v.Comment == comment).ExecuteDelete();
                     _context.Comments.Remove(comment);
                     if (parent is not null && parent.Content is null && parent.Replies.Count == 1)
                     {
@@ -168,7 +168,7 @@ namespace webapi.Controllers
                         break;
                     }
                 }
-                _context.Votes.Where(v => v.CommentVotedFor == comment).ExecuteDelete();
+                _context.CommentVotes.Where(v => v.Comment == comment).ExecuteDelete();
                 _context.Comments.Remove(comment);
             }
             else

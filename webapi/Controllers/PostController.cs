@@ -80,8 +80,8 @@ namespace webapi.Controllers
                 Content = p.Type.Name == "guide" ? p.Description : p.Content,
                 Title = p.Title,
                 CommentCount = _context.Comments.Where(c => c.Post == p).Count(),
-                VoteCount = _context.Votes.Where(c => c.PostVotedFor == p).Count(),
-                IsVotedByUser = _context.Votes.Any(v => v.PostVotedFor == p && v.User.UserName == User.Identity.Name),
+                VoteCount = _context.PostVotes.Where(v => v.Post == p).Count(),
+                IsVotedByUser = _context.PostVotes.Any(v => v.Post == p && v.User.UserName == User.Identity.Name),
                 CreatedOn = DateTime.SpecifyKind(p.CreatedOn, DateTimeKind.Utc),
                 Tags = _context.TagToPost.Where(ttp => ttp.Post == p).Select(ttp => _context.Tags.First(t => t == ttp.Tag).Name).ToList(),
                 ProgrammingLanguage = p.Type.Name == "snippet" ? p.ProgrammingLanguage.Name : null
@@ -115,8 +115,8 @@ namespace webapi.Controllers
                 Description = post.Description,
                 Content = post.Content,
                 Title = post.Title,
-                VoteCount = _context.Votes.Where(v => v.PostVotedFor == post).Count(),
-                IsVotedByUser = _context.Votes.Any(v => v.PostVotedFor == post && v.User.UserName == User.Identity.Name),
+                VoteCount = _context.PostVotes.Where(v => v.Post == post).Count(),
+                IsVotedByUser = _context.PostVotes.Any(v => v.Post == post && v.User.UserName == User.Identity.Name),
                 CreatedOn = DateTime.SpecifyKind(post.CreatedOn, DateTimeKind.Utc),
                 PostType = post.Type.Name,
                 Tags = _context.TagToPost
@@ -144,8 +144,8 @@ namespace webapi.Controllers
                 Author = c.Author.UserName,
                 Content = c.Content,
                 ReplyTo = c.ReplyTo.Id,
-                VoteCount = _context.Votes.Where(v => v.CommentVotedFor == c).Count(),
-                IsVotedByUser = _context.Votes.Any(v => v.CommentVotedFor == c && v.User.UserName == User.Identity.Name),
+                VoteCount = _context.CommentVotes.Where(v => v.Comment == c).Count(),
+                IsVotedByUser = _context.CommentVotes.Any(v => v.Comment == c && v.User.UserName == User.Identity.Name),
                 CreatedOn = DateTime.SpecifyKind(c.CreatedOn, DateTimeKind.Utc)
             }).ToList());
         }
@@ -377,10 +377,10 @@ namespace webapi.Controllers
             post.Comments?.ForEach(c =>
             {
                 _context.Comments.Remove(c);
-                c.Votes?.ForEach(v => _context.Votes.Remove(v));
+                c.Votes?.ForEach(v => _context.CommentVotes.Remove(v));
             });
 
-            post.Votes?.ForEach(v => _context.Votes.Remove(v));
+            post.Votes?.ForEach(v => _context.PostVotes.Remove(v));
 
             post.TagToPosts?.ForEach(ttp =>
             {
@@ -420,14 +420,14 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
-            if (_context.Votes.Any(v => v.PostVotedFor == post && v.User == user))
+            if (_context.PostVotes.Any(v => v.Post == post && v.User == user))
             {
                 return BadRequest();
             }
 
-            _context.Votes.Add(new Vote
+            _context.PostVotes.Add(new PostVote
             {
-                PostVotedFor = post,
+                Post = post,
                 User = user,
             });
             _context.SaveChanges();
@@ -458,13 +458,13 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
-            var vote = _context.Votes.Where(v => v.PostVotedFor == post && v.User == user).FirstOrDefault();
+            var vote = _context.PostVotes.Where(v => v.Post == post && v.User == user).FirstOrDefault();
             if (vote is null)
             {
                 return BadRequest();
             }
 
-            _context.Votes.Remove(vote);
+            _context.PostVotes.Remove(vote);
             _context.SaveChanges();
 
             return Ok();

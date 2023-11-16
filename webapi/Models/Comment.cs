@@ -10,8 +10,8 @@ namespace webapi.Models
         public Comment? ReplyTo { get; set; }
         public string? Content { get; set; }
         public ApplicationUser? Author { get; set; }
-        public List<Comment>? Replies { get; set; }
         public DateTime CreatedOn { get; set; }
-        public List<Vote>? Votes { get; set; }
+        public List<Comment> Replies { get; } = new();
+        public List<CommentVote> Votes { get; } = new();
     }
 }

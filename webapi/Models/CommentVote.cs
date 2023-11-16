@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace webapi.Models
 {
-    public class Tag
+    public class CommentVote
     {
         public int Id { get; set; }
-        public required string Name { get; set; }
-        public List<TagToPost> TagToPosts { get; } = new();
+        public required Comment Comment { get; set; }
+        public required ApplicationUser User { get; set; }
     }
 }

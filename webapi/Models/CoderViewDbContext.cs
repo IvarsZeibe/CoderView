@@ -11,7 +11,8 @@ public class CoderViewDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Post> Posts { get; set; }
     public DbSet<PostType> PostTypes { get; set; }
     public DbSet<Comment> Comments { get; set; }
-    public DbSet<Vote> Votes { get; set; }
+    public DbSet<PostVote> PostVotes { get; set; }
+    public DbSet<CommentVote> CommentVotes { get; set; }
     public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<TagToPost> TagToPost { get; set; }
@@ -35,6 +36,16 @@ public class CoderViewDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<Comment>()
             .Property(c => c.CreatedOn)
             .HasDefaultValueSql("GETUTCDATE()");
+
+        modelBuilder.Entity<Post>()
+            .HasMany(c => c.Votes)
+            .WithOne(v => v.Post)
+            .OnDelete(DeleteBehavior.ClientCascade);
+
+        modelBuilder.Entity<Comment>()
+            .HasMany(c => c.Votes)
+            .WithOne(v => v.Comment)
+            .OnDelete(DeleteBehavior.ClientCascade);
 
         modelBuilder.Entity<ApplicationUser>()
             .Property(x => x.UserName)

@@ -11,10 +11,10 @@ namespace webapi.Models
         public required PostType Type { get; set; }
         public required ApplicationUser Author { get; set; }
         public DateTime CreatedOn { get; set; }
-        public List<Comment>? Comments { get; set; }
-        public List<Vote>? Votes { get; set; }
-        public List<TagToPost>? TagToPosts { get; set; }
         public ProgrammingLanguage? ProgrammingLanguage { get; set; }
         public string? Description { get; set; }
+        public List<Comment> Comments { get; } = new();
+        public List<PostVote> Votes { get; } = new();
+        public List<TagToPost> TagToPosts { get; } = new();
     }
 }
