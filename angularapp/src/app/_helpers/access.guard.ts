@@ -24,6 +24,13 @@ export class AccessGuard implements CanActivate {
 				return false;
 			}
 		}
+		const requiresAdminPrivilages = route.data['requiresAdminPrivilages'] || false;
+		if (requiresAdminPrivilages) {
+			if (!this.storageService.isAdministrator()) {
+				this.router.navigate(['/']);
+				return false;
+			}
+		}
 		return true;
 	}
 }

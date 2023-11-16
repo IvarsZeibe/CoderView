@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using webapi.Data;
@@ -20,6 +21,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.User.RequireUniqueEmail = true;
 }).AddEntityFrameworkStores<CoderViewDbContext>()
     .AddSignInManager<SignInManager<ApplicationUser>>()
+    .AddRoles<IdentityRole>()
     .AddDefaultTokenProviders();
 builder.Services.AddScoped<AuthService>();
 
@@ -29,7 +31,18 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetService<CoderViewDbContext>();
-    db.Database.EnsureCreated();
+    if (db.Database.EnsureCreated())
+    {
+        var roleManager = scope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
+        roleManager.CreateAsync(new IdentityRole("Administrator")).Wait();
+
+        var userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
+        ApplicationUser user = new ApplicationUser();
+        user.UserName = "admin";
+        user.Email = "admin@admin.admin";
+        userManager.CreateAsync(user, "Admin123!").Wait();
+        userManager.AddToRoleAsync(user, "Administrator").Wait();
+    }
 }
 
 // Configure the HTTP request pipeline.

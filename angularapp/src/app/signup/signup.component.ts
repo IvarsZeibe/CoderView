@@ -3,7 +3,7 @@ import { AuthService } from '../_services/auth-service.service';
 import { PasswordConfirmationValidatorService } from '../_services/password-confirmation-validator.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, of, switchMap } from 'rxjs';
 import { StorageService } from '../_services/storage.service';
 
 @Component({
@@ -54,17 +54,22 @@ export class SignUpComponent implements OnInit {
 			.subscribe({
 			next: data => {
 				if (data.succeeded) {
+					let roles: string[];
+					let isLoginSuccessful: boolean;
 					this.authService.login(username, password)
 						.pipe(
+							switchMap(isSuccess => {
+								isLoginSuccessful = isSuccess;
+								return isSuccess ? this.authService.getRoles() : of([]);
+							}),
 							finalize(() => {
-								const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-								this.router.navigateByUrl(returnUrl);
+								if (isLoginSuccessful) {
+									this.storageService.saveUser(username, roles);
+									const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+									this.router.navigateByUrl(returnUrl);
+								}
 							})
-					).subscribe(isLoginSuccessful => {
-						if (isLoginSuccessful) {
-							this.storageService.saveUser(username)
-						}
-					});
+						).subscribe(r => roles = r);
 				} else {
 					this.errorMessage = '';
 					const errors = Object.values(data.errors);

@@ -110,5 +110,15 @@ namespace webapi.Services
         {
             return _userManager.FindByNameAsync(username);
         }
+
+        public Task<IList<string>> GetRoles(string username)
+        {
+            var user = _userManager.FindByNameAsync(username).Result;
+            if (user is null)   
+            {
+                return Task.FromResult<IList<string>>(Array.Empty<string>());
+            }
+            return _userManager.GetRolesAsync(user);
+        }
     }
 }

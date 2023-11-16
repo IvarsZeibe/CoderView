@@ -70,4 +70,8 @@ export class AuthService {
 			authGuard.canActivate(currentRoute.snapshot, routerStateSnapshot);
 		}
 	}
+
+	getRoles(): Observable<string[]> {
+		return this.http.get<string[]>(AUTH_API + 'roles');
+	}
 }

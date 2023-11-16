@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using webapi.Data;
 using webapi.Services;
 using webapi.ViewModels;
@@ -42,5 +43,19 @@ public class AuthenticationController : ControllerBase
     public Task SignOutRoute()
     {
         return _authService.SignOutAsync();
+    }
+
+
+    [HttpGet]
+    [Route("/api/roles")]
+    [Authorize]
+    public Task<IList<string>> GetRoles()
+    {
+        string? username = User?.Identity?.Name;
+        if (username.IsNullOrEmpty())
+        {
+            return Task.FromResult<IList<string>>(Array.Empty<string>());
+        }
+        return _authService.GetRoles(username);
     }
 }

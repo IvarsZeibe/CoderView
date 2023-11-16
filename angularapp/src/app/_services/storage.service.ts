@@ -11,13 +11,25 @@ export class StorageService {
 		window.localStorage.clear();
 	}
 
-	public saveUser(user: any): void {
+	public saveUser(user: string, roles: string[]): void {
 		window.localStorage.removeItem(USER_KEY);
-		window.localStorage.setItem(USER_KEY, user.toLowerCase());
+		window.localStorage.setItem(USER_KEY, JSON.stringify({username: user, roles}));
 	}
 
-	public getUsername(): any {
-		return window.localStorage.getItem(USER_KEY);
+	public getUsername(): string {
+		return this.getUserData()?.username ?? "";
+	}
+
+	public isAdministrator(): boolean {
+		return !!this.getUserData()?.roles.includes("Administrator");
+	}
+
+	private getUserData(): { username: string, roles: string[] } | null {
+		const userDataString = window.localStorage.getItem(USER_KEY);
+		if (!userDataString) {
+			return null;
+		}
+		return JSON.parse(userDataString);
 	}
 
 	public isLoggedIn(): boolean {

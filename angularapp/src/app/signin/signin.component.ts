@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../_services/auth-service.service';
 import { StorageService } from '../_services/storage.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, of, switchMap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -32,24 +32,22 @@ export class SignInComponent implements OnInit {
 	onSubmit(): void {
 		const { username, password } = this.loginForm.value;
 		this.isLoading = true;
+		let roles: string[];
 
 		this.authService.login(username, password)
 			.pipe(
+				switchMap(isSuccess => {
+					this.isLoginFailed = !isSuccess;
+					return isSuccess ? this.authService.getRoles() : of([]);
+				}),
 				finalize(() => {
-					this.isLoading = false;
-				})
-			)
-			.subscribe({
-				next: hasLoggedIn => {
-					if (hasLoggedIn) {
-						this.storageService.saveUser(username);
-						this.isLoginFailed = false;
+					if (!this.isLoginFailed) {
+						this.storageService.saveUser(username, roles);
 						const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
 						this.router.navigateByUrl(returnUrl);
-					} else {
-						this.isLoginFailed = true;
 					}
-				}
-		});
+					this.isLoading = false;
+				})
+			).subscribe(r => roles = r);
 	}
 }
