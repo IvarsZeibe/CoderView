@@ -140,10 +140,10 @@ namespace webapi.Controllers
                 .Where(c => c.Post.Id == shortGuid)
                 .Select(c => new CommentViewModel
             {
-                Id = c.Id,
+                Id = new ShortGuid(c.Id),
                 Author = c.Author.UserName,
                 Content = c.Content,
-                ReplyTo = c.ReplyTo.Id,
+                ReplyTo = ShortGuid.ParseOrDefault(c.ReplyTo.Id),
                 VoteCount = _context.CommentVotes.Where(v => v.Comment == c).Count(),
                 IsVotedByUser = _context.CommentVotes.Any(v => v.Comment == c && v.User.UserName == User.Identity.Name),
                 CreatedOn = DateTime.SpecifyKind(c.CreatedOn, DateTimeKind.Utc)

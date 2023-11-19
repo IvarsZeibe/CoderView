@@ -5,7 +5,7 @@ namespace webapi.Models
 {
     public class Comment
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public required Post Post { get; set; }
         public Comment? ReplyTo { get; set; }
         public string? Content { get; set; }

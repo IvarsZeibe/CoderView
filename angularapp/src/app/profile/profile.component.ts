@@ -1,7 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import { UserService } from '../_services/user.service';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { MyComment, MyPost, UserService } from '../_services/user.service';
 import { FormControl, Validators } from '@angular/forms';
 import { PasswordConfirmationValidatorService } from '../_services/password-confirmation-validator.service';
+import { DateHelperService } from '../_services/date-helper.service';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog } from '@angular/material/dialog';
+import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
+import { Router } from '@angular/router';
+import { AuthService } from '../_services/auth-service.service';
+import { StorageService } from '../_services/storage.service';
 
 @Component({
 	selector: 'app-profile',
@@ -25,14 +33,49 @@ export class ProfileComponent implements OnInit {
 	isChangingPassword = false;
 	passwordError = "";
 
-	constructor(private userService: UserService,
-		private passwordConfirmationValidator: PasswordConfirmationValidatorService) { }
+	currentTime = new Date();
+
+	comments: MyComment[] = [];
+	commentDataSource = new MatTableDataSource(this.comments);
+	displayedCommentHistoryColumns: string[] = ['postTitle', 'commentContent', 'voteCount', 'createdOn'];
+	@ViewChild("commentPaginator") commentPaginator: MatPaginator | null = null;
+
+
+	posts: MyPost[] = [];
+	postDataSource = new MatTableDataSource(this.posts);
+	displayedPostHistoryColumns: string[] = ['title', 'commentCount', 'voteCount', 'createdOn'];
+	@ViewChild("postPaginator") postPaginator: MatPaginator | null = null;
+
+
+	constructor(
+		private userService: UserService,
+		private passwordConfirmationValidator: PasswordConfirmationValidatorService,
+		public dateHelperService: DateHelperService,
+		private dialog: MatDialog,
+		private router: Router,
+		private authService: AuthService,
+		private storageService: StorageService
+	) { }
 
 	ngOnInit(): void {
 		this.userService.getUserData().subscribe({
 			next: data => {
 				this.username = data.username;
 				this.email = data.email;
+			}
+		});
+
+		this.userService.getCommentHistory().subscribe({
+			next: comments => {
+				this.commentDataSource = new MatTableDataSource(comments);
+				this.commentDataSource.paginator = this.commentPaginator;
+			}
+		});
+
+		this.userService.getPostHistory().subscribe({
+			next: posts => {
+				this.postDataSource = new MatTableDataSource(posts);
+				this.postDataSource.paginator = this.postPaginator;
 			}
 		});
 
@@ -131,6 +174,27 @@ export class ProfileComponent implements OnInit {
 					}
 				} else {
 					this.passwordError = "Password invalid";
+				}
+			}
+		});
+	}
+
+	openDeleteAccountDialog() {
+		this.dialog.open(DeleteDialogComponent, {
+			data: {
+				title: "Delete account",
+				content: "Are you sure you want to delete your account?\n This action is irreversible.",
+				deleteAction: () => {
+					this.userService.deleteAccount().subscribe({
+						next: () => {
+							this.storageService.clean();
+							this.authService.forceRunAuthGuard();
+							this.router.navigate(['/']);
+						},
+						error: (e) => {
+							console.log(e);
+						}
+					});
 				}
 			}
 		});

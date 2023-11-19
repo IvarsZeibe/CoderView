@@ -10,6 +10,7 @@ namespace webapi.ViewModels
         public required string Content { get; set; }
         [StringLength(22, MinimumLength = 22)]
         public required string PostId { get; set; }
-        public int? ReplyTo { get; set; }
+        [StringLength(22, MinimumLength = 22)]
+        public string? ReplyTo { get; set; }
     }
 }

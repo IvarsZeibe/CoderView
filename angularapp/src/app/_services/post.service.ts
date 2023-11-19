@@ -37,10 +37,10 @@ export type PostData = {
 };
 
 export type Comments = {
-	id: number,
+	id: string,
 	author: string | null,
 	content: string | null,
-	replyTo: number | null,
+	replyTo: string | null,
 	voteCount: number,
 	isVotedByUser: boolean,
 	createdOn: Date

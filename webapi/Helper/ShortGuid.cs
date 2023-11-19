@@ -47,6 +47,11 @@
 
         public static ShortGuid? ParseOrDefault(string shortGuidString)
         {
+            if (string.IsNullOrEmpty(shortGuidString))
+            {
+                return null;
+            }
+
             byte[] buffer = new byte[16];
             if (Convert.TryFromBase64String
                 (shortGuidString.Replace("_", "/").Replace("-", "+") + "==", buffer, out _))
@@ -54,6 +59,16 @@
                 return new ShortGuid(new Guid(buffer));
             }
             return null;
+        }
+
+        public static string? ParseOrDefault(Guid? guid)
+        {
+            if (guid is null)
+            {
+                return null;
+            }
+            return new ShortGuid((Guid)guid);
+
         }
 
         public static implicit operator string(ShortGuid guid)

@@ -48,7 +48,7 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
-            var replyTo = _context.Comments.Find(model.ReplyTo);
+            var replyTo = _context.Comments.Find(ShortGuid.ParseOrDefault(model.ReplyTo)?.ToGuid());
             var comment = _context.Comments.Add(new Models.Comment
             {
                 Author = user,
@@ -58,21 +58,27 @@ namespace webapi.Controllers
             });
             _context.SaveChanges();
 
-            return Ok(comment.Entity.Id);
+            return Ok(Json(new ShortGuid(comment.Entity.Id).ToString()));
         }
 
         [HttpPost]
         [Route("/api/comment/{id}/vote")]
         [Authorize]
-        public IActionResult VoteOnComment(int id)
+        public IActionResult VoteOnComment(string id)
         {
+            var shortGuid = ShortGuid.ParseOrDefault(id);
+            if (shortGuid is null)
+            {
+                return BadRequest();
+            }
+
             ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
             if (user is null)
             {
                 return BadRequest();
             }
 
-            var comment = _context.Comments.Find(id);
+            var comment = _context.Comments.Find(shortGuid.ToGuid());
             if (comment is null)
             {
                 return BadRequest();
@@ -96,15 +102,21 @@ namespace webapi.Controllers
         [HttpPost]
         [Route("/api/comment/{id}/unvote")]
         [Authorize]
-        public IActionResult UnvoteOnComment(int id)
+        public IActionResult UnvoteOnComment(string id)
         {
+            var shortGuid = ShortGuid.ParseOrDefault(id);
+            if (shortGuid is null)
+            {
+                return BadRequest();
+            }
+
             ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
             if (user is null)
             {
                 return BadRequest();
             }
 
-            var comment = _context.Comments.Find(id);
+            var comment = _context.Comments.Find(shortGuid.ToGuid());
             if (comment is null)
             {
                 return BadRequest();
@@ -125,8 +137,14 @@ namespace webapi.Controllers
         [HttpDelete]
         [Route("/api/comment/{id}")]
         [Authorize]
-        public IActionResult DeleteComment(int id)
+        public IActionResult DeleteComment(string id)
         {
+            var shortGuid = ShortGuid.ParseOrDefault(id);
+            if (shortGuid is null)
+            {
+                return BadRequest();
+            }
+
             ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
             if (user is null)
             {
@@ -136,7 +154,7 @@ namespace webapi.Controllers
             var comment = _context.Comments
                 .Include(c => c.ReplyTo)
                 .Include(c => c.Replies)
-                .FirstOrDefault(c => c.Id == id);
+                .FirstOrDefault(c => c.Id == shortGuid);
 
             if (comment is null)
             {

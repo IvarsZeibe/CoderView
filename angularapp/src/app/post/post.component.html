@@ -19,7 +19,7 @@
             </mat-card-subtitle>
         </mat-card-header>
         <mat-card-header *ngIf="postType == 'guide'">
-            {{description}}
+            <mat-card-title>{{description}}</mat-card-title>
         </mat-card-header>
     </div>
 
@@ -37,7 +37,7 @@
         </div>
     </mat-card-content>
     <mat-card-actions>
-        <button mat-button (click)="commentsSection.startReply(-1)">Comment ({{commentCount}})</button>
+        <button mat-button (click)="commentsSection.startReply('post')">Comment ({{commentCount}})</button>
         <button mat-button [class.button-pressed]="isVotedByUser" (click)="voteOnPost()">Vote ({{voteCount}})</button>
     </mat-card-actions>
 </mat-card>

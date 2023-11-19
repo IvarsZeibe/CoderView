@@ -8,10 +8,10 @@ import { CommentService } from '../_services/comment.service';
 import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
 import { PostService } from '../_services/post.service';
 
-export type Comments = Record<number | -2, {
+export type Comments = Record<string, {
 	owner: string,
 	content: string,
-	replyTo: number | null,
+	replyTo: string | null,
 	depth: number,
 	voteCount: number,
 	isVotedByUser: boolean,
@@ -30,11 +30,10 @@ export class CommentSectionComponent implements OnInit {
 
 	@Output() commentCount = new EventEmitter<number>();
 
-	// key is -2 for new comment while the server hasn't returned the id of the newly created comment
 	comments: Comments = {};
 
-	// key is -1 for comment on post
-	repliesInProgress: Record<number | -1, FormControl<string>> = {};
+	// key 'post' is for comment on post not reply to other comment
+	repliesInProgress: Record<string | 'post', FormControl<string>> = {};
 
 	isLoading = true;
 	hasFailedToLoadComments = false;
@@ -95,42 +94,37 @@ export class CommentSectionComponent implements OnInit {
 		return this.commentDepthColors[depth];
 	}
 
-	getOrderedCommentIds(): number[] {
-		let currentDepth = 0;
-		const orderedCommentIds: number[] = [];
-		for (let i = 0; i < currentDepth + 1; i++) {
-			let areCommentsInThisDepthFound = false;
-			for (const commentIdString of Object.keys(this.comments).reverse()) {
-				const commentId = parseInt(commentIdString);
-				if (this.comments[commentId].depth == currentDepth) {
-					areCommentsInThisDepthFound = true;
-					if (this.comments[commentId].replyTo) {
-						const parentIndex = orderedCommentIds.indexOf(this.comments[commentId].replyTo!);
-						orderedCommentIds.splice(parentIndex + 1, 0, commentId);
-					} else {
-						orderedCommentIds.push(commentId);
-					}
+	getOrderedCommentIds(): string[] {
+		const orderedCommentIds: string[] = [];
+		const oldestToNewest = Object.entries(this.comments).sort((first, second) => first[1].createdOn.valueOf() - second[1].createdOn.valueOf());
+		for (const [commentId, commentValue] of oldestToNewest) {
+			if (!commentValue.replyTo) {
+				orderedCommentIds.splice(0, 0, commentId);
+				continue;
+			}
+			let i = orderedCommentIds.indexOf(commentValue.replyTo!) + 1;
+			if (i != oldestToNewest.length - 1) {
+				while (oldestToNewest[i][1].replyTo == commentValue.replyTo) {
+					i++;
 				}
 			}
-			if (areCommentsInThisDepthFound) {
-				currentDepth++;
-			}
+			orderedCommentIds.splice(i, 0, commentId);
 		}
 		return orderedCommentIds;
 	}
 
-	startReply(commentId: number): void {
+	startReply(commentId: string): void {
 		if (!this.storageService.isLoggedIn()) {
 			this.router.navigate(['/signin'], { queryParams: { returnUrl: this.router.url } });
 		}
 		this.repliesInProgress[commentId] = new FormControl("", { nonNullable: true });
 	}
 
-	cancelReply(commentId: number): void {
+	cancelReply(commentId: string): void {
 		delete this.repliesInProgress[commentId];
 	}
 
-	submitReply(replyTo: number | -1): void {
+	submitReply(replyTo: string | 'post'): void {
 		this.repliesInProgress[replyTo].setValue(this.repliesInProgress[replyTo].value.trim());
 		if (this.repliesInProgress[replyTo].value.length == 0) {
 			this.repliesInProgress[replyTo].setErrors({ required: true });
@@ -139,11 +133,12 @@ export class CommentSectionComponent implements OnInit {
 			this.repliesInProgress[replyTo].setErrors({ tooLong: true });
 			return;
 		}
-		this.comments[-2] = {
+		const tempCommentId = 'temp_' + new Date().toISOString();
+		this.comments[tempCommentId] = {
 			content: this.repliesInProgress[replyTo].value,
-			depth: replyTo == -1 ? 0 : this.comments[replyTo].depth + 1,
+			depth: replyTo == 'post' ? 0 : this.comments[replyTo].depth + 1,
 			owner: this.storageService.getUsername(),
-			replyTo: replyTo == -1 ? null : replyTo,
+			replyTo: replyTo == 'post' ? null : replyTo,
 			voteCount: 0,
 			isVotedByUser: false,
 			createdOn: new Date()
@@ -156,23 +151,22 @@ export class CommentSectionComponent implements OnInit {
 			element.classList.add("long-comment");
 		}
 
-		this.commentService.create(this.repliesInProgress[replyTo].value, this.postId, replyTo == -1 ? null : replyTo).subscribe({
-			next: commentId => {
-				const id = commentId.toString();
-				this.comments[id] = this.comments[-2];
-				delete this.comments[-2];
+		this.commentService.create(this.repliesInProgress[replyTo].value, this.postId, replyTo == 'post' ? null : replyTo).subscribe({
+			next: response => {
+				const id = response.value;
+				this.comments[id] = this.comments[tempCommentId];
+				delete this.comments[tempCommentId];
 
-				this.changeDetector.detectChanges();
 				const element = document.getElementById('comment' + id) as HTMLElement;
 				if (element && element.offsetHeight < element.scrollHeight) {
 					element.classList.add("long-comment");
 				}
 			}
-		})
+		});
 		delete this.repliesInProgress[replyTo];
 	}
 
-	voteOnComment(commentId: number) {
+	voteOnComment(commentId: string) {
 		if (!this.storageService.isLoggedIn()) {
 			this.router.navigate(['/signin'], { queryParams: { returnUrl: this.router.url } });
 		}
@@ -203,11 +197,11 @@ export class CommentSectionComponent implements OnInit {
 		element.style.display = "";
 	}
 
-	isCommentedByCurrentUser(commentId: number) {
+	isCommentedByCurrentUser(commentId: string) {
 		return this.comments[commentId].owner.toLowerCase() == this.storageService.getUsername();
 	}
 
-	openDeleteCommentDialog(commentId: number) {
+	openDeleteCommentDialog(commentId: string) {
 		this.dialog.open(DeleteDialogComponent, {
 			data: {
 				deleteAction: () => {
@@ -216,7 +210,7 @@ export class CommentSectionComponent implements OnInit {
 					if (!Object.values(this.comments).some(c => c.replyTo == commentId)) {
 						// eslint-disable-next-line no-constant-condition
 						while (true) {
-							const parentId: number | null = this.comments[commentId].replyTo;
+							const parentId: string | null = this.comments[commentId].replyTo;
 
 							delete this.comments[commentId];
 							this.commentCount.emit(this.getCommentCount());

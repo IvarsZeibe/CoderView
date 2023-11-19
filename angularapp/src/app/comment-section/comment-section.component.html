@@ -10,20 +10,20 @@
 
 
     <div style="margin-top: 10px;" [style.display]="shouldShowNoCommentText() ? 'block' : 'none'">
-        <div style="display: flex; justify-content: center; align-items: center;">Be the first to <button mat-button (click)="startReply(-1)">Comment</button>!</div>
+        <div style="display: flex; justify-content: center; align-items: center;">Be the first to <button mat-button (click)="startReply('post')">Comment</button>!</div>
         
     </div>
     <mat-card-content>
-        <mat-form-field class="comment-input" *ngIf="repliesInProgress.hasOwnProperty(-1)" subscriptSizing="dynamic">
-            <textarea maxlength="5000" type="text" [formControl]="repliesInProgress[-1]" matInput></textarea>
-            <mat-error *ngIf="repliesInProgress[-1].hasError('required')">
+        <mat-form-field class="comment-input" *ngIf="repliesInProgress.hasOwnProperty('post')" subscriptSizing="dynamic">
+            <textarea maxlength="5000" type="text" [formControl]="repliesInProgress['post']" matInput></textarea>
+            <mat-error *ngIf="repliesInProgress['post'].hasError('required')">
                 Comment cannot be empty
             </mat-error>
-            <mat-error *ngIf="repliesInProgress[-1].hasError('tooLong')">
+            <mat-error *ngIf="repliesInProgress['post'].hasError('tooLong')">
                 Max comment length is 5000 characters
             </mat-error>
-            <button matSuffix mat-button (click)="cancelReply(-1)">Cancel</button>
-            <button matSuffix mat-button (click)="submitReply(-1)">Comment</button>
+            <button matSuffix mat-button (click)="cancelReply('post')">Cancel</button>
+            <button matSuffix mat-button (click)="submitReply('post')">Comment</button>
         </mat-form-field>
         <div *ngFor="let commentId of getOrderedCommentIds()">
             <mat-card [style.marginLeft]="15 * comments[commentId].depth + 'px'" [style.borderColor]="getCommentColor(comments[commentId].depth)" class="comment">

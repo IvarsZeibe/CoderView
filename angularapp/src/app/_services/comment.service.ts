@@ -14,7 +14,7 @@ const httpOptions = {
 export class CommentService {
 	constructor(private http: HttpClient) { }
 
-	public create(content: string, postId: string, replyTo: number | null): Observable<any> {
+	public create(content: string, postId: string, replyTo: string | null): Observable<any> {
 		return this.http.post(
 			AUTH_API + 'comment',
 			{
@@ -26,7 +26,7 @@ export class CommentService {
 		);
 	}
 
-	public voteOn(commentId: number) {
+	public voteOn(commentId: string) {
 		firstValueFrom(this.http.post(
 			AUTH_API + 'comment/' + commentId + '/vote',
 			{},
@@ -34,7 +34,7 @@ export class CommentService {
 		));
 	}
 
-	public unvoteOn(commentId: number) {
+	public unvoteOn(commentId: string) {
 		firstValueFrom(this.http.post(
 			AUTH_API + 'comment/' + commentId + '/unvote',
 			{},
@@ -42,7 +42,7 @@ export class CommentService {
 		));
 	}
 
-	public delete(commentId: number) {
+	public delete(commentId: string) {
 		firstValueFrom(this.http.delete(
 			AUTH_API + 'comment/' + commentId,
 			httpOptions

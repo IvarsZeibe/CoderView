@@ -123,3 +123,7 @@ mat-expansion-panel-header {
 	height: 100% !important;
 	background: #1e1e1e;
 }
+
+mat-expansion-panel {
+	border-radius: 10px !important;
+}

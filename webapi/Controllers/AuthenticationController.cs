@@ -16,7 +16,6 @@ public class AuthenticationController : ControllerBase
         _authService = authService;
     }
 
-
     [HttpPost]
     [Route("/api/isAuthenticated")]
     public bool IsAuthenticated()
@@ -43,42 +42,5 @@ public class AuthenticationController : ControllerBase
     public Task SignOutRoute()
     {
         return _authService.SignOutAsync();
-    }
-
-    [HttpPost]
-    [Authorize]
-    [Route("/api/profile")]
-    public IActionResult GetUserData()
-    {
-        var user = _authService.GetUserByUsernameAsync(User.Identity.Name).Result;
-        if (user is null)
-        {
-            return BadRequest();
-        }
-        return Ok(new ProfileViewModel { Username = user.UserName, Email = user.Email });
-    }
-
-    [HttpPost]
-    [Authorize]
-    [Route("/api/profile/changeUsername")]
-    public Task<IdentityResult> PostChangeUsername([FromBody]string username)
-    {
-        return _authService.ChangeUsername(User.Identity.Name, username);
-    }
-
-    [HttpPost]
-    [Authorize]
-    [Route("/api/profile/changeEmail")]
-    public Task<IdentityResult> PostChangeEmail([FromBody]string email)
-    {
-        return _authService.ChangeEmail(User.Identity.Name, email);
-    }
-
-    [HttpPost]
-    [Authorize]
-    [Route("/api/profile/changePassword")]
-    public Task<IdentityResult> PostChangeUsername(PasswordChangeViewModel passwordChange)
-    {
-        return _authService.ChangePassword(User.Identity.Name, passwordChange.CurrentPassword, passwordChange.NewPassword);
     }
 }

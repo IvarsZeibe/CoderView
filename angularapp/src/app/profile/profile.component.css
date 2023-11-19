@@ -10,12 +10,12 @@ form {
 
 .personal-details {
 	display: flex;
+	gap: 5px;
 }
 
 .personal-details mat-card {
 	flex: 1;
-	margin: 5px;
-	min-height: 150px
+	min-height: 150px;
 }
 
 .personal-details mat-card-subtitle {
@@ -33,9 +33,97 @@ mat-form-field {
 
 .full-width {
 	width: 100%;
-	margin: 5px;
+	margin-top: 5px;
 }
 
 .password-change {
-	margin: 5px;
+	margin-top: 5px;
+}
+
+mat-expansion-panel {
+	border-radius: 10px !important;
+}
+
+mat-accordion mat-expansion-panel:not(.mat-expanded),
+mat-accordion mat-expansion-panel:not(.mat-expansion-panel-spacing) {
+	border-radius: 0px !important;
+}
+
+mat-accordion mat-expansion-panel:first-of-type {
+	border-top-left-radius: 10px !important;
+	border-top-right-radius: 10px !important;
+}
+
+mat-accordion mat-expansion-panel:last-of-type {
+	border-bottom-left-radius: 10px !important;
+	border-bottom-right-radius: 10px !important;
+}
+
+.comment {
+	display: flex;
+	justify-content: space-between;
+}
+
+table {
+	margin-top: 2px;
+	border-radius: 10px;
+	outline: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+td {
+	max-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.mat-mdc-row:hover .mat-mdc-cell {
+	background-color: #3d4059;
+	cursor: pointer;
+}
+
+.date-row .time-passed-date {
+	width: inherit;
+	display: block;
+}
+
+.date-row:hover .time-passed-date {
+	display: none;
+}
+
+.date-row .full-date {
+	width: inherit;
+	display: none;
+}
+
+.date-row:hover .full-date {
+	display: block;
+}
+
+.mat-column-title {
+	width: 100%;
+}
+
+.mat-column-commentCount {
+	width: 50px;
+	min-width: 50px;
+}
+
+.mat-column-voteCount {
+	width: 50px;
+	min-width: 50px;
+}
+
+.mat-column-createdOn {
+	width: 200px;
+	min-width: 200px;
+}
+
+.divider {
+	width: 100%;
+	height: 1px;
+	background-color: #ffd600;
+	box-shadow: 0px 0px 4px #ffae00;
+	margin-top: 20px;
+	margin-bottom: 20px;
 }
