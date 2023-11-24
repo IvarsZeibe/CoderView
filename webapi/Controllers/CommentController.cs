@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using webapi.Data;
 using webapi.Helper;
 using webapi.Models;
+using webapi.Services;
 using webapi.ViewModels;
 
 namespace webapi.Controllers
@@ -13,9 +14,11 @@ namespace webapi.Controllers
     public class CommentController : Controller
     {
         private CoderViewDbContext _context;
-        public CommentController(CoderViewDbContext context) 
+        private CommentService _commentService;
+        public CommentController(CoderViewDbContext context, CommentService commentService) 
         {
             _context = context;
+            _commentService = commentService;
         }
 
         [HttpPost]
@@ -166,36 +169,8 @@ namespace webapi.Controllers
                 return Unauthorized();
             }
 
-            if (comment.Replies.IsNullOrEmpty())
-            {
-                while (true)
-                {
-                    var parent = _context.Comments
-                        .Include(c => c.ReplyTo)
-                        .Include(c => c.Replies)
-                        .FirstOrDefault(c => c == comment.ReplyTo);
+            _commentService.Delete(comment);
 
-                    _context.CommentVotes.Where(v => v.Comment == comment).ExecuteDelete();
-                    _context.Comments.Remove(comment);
-                    if (parent is not null && parent.Content is null && parent.Replies.Count == 1)
-                    {
-                        comment = parent;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                _context.CommentVotes.Where(v => v.Comment == comment).ExecuteDelete();
-                _context.Comments.Remove(comment);
-            }
-            else
-            {
-                comment.Author = null;
-                comment.Content = null;
-            }
-
-            _context.SaveChanges();
             return Ok();
         }
     }

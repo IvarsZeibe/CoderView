@@ -36,13 +36,16 @@ import { ProfileComponent } from './profile/profile.component';
 import { CommentSectionComponent } from './comment-section/comment-section.component';
 import { ClickStopPropagationDirective } from './_helpers/click-stop-propagation.directive';
 import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
+import { ControlPanelComponent } from './control-panel/control-panel.component';
+import { ManageUserDialogComponent } from './manage-user-dialog/manage-user-dialog.component';
+import { ConfirmResetPasswordDialogComponent } from './confirm-reset-password-dialog/confirm-reset-password-dialog.component';
 
 @NgModule({
 	declarations: [
 		AppComponent, NavMenuComponent, SignInComponent,
 		SignUpComponent, PostsComponent, NewPostComponent,
 		PostComponent, ProfileComponent,
-		CommentSectionComponent, ClickStopPropagationDirective, DeleteDialogComponent
+		CommentSectionComponent, ClickStopPropagationDirective, DeleteDialogComponent, ControlPanelComponent, ManageUserDialogComponent, ConfirmResetPasswordDialogComponent
 	],
 	imports: [
 		BrowserModule,

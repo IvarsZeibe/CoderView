@@ -1,0 +1,31 @@
+<h1 mat-dialog-title>Manage user</h1>
+<div mat-dialog-content class="content-container">
+    <mat-card>
+        <mat-card-content>
+            <div>
+                <mat-card-subtitle>Username</mat-card-subtitle>
+                <div class="white-text">{{username}}</div>
+            </div>
+            <div>
+                <mat-card-subtitle>E-mail</mat-card-subtitle>
+                <div class="white-text">{{email}}</div>
+            </div>
+            <div>
+                <mat-card-subtitle>Is admin</mat-card-subtitle>
+                <div class="white-text">{{isAdmin ? 'Yes' : 'No'}}</div>
+            </div>
+            <button mat-button *ngIf="!isAdmin" (click)="grantAdminPrivileges()">Grant admin privileges</button>
+            <button mat-button *ngIf="isAdmin" (click)="removeAdminPrivileges()">Remove admin privileges</button>
+        </mat-card-content>
+    </mat-card>
+    <div>
+    </div>
+</div>
+
+<div mat-dialog-actions class="dialog-actions">
+    <button mat-button mat-dialog-close cdkFocusInitial>Close</button>
+    <div>
+        <button class="reset-password-button" mat-flat-button color="primary" (click)="openConfirmResetPasswordDialog()" *ngIf="!isPasswordReset">Reset password</button>
+        <button mat-flat-button class="delete-button" (click)="openConfirmDeleteAccountDialog()">Delete account</button>
+    </div>
+</div>

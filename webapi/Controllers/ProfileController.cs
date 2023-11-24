@@ -15,10 +15,12 @@ public class ProfileController : ControllerBase
 {
     private CoderViewDbContext _context;
     private AuthService _authService;
-    public ProfileController(CoderViewDbContext context, AuthService authService)
+    private UserService _userService;
+    public ProfileController(CoderViewDbContext context, AuthService authService, UserService userService)
     {
         _context = context;
         _authService = authService;
+        _userService = userService;
     }
 
     [HttpPost]
@@ -110,11 +112,7 @@ public class ProfileController : ControllerBase
         {
             return BadRequest();
         }
-
-        _context.RemoveRange(_context.Comments.Where(c => c.Author == user));
-
-        _context.ApplicationUsers.Remove(user);
-        _context.SaveChanges();
+        _userService.Delete(user);
         return Ok();
     }
 }

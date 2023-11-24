@@ -29,6 +29,7 @@ footer {
 
 ::ng-deep .mat-mdc-card,
 ::ng-deep .mat-mdc-button,
+::ng-deep .mdc-button,
 ::ng-deep .mdc-snackbar__surface,
 ::ng-deep .mdc-dialog__surface {
 	border-radius: 10px !important;

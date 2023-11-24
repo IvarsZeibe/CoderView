@@ -8,6 +8,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { PostsComponent } from './posts/posts.component';
 import { PostComponent } from './post/post.component';
 import { NewPostComponent } from './new-post/new-post.component';
+import { ControlPanelComponent } from './control-panel/control-panel.component';
 
 const routes: Routes = [
 	{ path: '', component: PostsComponent, pathMatch: 'full' },
@@ -38,6 +39,12 @@ const routes: Routes = [
 		canActivate: [AccessGuard]
 	},
 	{ path: 'signup', component: SignUpComponent },
+	{
+		path: 'controlpanel',
+		component: ControlPanelComponent,
+		data: { requiresLogin: true, requiresAdminPrivileges: true },
+		canActivate: [AccessGuard]
+	},
 	{ path: '**', redirectTo: '' },
 ];
 

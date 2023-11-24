@@ -68,7 +68,7 @@
             </mat-form-field>
             <mat-form-field *ngIf="postTypeFormControl.value == 'discussion'" class="full-width">
                 <mat-label>Content</mat-label>
-                <textarea #content maxlength="20000" [formControl]="contentFormControl" matInput></textarea>
+                <textarea class="post-content-textarea" #content maxlength="20000" [formControl]="contentFormControl" matInput></textarea>
                 <mat-error *ngIf="contentFormControl.hasError('required')">
                     Content is required
                 </mat-error>

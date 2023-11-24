@@ -1,0 +1,192 @@
+<h1>Control Panel</h1>
+<mat-accordion>
+    <mat-expansion-panel>
+        <mat-expansion-panel-header>
+            <mat-panel-title>Manage posts</mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-form-field class="search-bar">
+            <mat-label>Filter</mat-label>
+            <input matInput (keyup)="filterDataSource($event, postDataSource)">
+        </mat-form-field>
+        <table mat-table [dataSource]="postDataSource">
+            <ng-container matColumnDef="title">
+                <th mat-header-cell *matHeaderCellDef> Post </th>
+                <td mat-cell *matCellDef="let element" title="{{element.title}}"> {{element.title}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="postType">
+                <th mat-header-cell *matHeaderCellDef> Type </th>
+                <td mat-cell *matCellDef="let element" title="{{element.postType}}"> {{element.postType}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="author">
+                <th mat-header-cell *matHeaderCellDef> Author </th>
+                <td mat-cell *matCellDef="let element" title="{{element.author}}"> {{element.author}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="commentCount">
+                <th mat-header-cell *matHeaderCellDef> Comments </th>
+                <td mat-cell *matCellDef="let element" title="{{element.commentCount}}"> {{element.commentCount}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="voteCount">
+                <th mat-header-cell *matHeaderCellDef> Votes </th>
+                <td mat-cell *matCellDef="let element" title="{{element.voteCount}}"> {{element.voteCount}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="createdOn">
+                <th mat-header-cell *matHeaderCellDef> Created on </th>
+                <td class="date-row" mat-cell *matCellDef="let element"
+                    title="{{element.createdOn.toLocaleDateString() + ' ' + element.createdOn.toLocaleTimeString()}}">
+                    <div class="time-passed-date">{{dateHelperService.getTimePassedString(element.createdOn, currentTime)}}</div>
+                    <div class="full-date">{{element.createdOn.toLocaleDateString() + ' ' + element.createdOn.toLocaleTimeString()}}</div>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="delete">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let element" appClickStopPropagation>
+                    <button mat-icon-button (click)="openPostDeleteDialog(element.id)">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedPostColumns"></tr>
+            <tr mat-row
+                class="clickable-row"
+                [routerLink]="['/post/' + row.id]"
+                *matRowDef="let row; columns: displayedPostColumns;"></tr>
+        </table>
+        <mat-paginator #postPaginator
+                       [pageSizeOptions]="[5, 10, 20]"
+                       showFirstLastButtons>
+        </mat-paginator>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+        <mat-expansion-panel-header>
+            <mat-panel-title>Manage comments</mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-form-field class="search-bar">
+            <mat-label>Filter</mat-label>
+            <input matInput (keyup)="filterDataSource($event, commentDataSource)">
+        </mat-form-field>
+        <table mat-table [dataSource]="commentDataSource">
+            <ng-container matColumnDef="content">
+                <th mat-header-cell *matHeaderCellDef> Content </th>
+                <td mat-cell *matCellDef="let element" title="{{element.content ?? '[Deleted]'}}"> {{element.content ?? '[Deleted]'}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="postTitle">
+                <th mat-header-cell *matHeaderCellDef> Post </th>
+                <td mat-cell *matCellDef="let element" title="{{element.postTitle}}"> {{element.postTitle}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="author">
+                <th mat-header-cell *matHeaderCellDef> Author </th>
+                <td mat-cell *matCellDef="let element" title="{{element.author ?? '[Deleted]'}}"> {{element.author ?? '[Deleted]'}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="replyCount">
+                <th mat-header-cell *matHeaderCellDef> Replies </th>
+                <td mat-cell *matCellDef="let element" title="{{element.replyCount}}"> {{element.replyCount}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="voteCount">
+                <th mat-header-cell *matHeaderCellDef> Votes </th>
+                <td mat-cell *matCellDef="let element" title="{{element.voteCount}}"> {{element.voteCount}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="createdOn">
+                <th mat-header-cell *matHeaderCellDef> Created on </th>
+                <td class="date-row" mat-cell *matCellDef="let element"
+                    title="{{element.createdOn.toLocaleDateString() + ' ' + element.createdOn.toLocaleTimeString()}}">
+                    <div class="time-passed-date">{{dateHelperService.getTimePassedString(element.createdOn, currentTime)}}</div>
+                    <div class="full-date">{{element.createdOn.toLocaleDateString() + ' ' + element.createdOn.toLocaleTimeString()}}</div>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="delete">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let element" appClickStopPropagation>
+                    <button *ngIf="element.author" mat-icon-button (click)="openCommentDeleteDialog(element.id)">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedCommentColumns"></tr>
+            <tr mat-row
+                class="clickable-row"
+                [routerLink]="['/post/' + row.postId]"
+                *matRowDef="let row; columns: displayedCommentColumns;"></tr>
+        </table>
+        <mat-paginator #commentPaginator
+                       [pageSizeOptions]="[5, 10, 20]"
+                       showFirstLastButtons>
+        </mat-paginator>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+        <mat-expansion-panel-header>
+            <mat-panel-title>Manage users</mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-form-field class="search-bar">
+            <mat-label>Filter</mat-label>
+            <input matInput (keyup)="filterDataSource($event, userDataSource)">
+        </mat-form-field>
+        <table mat-table [dataSource]="userDataSource">
+            <ng-container matColumnDef="username">
+                <th mat-header-cell *matHeaderCellDef> Username </th>
+                <td mat-cell *matCellDef="let element" title="{{element.username}}"> {{element.username}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="email">
+                <th mat-header-cell *matHeaderCellDef> E-mail </th>
+                <td mat-cell *matCellDef="let element" title="{{element.email}}"> {{element.email}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="isAdmin">
+                <th mat-header-cell *matHeaderCellDef> IsAdmin </th>
+                <td mat-cell *matCellDef="let element" title="{{element.isAdmin ? 'Yes' : 'No'}}"> {{element.isAdmin ? 'Yes' : 'No'}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="commentCount">
+                <th mat-header-cell *matHeaderCellDef> Comments </th>
+                <td mat-cell *matCellDef="let element" title="{{element.commentCount}}"> {{element.commentCount}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="postCount">
+                <th mat-header-cell *matHeaderCellDef> Posts </th>
+                <td mat-cell *matCellDef="let element" title="{{element.postCount}}"> {{element.postCount}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="manage">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let element">
+                    <button mat-icon-button (click)="openManageUserDialog(element)">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="delete">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let element">
+                    <button mat-icon-button (click)="openUserDeleteDialog(element.id)">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedUserColumns"></tr>
+            <tr mat-row
+                *matRowDef="let row; columns: displayedUserColumns;"></tr>
+        </table>
+        <mat-paginator #userPaginator
+                       [pageSizeOptions]="[5, 10, 20]"
+                       showFirstLastButtons>
+        </mat-paginator>
+    </mat-expansion-panel>
+</mat-accordion>

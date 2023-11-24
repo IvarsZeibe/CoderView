@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using webapi.Data;
+using webapi.Helper;
 using webapi.Models;
 using webapi.ViewModels;
 
@@ -119,6 +120,24 @@ namespace webapi.Services
                 return Task.FromResult<IList<string>>(Array.Empty<string>());
             }
             return _userManager.GetRolesAsync(user);
+        }
+
+        public string ResetPassword(ApplicationUser user)
+        {
+            var resetToken = _userManager.GeneratePasswordResetTokenAsync(user).Result;
+            var newPassword = Password.Generate(32, 12);
+            _userManager.ResetPasswordAsync(user, resetToken, newPassword).Wait();
+            return newPassword;
+        }
+
+        public void GiveAdminRole(ApplicationUser user)
+        {
+            _userManager.AddToRoleAsync(user, "Administrator").Wait();
+        }
+
+        public void RemoveAdminRole(ApplicationUser user)
+        {
+            _userManager.RemoveFromRoleAsync(user, "Administrator").Wait();
         }
     }
 }

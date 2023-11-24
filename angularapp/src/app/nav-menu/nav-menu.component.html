@@ -1,5 +1,6 @@
 <mat-toolbar>
     <a mat-button class="home-button" [routerLink]="['/posts']"><span class="logo-start">Coder</span><span class="logo-end">View</span></a>
+    <a *ngIf="storageService.isAdministrator()" mat-button [routerLink]="['/controlpanel']">Control Panel</a>
     <a mat-button [routerLink]="['/posts']" [queryParams]="{type: 'discussion'}">Discussions</a>
     <a mat-button [routerLink]="['/posts']" [queryParams]="{type: 'snippet'}">Code Snippets</a>
     <a mat-button [routerLink]="['/posts']" [queryParams]="{type: 'guide'}">Guides</a>

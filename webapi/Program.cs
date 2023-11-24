@@ -24,6 +24,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddRoles<IdentityRole>()
     .AddDefaultTokenProviders();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<PostService>();
+builder.Services.AddScoped<CommentService>();
+builder.Services.AddScoped<UserService>();
 
 
 var app = builder.Build();

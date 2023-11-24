@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using webapi.Data;
 using webapi.Helper;
 using webapi.Models;
+using webapi.Services;
 using webapi.ViewModels;
 
 namespace webapi.Controllers
@@ -18,9 +19,11 @@ namespace webapi.Controllers
     public class PostController : Controller
     {
         private CoderViewDbContext _context;
-        public PostController(CoderViewDbContext context) 
+        private PostService _postService;
+        public PostController(CoderViewDbContext context, PostService postService) 
         {
             _context = context;
+            _postService = postService;
         }
 
         [HttpGet]
@@ -374,26 +377,8 @@ namespace webapi.Controllers
                 return Unauthorized();
             }
 
-            post.Comments?.ForEach(c =>
-            {
-                _context.Comments.Remove(c);
-                c.Votes?.ForEach(v => _context.CommentVotes.Remove(v));
-            });
+            _postService.Delete(post);
 
-            post.Votes?.ForEach(v => _context.PostVotes.Remove(v));
-
-            post.TagToPosts?.ForEach(ttp =>
-            {
-                _context.TagToPost.Remove(ttp);
-                if (ttp.Tag.TagToPosts?.Count == 1)
-                {
-                    _context.Tags.Remove(ttp.Tag);
-                }
-            });
-
-            _context.Posts.Remove(post);
-
-            _context.SaveChanges();
             return Ok();
         }
 

@@ -1,0 +1,79 @@
+table {
+	border-radius: 10px;
+	outline: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+td {
+	max-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.date-row .time-passed-date {
+	width: inherit;
+	display: block;
+}
+
+.date-row:hover .time-passed-date {
+	display: none;
+}
+
+.date-row .full-date {
+	width: inherit;
+	display: none;
+}
+
+.date-row:hover .full-date {
+	display: block;
+}
+
+.search-bar {
+	width: 100%;
+}
+
+.mat-column-createdOn {
+	width: 200px;
+	min-width: 200px;
+}
+
+.mat-column-delete, .mat-column-manage {
+	width: 50px;
+	min-width: 50px;
+	padding: 0px;
+}
+
+.mat-column-voteCount, .mat-column-commentCount,
+.mat-column-replyCount, .mat-column-postCount {
+	width: 50px;
+	min-width: 50px;
+}
+
+.mat-column-resetPassword {
+	width: 150px;
+	min-width: 150px;
+}
+
+.clickable-row:hover {
+	background-color: #3d4059;
+	cursor: pointer;
+}
+
+mat-expansion-panel {
+	border-radius: 10px !important;
+}
+
+mat-accordion mat-expansion-panel:not(.mat-expanded),
+mat-accordion mat-expansion-panel:not(.mat-expansion-panel-spacing) {
+	border-radius: 0px !important;
+}
+
+mat-accordion mat-expansion-panel:first-of-type {
+	border-top-left-radius: 10px !important;
+	border-top-right-radius: 10px !important;
+}
+
+mat-accordion mat-expansion-panel:last-of-type {
+	border-bottom-left-radius: 10px !important;
+	border-bottom-right-radius: 10px !important;
+}

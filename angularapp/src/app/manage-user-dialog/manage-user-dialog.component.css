@@ -1,0 +1,29 @@
+.content-container {
+	width: 500px;
+}
+
+.white-text {
+	color: white;
+}
+
+mat-card {
+	box-shadow: none;
+}
+
+mat-card-content {
+	padding-top: 0px !important;
+	display: flex;
+	flex-flow: column;
+	gap: 10px;
+}
+
+.delete-button {
+	width: 150px;
+	color: red;
+	border: 1px solid red;
+	font-weight: bold;
+}
+
+.dialog-actions {
+	justify-content: space-between;
+}
