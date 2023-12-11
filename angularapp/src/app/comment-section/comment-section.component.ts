@@ -7,6 +7,7 @@ import { DateHelperService } from '../_services/date-helper.service';
 import { CommentService } from '../_services/comment.service';
 import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
 import { PostService } from '../_services/post.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export type Comments = Record<string, {
 	owner: string,
@@ -45,7 +46,8 @@ export class CommentSectionComponent implements OnInit {
 		private commentService: CommentService,
 		private dialog: MatDialog,
 		public dateHelperService: DateHelperService,
-		private changeDetector: ChangeDetectorRef
+		private changeDetector: ChangeDetectorRef,
+		private snackBar: MatSnackBar
 	) { }
 
 	ngOnInit(): void {
@@ -117,6 +119,10 @@ export class CommentSectionComponent implements OnInit {
 		if (!this.storageService.isLoggedIn()) {
 			this.router.navigate(['/signin'], { queryParams: { returnUrl: this.router.url } });
 		}
+		if (commentId.startsWith("temp_")) {
+			this.snackBar.open("Comment not fully loaded yet, please wait", "Close");
+			return;
+		}
 		this.repliesInProgress[commentId] = new FormControl("", { nonNullable: true });
 	}
 
@@ -146,7 +152,7 @@ export class CommentSectionComponent implements OnInit {
 		this.commentCount.emit(this.getCommentCount());
 
 		this.changeDetector.detectChanges();
-		const element = document.getElementById('comment-2') as HTMLElement;
+		const element = document.getElementById('comment' + tempCommentId.toString()) as HTMLElement;
 		if (element && element.offsetHeight < element.scrollHeight) {
 			element.classList.add("long-comment");
 		}
@@ -157,6 +163,7 @@ export class CommentSectionComponent implements OnInit {
 				this.comments[id] = this.comments[tempCommentId];
 				delete this.comments[tempCommentId];
 
+				this.changeDetector.detectChanges();
 				const element = document.getElementById('comment' + id) as HTMLElement;
 				if (element && element.offsetHeight < element.scrollHeight) {
 					element.classList.add("long-comment");
