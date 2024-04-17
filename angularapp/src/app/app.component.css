@@ -36,5 +36,5 @@ footer {
 }
 
 ::ng-deep .mdc-dialog__surface {
-	background-color: #2d304b !important;
+	background-color: var(--surface-color) !important;
 }

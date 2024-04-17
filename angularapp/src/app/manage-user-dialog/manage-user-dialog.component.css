@@ -2,8 +2,8 @@
 	width: 500px;
 }
 
-.white-text {
-	color: white;
+.bright-text {
+	color: var(--bright-text);
 }
 
 mat-card {

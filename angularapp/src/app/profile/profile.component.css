@@ -78,7 +78,7 @@ td {
 }
 
 .mat-mdc-row:hover .mat-mdc-cell {
-	background-color: #3d4059;
+	background-color: var(--table-hover-color);
 	cursor: pointer;
 }
 

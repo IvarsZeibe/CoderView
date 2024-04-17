@@ -4,15 +4,15 @@
         <mat-card-content>
             <div>
                 <mat-card-subtitle>Username</mat-card-subtitle>
-                <div class="white-text">{{username}}</div>
+                <div class="bright-text">{{username}}</div>
             </div>
             <div>
                 <mat-card-subtitle>E-mail</mat-card-subtitle>
-                <div class="white-text">{{email}}</div>
+                <div class="bright-text">{{email}}</div>
             </div>
             <div>
                 <mat-card-subtitle>Is admin</mat-card-subtitle>
-                <div class="white-text">{{isAdmin ? 'Yes' : 'No'}}</div>
+                <div class="bright-text">{{isAdmin ? 'Yes' : 'No'}}</div>
             </div>
             <button mat-button *ngIf="!isAdmin" (click)="grantAdminPrivileges()">Grant admin privileges</button>
             <button mat-button *ngIf="isAdmin" (click)="removeAdminPrivileges()">Remove admin privileges</button>

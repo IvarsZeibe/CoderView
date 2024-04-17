@@ -9,7 +9,7 @@
 }
 
 .button-pressed {
-	background-color: #292a45;
+	background-color: var(--button-pressed);
 }
 
 .heading {
@@ -116,12 +116,12 @@ mat-expansion-panel-header {
 
 .editor {
 	border-radius: 10px;
-	border: 10px solid #1e1e1e;
+	border: 10px solid var(--code-editor-background);
 }
 
 ::ng-deep .editor-container {
 	height: 100% !important;
-	background: #1e1e1e;
+	background: var(--code-editor-background);
 }
 
 mat-expansion-panel {

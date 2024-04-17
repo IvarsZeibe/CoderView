@@ -3,6 +3,7 @@ import { StorageService } from './_services/storage.service';
 import { AuthService } from './_services/auth-service.service';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
+import { ThemeService } from './_services/theme.service';
 
 @Component({
 	selector: 'app-root',
@@ -14,7 +15,8 @@ export class AppComponent implements OnInit {
 		private storageService: StorageService,
 		private authService: AuthService,
 		private domSanitizer: DomSanitizer,
-		private matIconRegistry: MatIconRegistry
+        private matIconRegistry: MatIconRegistry,
+        private themeService: ThemeService
 	) {
 		this.matIconRegistry.addSvgIcon("profile", this.domSanitizer.bypassSecurityTrustResourceUrl("/assets/profile_icon.svg"));
 	}
@@ -31,7 +33,13 @@ export class AppComponent implements OnInit {
 				this.storageService.clean();
 				this.authService.forceRunAuthGuard();
 			}
-		});
+        });
+
+        this.themeService.isLightTheme.subscribe({
+            next: () => {
+                this.setBackgroundImage();
+            }
+        });
 
 		this.setBackgroundImage();
 	}
@@ -45,6 +53,9 @@ export class AppComponent implements OnInit {
 	}
 
 	private generateBackground(): HTMLCanvasElement {
+		const style = getComputedStyle(document.body);
+		const backgorundColor1 = style.getPropertyValue('--background-color1');
+		const backgorundColor2 = style.getPropertyValue('--background-color2');
 		const canvas = document.createElement('canvas');
 		canvas.width = screen.width;
 		canvas.height = screen.height;
@@ -63,9 +74,9 @@ export class AppComponent implements OnInit {
 						w += 55;
 					}
 					if (randomNumber > 0.9) {
-						context.fillStyle = '#161d2c';
+						context.fillStyle = backgorundColor1;
 					} else if (randomNumber > 0.7) {
-						context.fillStyle = '#242739';
+						context.fillStyle = backgorundColor2;
 					} else {
 						continue;
 					}

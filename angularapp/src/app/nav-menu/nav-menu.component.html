@@ -5,6 +5,9 @@
     <a mat-button [routerLink]="['/posts']" [queryParams]="{type: 'snippet'}">Code Snippets</a>
     <a mat-button [routerLink]="['/posts']" [queryParams]="{type: 'guide'}">Guides</a>
     <span class="spacer"></span>
+    <a mat-icon-button (click)="themeService.toggleTheme()">
+        <mat-icon>contrast</mat-icon>
+    </a>
     <a *ngIf="!storageService.isLoggedIn()" mat-button [routerLink]="['/signin']">
         <div class="center">
             Sign In

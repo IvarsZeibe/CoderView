@@ -75,12 +75,27 @@ $angularapp-primary: mat.define-palette($primary);
 $angularapp-accent: mat.define-palette($accent);
 $angularapp-warn: mat.define-palette(mat.$red-palette);
 
+$my-primary: mat.define-palette(mat.$indigo-palette, 500);
+$my-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
+$my-warn: mat.define-palette(mat.$red-palette);
+
 $angularapp-theme: mat.define-dark-theme(
 	(
 		color: (
 			primary: $angularapp-primary,
 			accent: $angularapp-accent,
 			warn: $angularapp-warn
+		),
+		typography: mat.define-typography-config(),
+	)
+);
+
+$light-theme: mat.define-light-theme(
+	(
+		color: (
+			primary: $my-primary,
+			accent: $my-accent,
+			warn: $my-warn
 		),
 		typography: mat.define-typography-config(),
 	)
@@ -96,5 +111,42 @@ $material-theme-overrides: (
   ),
 );
 
+$light-theme-overrides: (
+  'color': (
+    'background': (
+      'background': #fff9e3,
+      'card': #fff3c8,
+	  'app-bar': #ffe9c8,
+    ),
+  ),
+);
+$light-theme: map.deep-merge($light-theme, $light-theme-overrides);
+
 $angularapp-theme: map.deep-merge($angularapp-theme, $material-theme-overrides);
-@include mat.all-component-themes($angularapp-theme);
+
+.light-theme {
+	@include mat.all-component-themes($light-theme);
+	--surface-color: #fff3c8;
+	--background-color1: #fefaba;
+	--background-color2: #fce674;
+	--comment-color: #fef4d1;
+	--comment-border: #00000033;
+	--button-pressed: #e1d7a3;
+	--code-editor-background: white;
+	--table-hover-color: #fde8c7;
+	--logo-changing-color: darkblue;
+	--bright-text: black;
+}
+.dark-theme {
+	@include mat.all-component-themes($angularapp-theme);
+	--surface-color: #161d2c;
+	--background-color1: #161d2c;
+	--background-color2: #242739;
+	--comment-color: #363a5b;
+	--comment-border: #4d527b;
+	--button-pressed: #292a45;
+	--code-editor-background: #1e1e1e;
+	--table-hover-color: #3d4059;
+	--logo-changing-color: white;
+	--bright-text: white;
+}

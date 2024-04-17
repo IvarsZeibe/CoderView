@@ -34,7 +34,7 @@
 }
 
 .button-pressed {
-	background-color: #292a45;
+	background-color: var(--button-pressed);
 }
 
 mat-card-content, mat-card-title {
@@ -69,15 +69,14 @@ mat-card-content, mat-card-title {
 
 .editor {
 	border-radius: 10px;
-	border: 10px solid #1e1e1e;
 	height: 50vh;
+	border: 10px solid var(--code-editor-background);
 }
 
 ::ng-deep .editor-container {
 	height: 100% !important;
-	background: #1e1e1e;
+	background: var(--code-editor-background);
 }
-
 .guide-content h1 {
 	font-size: x-large;
 	font-weight: normal;

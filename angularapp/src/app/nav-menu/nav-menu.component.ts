@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { StorageService } from '../_services/storage.service';
 import { AuthService } from '../_services/auth-service.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { ThemeService } from '../_services/theme.service';
 
 @Component({
 	selector: 'app-nav-menu',
@@ -19,7 +20,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 export class NavMenuComponent implements OnInit {
 	isAnimationDisabled = true;
 
-	constructor(public storageService: StorageService, private authService: AuthService) {
+	constructor(public storageService: StorageService, private authService: AuthService, public themeService: ThemeService) {
 		queueMicrotask(() => { this.isAnimationDisabled = false; });
 	}
 

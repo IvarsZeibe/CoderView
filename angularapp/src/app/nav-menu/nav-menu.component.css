@@ -7,7 +7,7 @@
 .logo-end {
 	font-size: 20px;
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	color: white;
+	color: var(--logo-changing-color);
 	font-weight: lighter;
 }
 

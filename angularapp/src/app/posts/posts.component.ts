@@ -10,6 +10,7 @@ import { Observable, Subscription, finalize, map, startWith } from 'rxjs';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { ProgrammingLanguagesService } from '../_services/programming-languages.service';
+import { ThemeService } from '../_services/theme.service';
 
 @Component({
 	selector: 'app-posts',
@@ -40,6 +41,7 @@ export class PostsComponent implements OnInit, AfterViewInit {
 	availableTagOptions: Observable<string[]> = new Observable()
 
 	getPostsRequest?: Subscription;
+	editorTheme = 'vs-light';
 
 	constructor(
 		private route: ActivatedRoute,
@@ -49,7 +51,8 @@ export class PostsComponent implements OnInit, AfterViewInit {
 		public dateHelperService: DateHelperService,
 		private snackBar: MatSnackBar,
 		public programmingLanguagesService: ProgrammingLanguagesService,
-		private changeDetector: ChangeDetectorRef
+		private changeDetector: ChangeDetectorRef,
+		private themeService: ThemeService
 	) { }
 
 	ngOnInit(): void {
@@ -82,6 +85,13 @@ export class PostsComponent implements OnInit, AfterViewInit {
 				startWith(''),
 				map(value => this._filterTags(value || '')),
 			);
+		});
+
+		//this.editorOptions = { ...this.editorOptions, theme: this.themeService.isLightTheme.observed ? 'vs-light' : 'vs-dark' }
+		this.themeService.isLightTheme.subscribe({
+			next: isLightTheme => {
+				this.editorTheme = isLightTheme ? 'vs-light' : 'vs-dark';
+			}
 		});
 
 		new ResizeObserver(() => {

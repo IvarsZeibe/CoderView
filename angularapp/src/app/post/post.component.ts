@@ -6,6 +6,7 @@ import { DateHelperService } from '../_services/date-helper.service';
 import { PostContentService } from '../_services/post-content.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { GuideFormattingService } from '../_services/guide-formatting.service';
+import { ThemeService } from '../_services/theme.service';
 
 @Component({
 	selector: 'app-post',
@@ -36,7 +37,8 @@ export class PostComponent implements OnInit {
 		public dateHelperService: DateHelperService,
 		private postContentService: PostContentService,
 		private snackBar: MatSnackBar,
-		public guideFormattingService: GuideFormattingService
+		public guideFormattingService: GuideFormattingService,
+		private themeService: ThemeService
 	) { }
 
 	ngOnInit(): void {
@@ -56,7 +58,13 @@ export class PostComponent implements OnInit {
 				this.editorOptions.language = postData.programmingLanguage || '';
 			},
 			error: () => this.router.navigate(['/posts'])
-		})
+		});
+		this.editorOptions = { ...this.editorOptions, theme: this.themeService.isLightTheme.observed ? 'vs-light' : 'vs-dark' }
+		this.themeService.isLightTheme.subscribe({
+			next: isLightTheme => {
+				this.editorOptions = { ...this.editorOptions, theme: isLightTheme ? 'vs-light' : 'vs-dark' };
+			}
+		});
 	}
 	updateCommentCount(commentCount: number) {
 		this.commentCount = commentCount;

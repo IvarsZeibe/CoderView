@@ -1,12 +1,12 @@
 .comment {
-	background-color: #363a5b;
+	background-color: var(--comment-color);
 	margin-bottom: 5px;
 	display: block;
 	border-left: solid 5px red;
 }
 
 .comment::after {
-	border: #4d527b 1px solid;
+	border: var(--comment-border) 1px solid;
 	border-radius: 10px;
 	border-left: none;
 }
@@ -28,7 +28,7 @@
 }
 
 .button-pressed {
-	background-color: #292a45;
+	background-color: var(--button-pressed);
 }
 
 mat-card-content, mat-card-title {
