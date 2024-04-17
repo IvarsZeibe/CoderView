@@ -39,7 +39,8 @@ export class AppComponent implements OnInit {
             next: () => {
                 this.setBackgroundImage();
             }
-        });
+		});
+		this.themeService.loadThemeFromLocalStorage();
 
 		this.setBackgroundImage();
 	}
