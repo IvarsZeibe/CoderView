@@ -5,7 +5,7 @@
 
 @include mat.core();
 
-$primary: (
+$dark-theme-primary: (
     50 : #fff7e0,
     100 : #ffecb3,
     200 : #ffe080,
@@ -38,7 +38,7 @@ $primary: (
     )
 );
 
-$accent: (
+$dark-theme-accent: (
     50 : #e3e3e5,
     100 : #b9babe,
     200 : #8b8c92,
@@ -71,20 +71,20 @@ $accent: (
     )
 );
 
-$angularapp-primary: mat.define-palette($primary);
-$angularapp-accent: mat.define-palette($accent);
-$angularapp-warn: mat.define-palette(mat.$red-palette);
+$light-theme-primary: mat.define-palette($dark-theme-primary, 500);
+$light-theme-accent: mat.define-palette($dark-theme-primary, 500);
+$light-theme-warn: mat.define-palette(mat.$red-palette);
 
-$my-primary: mat.define-palette(mat.$indigo-palette, 500);
-$my-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
-$my-warn: mat.define-palette(mat.$red-palette);
+$dark-theme-primary: mat.define-palette($dark-theme-primary);
+$dark-theme-accent: mat.define-palette($dark-theme-accent);
+$dark-theme-warn: mat.define-palette(mat.$red-palette);
 
-$angularapp-theme: mat.define-dark-theme(
+$dark-theme: mat.define-dark-theme(
 	(
 		color: (
-			primary: $angularapp-primary,
-			accent: $angularapp-accent,
-			warn: $angularapp-warn
+			primary: $dark-theme-primary,
+			accent: $dark-theme-accent,
+			warn: $dark-theme-warn
 		),
 		typography: mat.define-typography-config(),
 	)
@@ -93,15 +93,15 @@ $angularapp-theme: mat.define-dark-theme(
 $light-theme: mat.define-light-theme(
 	(
 		color: (
-			primary: $my-primary,
-			accent: $my-accent,
-			warn: $my-warn
+			primary: $light-theme-primary,
+			accent: $light-theme-accent,
+			warn: $light-theme-warn
 		),
 		typography: mat.define-typography-config(),
 	)
 );
 
-$material-theme-overrides: (
+$dark-theme-overrides: (
   'color': (
     'background': (
       'background': #1f2133,
@@ -114,32 +114,34 @@ $material-theme-overrides: (
 $light-theme-overrides: (
   'color': (
     'background': (
-      'background': #fff9e3,
-      'card': #fff3c8,
-	  'app-bar': #ffe9c8,
+      'background': #e7edfc,
+      'card': #ffffff,
+	  'app-bar': #ffffff,
     ),
   ),
 );
+
+$dark-theme: map.deep-merge($dark-theme, $dark-theme-overrides);
 $light-theme: map.deep-merge($light-theme, $light-theme-overrides);
 
-$angularapp-theme: map.deep-merge($angularapp-theme, $material-theme-overrides);
 
 .light-theme {
 	@include mat.all-component-themes($light-theme);
-	--surface-color: #fff3c8;
-	--background-color1: #fefaba;
-	--background-color2: #fce674;
-	--comment-color: #fef4d1;
+	--surface-color: #ffffff;
+	--background-color1: #ede8fc;
+	--background-color2: #d9e5f5;
+	--comment-color: #ffffff;
 	--comment-border: #00000033;
-	--button-pressed: #e1d7a3;
+	--button-pressed: #edeef5;
 	--code-editor-background: white;
-	--table-hover-color: #fde8c7;
+	--table-hover-color: #edeef5;
 	--logo-changing-color: darkblue;
 	--bright-text: black;
+	--footer-color: #dee4f2;
 }
 .dark-theme {
-	@include mat.all-component-themes($angularapp-theme);
-	--surface-color: #161d2c;
+	@include mat.all-component-themes($dark-theme);
+	--surface-color: #2d304b;
 	--background-color1: #161d2c;
 	--background-color2: #242739;
 	--comment-color: #363a5b;
@@ -149,4 +151,5 @@ $angularapp-theme: map.deep-merge($angularapp-theme, $material-theme-overrides);
 	--table-hover-color: #3d4059;
 	--logo-changing-color: white;
 	--bright-text: white;
+	--footer-color: #151622;
 }

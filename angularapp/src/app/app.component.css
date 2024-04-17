@@ -19,7 +19,7 @@ main {
 footer {
 	text-align: center;
 	padding: 20px;
-	background-color: #00000055;
+	background-color: var(--footer-color);
 }
 
 ::ng-deep .mat-mdc-text-field-wrapper {
