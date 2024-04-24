@@ -77,3 +77,18 @@ mat-accordion mat-expansion-panel:last-of-type {
 	border-bottom-left-radius: 10px !important;
 	border-bottom-right-radius: 10px !important;
 }
+
+#info-pane {
+	display: flex;
+	height: 200px;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+#info-pane mat-card {
+	flex: 1;
+	text-align: center;
+}
+#info-pane mat-card span {
+	font-size: 80px;
+	text-align: center;
+}
