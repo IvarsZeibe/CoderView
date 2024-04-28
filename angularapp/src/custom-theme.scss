@@ -138,6 +138,7 @@ $light-theme: map.deep-merge($light-theme, $light-theme-overrides);
 	--logo-changing-color: darkblue;
 	--bright-text: black;
 	--footer-color: #dee4f2;
+	--guide-editor-section-background: #f6f6f6;
 }
 .dark-theme {
 	@include mat.all-component-themes($dark-theme);
@@ -152,4 +153,5 @@ $light-theme: map.deep-merge($light-theme, $light-theme-overrides);
 	--logo-changing-color: white;
 	--bright-text: white;
 	--footer-color: #151622;
+	--guide-editor-section-background: #24263c;
 }

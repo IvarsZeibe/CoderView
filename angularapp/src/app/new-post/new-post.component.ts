@@ -12,6 +12,7 @@ import { MatSelectChange } from '@angular/material/select';
 import { ProgrammingLanguagesService } from '../_services/programming-languages.service';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { GuideContent } from '../_services/guide-formatting.service';
+import { ThemeService } from '../_services/theme.service';
 
 @Component({
 	selector: 'app-new-post',
@@ -69,7 +70,8 @@ export class NewPostComponent implements OnInit, OnDestroy {
 		private route: ActivatedRoute,
 		private postContentService: PostContentService,
 		private dialog: MatDialog,
-		public programmingLanguagesService: ProgrammingLanguagesService
+		public programmingLanguagesService: ProgrammingLanguagesService,
+		private themeService: ThemeService
 	) { }
 
 	ngOnInit() {
@@ -112,6 +114,12 @@ export class NewPostComponent implements OnInit, OnDestroy {
 				startWith(''),
 				map(value => this._filter(value || '')),
 			);
+		});
+
+		this.themeService.isLightTheme.subscribe({
+			next: isLightTheme => {
+				this.editorOptions = { ...this.editorOptions, theme: isLightTheme ? 'vs-light': 'vs-dark' };
+			}
 		});
 	}
 
