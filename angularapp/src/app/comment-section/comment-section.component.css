@@ -36,6 +36,8 @@ mat-card-content, mat-card-title {
 	overflow-wrap: anywhere;
 }
 
-.delete-button {
+.comment-options {
 	float: right;
+	display: flex;
+	align-items: center;
 }

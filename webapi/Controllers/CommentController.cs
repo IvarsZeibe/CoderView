@@ -65,6 +65,42 @@ namespace webapi.Controllers
         }
 
         [HttpPost]
+        [Route("/api/comment/{id}/edit")]
+        [Authorize]
+        public IActionResult EditComment(string id, EditCommentViewModel model)
+        {
+            model.NewContent = model.NewContent.Trim();
+            if (!TryValidateModel(model))
+            {
+                return BadRequest(ModelState);
+            }
+
+            ApplicationUser? user = _context.ApplicationUsers.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
+            if (user is null)
+            {
+                return BadRequest();
+            }
+
+
+            var shortGuid = ShortGuid.ParseOrDefault(id);
+            if (shortGuid is null)
+            {
+                return BadRequest();
+            }
+
+            var comment = _context.Comments.Find(shortGuid.ToGuid());
+            if (comment is null)
+            {
+                return BadRequest();
+            }
+
+            comment.Content = model.NewContent;
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpPost]
         [Route("/api/comment/{id}/vote")]
         [Authorize]
         public IActionResult VoteOnComment(string id)

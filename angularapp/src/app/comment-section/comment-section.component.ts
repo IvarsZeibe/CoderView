@@ -35,6 +35,7 @@ export class CommentSectionComponent implements OnInit {
 
 	// key 'post' is for comment on post not reply to other comment
 	repliesInProgress: Record<string | 'post', FormControl<string>> = {};
+	editsInProgress: string[] = [];
 
 	isLoading = true;
 	hasFailedToLoadComments = false;
@@ -115,6 +116,12 @@ export class CommentSectionComponent implements OnInit {
 		return orderedCommentIds;
 	}
 
+	editComment(commentId: string): void {
+		this.editsInProgress.push(commentId);
+		this.startReply(commentId);
+		this.repliesInProgress[commentId].setValue(this.comments[commentId].content);
+	}
+
 	startReply(commentId: string): void {
 		if (!this.storageService.isLoggedIn()) {
 			this.router.navigate(['/signin'], { queryParams: { returnUrl: this.router.url } });
@@ -128,6 +135,9 @@ export class CommentSectionComponent implements OnInit {
 
 	cancelReply(commentId: string): void {
 		delete this.repliesInProgress[commentId];
+		if (this.editsInProgress.includes(commentId)) {
+			this.editsInProgress.splice(this.editsInProgress.indexOf(commentId), 1);
+		}
 	}
 
 	submitReply(replyTo: string | 'post'): void {
@@ -171,6 +181,29 @@ export class CommentSectionComponent implements OnInit {
 			}
 		});
 		delete this.repliesInProgress[replyTo];
+	}
+
+	saveEditChanges(commentId: string) {
+		this.repliesInProgress[commentId].setValue(this.repliesInProgress[commentId].value.trim());
+		if (this.repliesInProgress[commentId].value.length == 0) {
+			this.repliesInProgress[commentId].setErrors({ required: true });
+			return;
+		} else if (this.repliesInProgress[commentId].value.length > 5000) {
+			this.repliesInProgress[commentId].setErrors({ tooLong: true });
+			return;
+		}
+
+		this.commentService.edit(commentId, this.repliesInProgress[commentId].value);
+		this.comments[commentId].content = this.repliesInProgress[commentId].value;
+		delete this.repliesInProgress[commentId];
+		this.editsInProgress.splice(this.editsInProgress.indexOf(commentId), 1);
+
+		this.changeDetector.detectChanges();
+		const element = document.getElementById('comment' + commentId.toString()) as HTMLElement;
+		if (element && element.offsetHeight < element.scrollHeight) {
+			element.classList.add("long-comment");
+		}
+
 	}
 
 	voteOnComment(commentId: string) {

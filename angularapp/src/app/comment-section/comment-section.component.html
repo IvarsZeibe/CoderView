@@ -26,12 +26,18 @@
             <button matSuffix mat-button (click)="submitReply('post')">Comment</button>
         </mat-form-field>
         <div *ngFor="let commentId of getOrderedCommentIds()">
-            <mat-card [style.marginLeft]="15 * comments[commentId].depth + 'px'" [style.borderColor]="getCommentColor(comments[commentId].depth)" class="comment">
-                <button *ngIf="isCommentedByCurrentUser(commentId)"
-                        class="delete-button" matSuffix mat-icon-button aria-label="Clear"
-                        (click)="openDeleteCommentDialog(commentId)">
-                    <mat-icon>close</mat-icon>
-                </button>
+            <mat-card [style.marginLeft]="15 * comments[commentId].depth + 'px'" *ngIf="!editsInProgress.includes(commentId)"
+                      [style.borderColor]="getCommentColor(comments[commentId].depth)" class="comment">
+                <div class="comment-options">
+                    <button *ngIf="isCommentedByCurrentUser(commentId)" matSuffix mat-button (click)="editComment(commentId)">
+                        Edit
+                    </button>
+                    <button *ngIf="isCommentedByCurrentUser(commentId)"
+                            matSuffix mat-icon-button aria-label="Clear"
+                            (click)="openDeleteCommentDialog(commentId)">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </div>
                 <mat-card-header>
                     <mat-card-subtitle class="user">
                         {{getFormattedAuthor(comments[commentId].owner)}} • {{dateHelperService.getTimePassedString(comments[commentId].createdOn, timeOnPageLoad)}}
@@ -62,7 +68,10 @@
                     Max comment length is 5000 characters
                 </mat-error>
                 <button matSuffix mat-button (click)="cancelReply(commentId)">Cancel</button>
-                <button matSuffix mat-button (click)="submitReply(commentId)">Comment</button>
+                <button *ngIf="editsInProgress.includes(commentId); else submitReplyButton" matSuffix mat-button (click)="saveEditChanges(commentId)">Save Changes</button>
+                <ng-template #submitReplyButton>
+                    <button matSuffix mat-button (click)="submitReply(commentId)">Comment</button>
+                </ng-template>
             </mat-form-field>
         </div>
     </mat-card-content>

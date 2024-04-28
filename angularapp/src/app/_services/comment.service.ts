@@ -26,6 +26,14 @@ export class CommentService {
 		);
 	}
 
+	public edit(commentId: string, newContent: string) {
+		firstValueFrom(this.http.post(
+			AUTH_API + 'comment/' + commentId + '/edit',
+			{newContent},
+			httpOptions
+		));
+	}
+
 	public voteOn(commentId: string) {
 		firstValueFrom(this.http.post(
 			AUTH_API + 'comment/' + commentId + '/vote',
