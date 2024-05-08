@@ -63,6 +63,19 @@ mat-expansion-panel {
 	border-radius: 10px !important;
 }
 
+canvasjs-chart {
+	display: flex;
+	margin-bottom: 20px;
+}
+
+::ng-deep canvasjs-chart canvas {
+	border-radius: 10px;
+}
+
+::ng-deep .canvasjs-chart-toolbar {
+	display: none;
+}
+
 mat-accordion mat-expansion-panel:not(.mat-expanded),
 mat-accordion mat-expansion-panel:not(.mat-expansion-panel-spacing) {
 	border-radius: 0px !important;
@@ -76,4 +89,19 @@ mat-accordion mat-expansion-panel:first-of-type {
 mat-accordion mat-expansion-panel:last-of-type {
 	border-bottom-left-radius: 10px !important;
 	border-bottom-right-radius: 10px !important;
+}
+
+#info-pane {
+	display: flex;
+	height: 200px;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+#info-pane mat-card {
+	flex: 1;
+	text-align: center;
+}
+#info-pane mat-card span {
+	font-size: 80px;
+	text-align: center;
 }

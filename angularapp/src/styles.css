@@ -15,3 +15,7 @@ a {
 	color: inherit;
 	text-decoration: inherit;
 }
+
+.canvasjs-chart-credit {
+	display: none !important;
+}

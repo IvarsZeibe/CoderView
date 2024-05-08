@@ -87,7 +87,8 @@ public class ControlPanelController : Controller
                 Id = new ShortGuid(new Guid(u.Id)),
                 IsAdmin = _context.UserRoles.Where(ur => ur.UserId == u.Id && ur.RoleId == adminRole.Id).Any(),
                 PostCount = u.Posts.Count,
-                Username = u.UserName
+                Username = u.UserName,
+                CreatedOn = DateTime.SpecifyKind(u.CreatedOn, DateTimeKind.Utc),
             }
         ).ToList();
     }

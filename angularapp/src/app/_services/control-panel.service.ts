@@ -11,7 +11,7 @@ const httpOptions = {
 
 export type PostData = { id: string, title: string, postType: PostType, author: string, commentCount: number, voteCount: number, createdOn: Date };
 export type CommentData = { id: string, content: string | null, postTitle: string, postId: string, author: string | null, replyCount: number, voteCount: number, createdOn: Date };
-export type UserData = { id: string, username: string, email: string, isAdmin: boolean, commentCount: number, postCount: number };
+export type UserData = { id: string, username: string, email: string, isAdmin: boolean, commentCount: number, postCount: number, createdOn: Date };
 
 @Injectable({
 	providedIn: 'root'
@@ -41,6 +41,8 @@ export class ControlPanelService {
 		return this.http.get<UserData[]>(
 			AUTH_API + 'users',
 			httpOptions
+		).pipe(
+			map(response => response.map(p => Object.assign(p, { createdOn: new Date(p.createdOn) })))
 		);
 	}
 

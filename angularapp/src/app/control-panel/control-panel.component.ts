@@ -6,6 +6,8 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
 import { MatDialog } from '@angular/material/dialog';
 import { ManageUserDialogComponent } from '../manage-user-dialog/manage-user-dialog.component';
 import { CommentData, ControlPanelService, PostData, UserData } from '../_services/control-panel.service';
+import { ThemeService } from '../_services/theme.service';
+import { CanvasJSChart } from '@canvasjs/angular-charts';
 
 @Component({
   selector: 'app-control-panel',
@@ -24,17 +26,41 @@ export class ControlPanelComponent implements OnInit, AfterViewInit {
 	@ViewChild("commentPaginator") commentPaginator: MatPaginator | null = null;
 
 	userDataSource: MatTableDataSource<UserData> = new MatTableDataSource();
-	displayedUserColumns: string[] = ['username', 'email', 'isAdmin', 'commentCount', 'postCount', 'manage', 'delete'];
+	displayedUserColumns: string[] = ['username', 'email', 'isAdmin', 'commentCount', 'postCount', 'createdOn', 'manage', 'delete'];
 	@ViewChild("userPaginator") userPaginator: MatPaginator | null = null;
+
+	@ViewChild("graph") graph: CanvasJSChart | null = null;
+
+	chartOptions: any = {
+		zoomEnabled: true,
+		exportEnabled: true,
+		theme: "light2",
+		title: {
+			text: "Daily Posts"
+		},
+		data: []
+	}
+	graphType?: string = "posts";
 
 	constructor(
 		public dateHelperService: DateHelperService,
 		private dialog: MatDialog,
-		private controlPanelService: ControlPanelService
+		private controlPanelService: ControlPanelService,
+		private themeService: ThemeService
 	) { }
 
 	ngOnInit() {
 		this.updataData();
+		this.themeService.isLightTheme.subscribe((isLightTheme) => {
+			this.chartOptions = {
+				...this.chartOptions,
+				theme: isLightTheme ? 'light2' : 'dark2',
+				backgroundColor: getComputedStyle(document.body).getPropertyValue("--surface-color")
+			};
+			if (this.graph) {
+				this.graph.shouldUpdateChart = true;
+			}
+		})
 	}
 
 	ngAfterViewInit() {
@@ -43,9 +69,61 @@ export class ControlPanelComponent implements OnInit, AfterViewInit {
 		this.userDataSource.paginator = this.userPaginator;
 	}
 
+	totalUsers = () => this.userDataSource.data.length;
+	totalPosts = () => this.postDataSource.data.length;
+	totalComments = () => this.commentDataSource.data.length;
+
+	setChartData() {
+		const data: any[] = [];
+		let dataset;
+		switch (this.graphType) {
+			case 'posts':
+				dataset = this.postDataSource.data;
+				break;
+			case 'comments':
+				dataset = this.commentDataSource.data;
+				break;
+			case 'users':
+				dataset = this.userDataSource.data;
+				break;
+			default:
+				return;
+		}
+		dataset.forEach(p => {
+			const createdOn = new Date(p.createdOn.getFullYear(), p.createdOn.getMonth());
+			const day = data.find((d: any) => {
+				return d.x.getMonth() == createdOn.getMonth() && d.x.getFullYear() == createdOn.getFullYear();
+			})
+			if (day) {
+				day.y++;
+			}
+			else {
+				data.push({ x: createdOn, y: 1 });
+			}
+		});
+		data.sort((a, b) => (b.x - a.x))
+		this.chartOptions = {
+			...this.chartOptions,
+			title: {
+				text: "Monthly New " + (this.graphType[0].toUpperCase() + this.graphType.substring(1))
+			},
+			axisX: {
+				valueFormatString: "MMM YYYY",
+			},
+			data: [{
+				type: 'line',
+				dataPoints: data
+			}]
+		};
+		if (this.graph) {
+			this.graph.shouldUpdateChart = true;
+		}
+	}
+
 	updataData() {
 		this.controlPanelService.getPosts().subscribe(posts => {
 			this.postDataSource.data = posts;
+			this.setChartData();
 		});
 		this.controlPanelService.getComments().subscribe(comments => {
 			this.commentDataSource.data = comments;
