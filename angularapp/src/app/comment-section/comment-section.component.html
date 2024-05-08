@@ -1,4 +1,13 @@
 <mat-card>
+    <button id="order-by-menu" mat-button [matMenuTriggerFor]="orderByMenu">
+        <mat-icon>sort</mat-icon>
+        Order by
+    </button>
+    <mat-menu #orderByMenu="matMenu">
+        <button (click)="sortComments(option)" *ngFor="let option of orderByOptions" mat-menu-item>
+            {{option}}
+        </button>
+    </mat-menu>
     <div style="margin-top: 10px;" [style.display]="isLoading ? 'block' : 'none'">
         <div style="text-align: center">Loading Comments</div>
         <mat-progress-bar style="margin-top: 10px;" mode="indeterminate"></mat-progress-bar>
@@ -11,7 +20,7 @@
 
     <div style="margin-top: 10px;" [style.display]="shouldShowNoCommentText() ? 'block' : 'none'">
         <div style="display: flex; justify-content: center; align-items: center;">Be the first to <button mat-button (click)="startReply('post')">Comment</button>!</div>
-        
+
     </div>
     <mat-card-content>
         <mat-form-field class="comment-input" *ngIf="repliesInProgress.hasOwnProperty('post')" subscriptSizing="dynamic">
@@ -25,7 +34,7 @@
             <button matSuffix mat-button (click)="cancelReply('post')">Cancel</button>
             <button matSuffix mat-button (click)="submitReply('post')">Comment</button>
         </mat-form-field>
-        <div *ngFor="let commentId of getOrderedCommentIds()">
+        <div *ngFor="let commentId of orderedCommentIds">
             <mat-card [style.marginLeft]="15 * comments[commentId].depth + 'px'" *ngIf="!editsInProgress.includes(commentId)"
                       [style.borderColor]="getCommentColor(comments[commentId].depth)" class="comment">
                 <div class="comment-options">

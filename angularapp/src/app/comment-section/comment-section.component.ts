@@ -9,7 +9,7 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
 import { PostService } from '../_services/post.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-export type Comments = Record<string, {
+type Comment = {
 	owner: string,
 	content: string,
 	replyTo: string | null,
@@ -17,7 +17,8 @@ export type Comments = Record<string, {
 	voteCount: number,
 	isVotedByUser: boolean,
 	createdOn: Date
-}>;
+};
+export type Comments = Record<string, Comment>;
 
 @Component({
   selector: 'app-comment-section',
@@ -39,6 +40,9 @@ export class CommentSectionComponent implements OnInit {
 
 	isLoading = true;
 	hasFailedToLoadComments = false;
+	orderBy = 'Newest';
+	orderByOptions = ['Newest', 'Oldest', 'Most voted']
+	orderedCommentIds: string[] = [];
 
 	constructor(
 		private storageService: StorageService,
@@ -65,6 +69,7 @@ export class CommentSectionComponent implements OnInit {
 						createdOn: comment.createdOn
 					};
 				}
+				this.updateCommentOrder();
 				this.commentCount.emit(this.getCommentCount());
 				this.isLoading = false;
 				this.changeDetector.detectChanges();
@@ -84,6 +89,11 @@ export class CommentSectionComponent implements OnInit {
 		})
 	}
 
+	sortComments(orderBy: string) {
+		this.orderBy = orderBy;
+		this.updateCommentOrder();
+	}
+
 	getCommentCount(): number {
 		return Object.keys(this.comments).length;
 	}
@@ -97,23 +107,31 @@ export class CommentSectionComponent implements OnInit {
 		return this.commentDepthColors[depth];
 	}
 
-	getOrderedCommentIds(): string[] {
-		const orderedCommentIds: string[] = [];
-		const oldestToNewest = Object.entries(this.comments).sort((first, second) => first[1].createdOn.valueOf() - second[1].createdOn.valueOf());
-		for (const [commentId, commentValue] of oldestToNewest) {
-			if (!commentValue.replyTo) {
-				orderedCommentIds.splice(0, 0, commentId);
-				continue;
-			}
-			let i = orderedCommentIds.indexOf(commentValue.replyTo!) + 1;
-			if (i != oldestToNewest.length - 1) {
-				while (oldestToNewest[i][1].replyTo == commentValue.replyTo) {
-					i++;
+	updateCommentOrder() {		
+		let orderMethod: (a: [string, Comment], b: [string, Comment]) => number;
+		if (this.orderBy == 'Newest') {
+			orderMethod = (first, second) => second[1].createdOn.valueOf() - first[1].createdOn.valueOf();
+		} else if (this.orderBy == 'Oldest') {
+			orderMethod = (first, second) => first[1].createdOn.valueOf() - second[1].createdOn.valueOf();
+		} else { // order by most voted
+			orderMethod = (first, second) => {
+				const voteComparison = second[1].voteCount.valueOf() - first[1].voteCount.valueOf();
+				if (voteComparison == 0) {
+					return second[1].createdOn.valueOf() - first[1].createdOn.valueOf();
 				}
-			}
-			orderedCommentIds.splice(i, 0, commentId);
+				return voteComparison;
+			};
 		}
-		return orderedCommentIds;
+		function flattenRecursive(items: any[], parentId = null) {
+			const fullySorted: string[] = [];
+			const sortedParents: any[] = items.filter(x => x[1].replyTo == parentId).sort(orderMethod);
+			sortedParents.forEach(item => {
+				fullySorted.push(item[0]);
+				fullySorted.push(...flattenRecursive(items, item[0]))
+			});
+			return fullySorted;
+		}
+		this.orderedCommentIds = flattenRecursive(Object.entries(this.comments));
 	}
 
 	editComment(commentId: string): void {
@@ -159,6 +177,8 @@ export class CommentSectionComponent implements OnInit {
 			isVotedByUser: false,
 			createdOn: new Date()
 		}
+		const parentCommentId = this.orderedCommentIds.indexOf(replyTo);
+		this.orderedCommentIds.splice(parentCommentId + 1, 0, tempCommentId);
 		this.commentCount.emit(this.getCommentCount());
 
 		this.changeDetector.detectChanges();
@@ -172,6 +192,8 @@ export class CommentSectionComponent implements OnInit {
 				const id = response.value;
 				this.comments[id] = this.comments[tempCommentId];
 				delete this.comments[tempCommentId];
+				const commentPosition = this.orderedCommentIds.indexOf(tempCommentId);
+				this.orderedCommentIds.splice(commentPosition, 1, id);
 
 				this.changeDetector.detectChanges();
 				const element = document.getElementById('comment' + id) as HTMLElement;
@@ -253,6 +275,7 @@ export class CommentSectionComponent implements OnInit {
 							const parentId: string | null = this.comments[commentId].replyTo;
 
 							delete this.comments[commentId];
+							this.orderedCommentIds.splice(this.orderedCommentIds.indexOf(commentId), 1);
 							this.commentCount.emit(this.getCommentCount());
 
 							if (parentId !== null &&
@@ -265,6 +288,7 @@ export class CommentSectionComponent implements OnInit {
 							}
 						}
 						delete this.comments[commentId];
+						this.orderedCommentIds.splice(this.orderedCommentIds.indexOf(commentId), 1);
 					} else {
 						this.comments[commentId].owner = "[Deleted]";
 						this.comments[commentId].content = "";

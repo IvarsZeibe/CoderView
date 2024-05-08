@@ -41,3 +41,7 @@ mat-card-content, mat-card-title {
 	display: flex;
 	align-items: center;
 }
+
+#order-by-menu {
+	margin-left: auto;
+}
