@@ -2,17 +2,23 @@
 <div id="info-pane">
     <mat-card>
         <h1>Total posts</h1>
-        <span>3</span>
+        <span>{{totalPosts()}}</span>
     </mat-card>
     <mat-card>
         <h1>Total users</h1>
-        <span>32</span>
+        <span>{{totalUsers()}}</span>
     </mat-card>
     <mat-card>
         <h1>Total comments</h1>
-        <span>172</span>
+        <span>{{totalComments()}}</span>
     </mat-card>
 </div>
+<mat-button-toggle-group [(ngModel)]="graphType" (ngModelChange)="setChartData()" aria-label="Font Style">
+    <mat-button-toggle value="posts">Posts</mat-button-toggle>
+    <mat-button-toggle value="comments">Comments</mat-button-toggle>
+    <mat-button-toggle value="users">Users</mat-button-toggle>
+</mat-button-toggle-group>
+<canvasjs-chart #graph [options]="chartOptions"></canvasjs-chart>
 <mat-accordion>
     <mat-expansion-panel>
         <mat-expansion-panel-header>
@@ -174,6 +180,15 @@
             <ng-container matColumnDef="postCount">
                 <th mat-header-cell *matHeaderCellDef> Posts </th>
                 <td mat-cell *matCellDef="let element" title="{{element.postCount}}"> {{element.postCount}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="createdOn">
+                <th mat-header-cell *matHeaderCellDef> Created on </th>
+                <td class="date-row" mat-cell *matCellDef="let element"
+                    title="{{element.createdOn.toLocaleDateString() + ' ' + element.createdOn.toLocaleTimeString()}}">
+                    <div class="time-passed-date">{{dateHelperService.getTimePassedString(element.createdOn, currentTime)}}</div>
+                    <div class="full-date">{{element.createdOn.toLocaleDateString() + ' ' + element.createdOn.toLocaleTimeString()}}</div>
+                </td>
             </ng-container>
 
             <ng-container matColumnDef="manage">

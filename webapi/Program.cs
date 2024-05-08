@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using webapi.Controllers;
 using webapi.Data;
+using webapi.Helper;
 using webapi.Models;
 using webapi.Services;
 
@@ -34,6 +36,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetService<CoderViewDbContext>();
+    //db.Database.EnsureDeleted();
     if (db.Database.EnsureCreated())
     {
         var roleManager = scope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
@@ -45,6 +48,11 @@ using (var scope = app.Services.CreateScope())
         user.Email = "admin@admin.admin";
         userManager.CreateAsync(user, "Admin123!").Wait();
         userManager.AddToRoleAsync(user, "Administrator").Wait();
+
+
+        DataGenerator dataGenerator = new DataGenerator();
+        dataGenerator.AddUsers(userManager);
+        dataGenerator.AddPosts(db);
     }
 }
 

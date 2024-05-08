@@ -63,6 +63,19 @@ mat-expansion-panel {
 	border-radius: 10px !important;
 }
 
+canvasjs-chart {
+	display: flex;
+	margin-bottom: 20px;
+}
+
+::ng-deep canvasjs-chart canvas {
+	border-radius: 10px;
+}
+
+::ng-deep .canvasjs-chart-toolbar {
+	display: none;
+}
+
 mat-accordion mat-expansion-panel:not(.mat-expanded),
 mat-accordion mat-expansion-panel:not(.mat-expansion-panel-spacing) {
 	border-radius: 0px !important;

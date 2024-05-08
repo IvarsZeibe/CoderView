@@ -9,5 +9,6 @@ namespace webapi.Models
         public List<Comment> Comments { get; } = new();
         public List<PostVote> PostVotes { get; } = new();
         public List<CommentVote> CommentVotes { get; } = new();
+        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
     }
 }

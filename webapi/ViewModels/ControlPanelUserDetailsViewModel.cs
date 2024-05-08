@@ -8,5 +8,6 @@
         public bool IsAdmin { get; set; }
         public int CommentCount { get; set; }
         public int PostCount { get; set; }
+        public DateTime CreatedOn { get; set; }
     }
 }
