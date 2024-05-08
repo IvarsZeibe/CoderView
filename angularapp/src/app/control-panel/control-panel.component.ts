@@ -33,7 +33,6 @@ export class ControlPanelComponent implements OnInit, AfterViewInit {
 
 	chartOptions: any = {
 		zoomEnabled: true,
-		exportEnabled: true,
 		theme: "light2",
 		title: {
 			text: "Daily Posts"
@@ -55,7 +54,11 @@ export class ControlPanelComponent implements OnInit, AfterViewInit {
 			this.chartOptions = {
 				...this.chartOptions,
 				theme: isLightTheme ? 'light2' : 'dark2',
-				backgroundColor: getComputedStyle(document.body).getPropertyValue("--surface-color")
+				backgroundColor: getComputedStyle(document.body).getPropertyValue("--surface-color"),
+				toolbar: {
+					buttonBorderColor: getComputedStyle(document.body).getPropertyValue("--comment-border"),
+					itemBackgroundColor: '#b8c4f599'
+				},
 			};
 			if (this.graph) {
 				this.graph.shouldUpdateChart = true;

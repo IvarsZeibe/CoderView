@@ -72,9 +72,9 @@ canvasjs-chart {
 	border-radius: 10px;
 }
 
-::ng-deep .canvasjs-chart-toolbar {
-	display: none;
-}
+/*::ng-deep .canvasjs-chart-toolbar button[state="menu"] {
+	display: none !important;
+}*/
 
 mat-accordion mat-expansion-panel:not(.mat-expanded),
 mat-accordion mat-expansion-panel:not(.mat-expansion-panel-spacing) {
