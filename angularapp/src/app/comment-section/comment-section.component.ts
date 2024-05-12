@@ -287,8 +287,6 @@ export class CommentSectionComponent implements OnInit {
 								break;
 							}
 						}
-						delete this.comments[commentId];
-						this.orderedCommentIds.splice(this.orderedCommentIds.indexOf(commentId), 1);
 					} else {
 						this.comments[commentId].owner = "[Deleted]";
 						this.comments[commentId].content = "";
