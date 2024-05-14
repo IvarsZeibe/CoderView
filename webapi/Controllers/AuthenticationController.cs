@@ -9,7 +9,7 @@ using webapi.ViewModels;
 namespace webapi.Controllers;
 
 [ApiController]
-public class AuthenticationController : ControllerBase
+public class AuthenticationController : Controller
 {
     private AuthService _authService;
     public AuthenticationController(AuthService authService)
@@ -26,9 +26,9 @@ public class AuthenticationController : ControllerBase
 
     [HttpPost]
     [Route("/api/signin")]
-    public Task<bool> SignIn(SignInViewModel model)
+    public IActionResult SignIn(SignInViewModel model)
     {
-        return _authService.SignInAsync(model);
+        return Json(_authService.SignInAsync(model).Result);
     }
 
     [HttpPost]

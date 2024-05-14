@@ -3,7 +3,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ActivatedRoute, Router, RouterStateSnapshot } from '@angular/router';
 
-//const AUTH_API = 'http://localhost:8080/api/auth/';
 const AUTH_API = '/api/';
 
 const httpOptions = {
@@ -29,8 +28,8 @@ export class AuthService {
 		);
 	}
 
-	login(username: string, password: string): Observable<boolean> {
-		return this.http.post<boolean>(
+	login(username: string, password: string): Observable<string> {
+		return this.http.post<string>(
 			AUTH_API + 'signin',
 			{
 				username,

@@ -27,12 +27,13 @@ namespace webapi.Services
             _passwordHasher = new PasswordHasher<ApplicationUser>();
         }
 
-        public async Task<bool> SignInAsync(SignInViewModel model)
+        // returns username if sign in successful
+        public async Task<string> SignInAsync(SignInViewModel model)
         {
             ApplicationUser user = _context.ApplicationUsers.Where(u => u.UserName == model.Username).FirstOrDefault();
             if (user is null)
             {
-                return false;
+                return "";
             }
 
             bool isPasswordCorrect = 
@@ -40,13 +41,13 @@ namespace webapi.Services
 
             if (!isPasswordCorrect)
             {
-                return false;
+                return "";
             }
 
             var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
             identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName));
             await _signInManager.SignInAsync(user, isPersistent: false);
-            return true;
+            return user.UserName;
         }
 
         public async Task SignOutAsync()

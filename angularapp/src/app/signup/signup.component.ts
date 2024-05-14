@@ -44,6 +44,7 @@ export class SignUpComponent implements OnInit {
 		this.isSignupFailed = false;
 		this.isLoading = true;
 		const { username, email, password } = this.registerForm.value;
+		let formattedUsername = "";
 
 		this.authService.register(username, email, password)
 			.pipe(
@@ -58,13 +59,14 @@ export class SignUpComponent implements OnInit {
 					let isLoginSuccessful: boolean;
 					this.authService.login(username, password)
 						.pipe(
-							switchMap(isSuccess => {
-								isLoginSuccessful = isSuccess;
-								return isSuccess ? this.authService.getRoles() : of([]);
+							switchMap(username => {
+								formattedUsername = username;
+								isLoginSuccessful = !!username;
+								return username ? this.authService.getRoles() : of([]);
 							}),
 							finalize(() => {
 								if (isLoginSuccessful) {
-									this.storageService.saveUser(username, roles);
+									this.storageService.saveUser(formattedUsername, roles);
 									const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
 									this.router.navigateByUrl(returnUrl);
 								}

@@ -260,7 +260,7 @@ export class CommentSectionComponent implements OnInit {
 	}
 
 	isCommentedByCurrentUser(commentId: string) {
-		return this.comments[commentId].owner.toLowerCase() == this.storageService.getUsername();
+		return this.comments[commentId].owner == this.storageService.getUsername();
 	}
 
 	openDeleteCommentDialog(commentId: string) {

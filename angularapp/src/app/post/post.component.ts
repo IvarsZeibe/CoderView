@@ -45,7 +45,7 @@ export class PostComponent implements OnInit {
 		this.postId = this.route.snapshot.paramMap.get('id')!;
 		this.postService.get(this.postId).subscribe({
 			next: postData => {
-				this.isOwnPost = postData.author.toLowerCase() == this.storageService.getUsername()?.toLowerCase();
+				this.isOwnPost = postData.author == this.storageService.getUsername();
 				this.title = postData.title;
 				this.author = postData.author;
 				this.description = postData.description;

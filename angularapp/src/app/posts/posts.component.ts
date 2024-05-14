@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { PostSummary, PostService, PostType } from '../_services/post.service';
 import { StorageService } from '../_services/storage.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,7 +17,7 @@ import { ThemeService } from '../_services/theme.service';
 	templateUrl: './posts.component.html',
 	styleUrls: ['./posts.component.css']
 })
-export class PostsComponent implements OnInit, AfterViewInit {
+export class PostsComponent implements OnInit, AfterViewInit, OnDestroy {
 	posts: PostSummary[] = [];
 
 	unappliedTitleFilter = "";
@@ -42,6 +42,8 @@ export class PostsComponent implements OnInit, AfterViewInit {
 
 	getPostsRequest?: Subscription;
 	editorTheme = 'vs-light';
+
+	resizeObserver?: ResizeObserver;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -87,18 +89,18 @@ export class PostsComponent implements OnInit, AfterViewInit {
 			);
 		});
 
-		//this.editorOptions = { ...this.editorOptions, theme: this.themeService.isLightTheme.observed ? 'vs-light' : 'vs-dark' }
 		this.themeService.isLightTheme.subscribe({
 			next: isLightTheme => {
 				this.editorTheme = isLightTheme ? 'vs-light' : 'vs-dark';
 			}
 		});
 
-		new ResizeObserver(() => {
-			if (this.isNearPageBottom()) {
+		this.resizeObserver = new ResizeObserver(() => {
+			if (!this.isTryingToLoadPosts && this.isNearPageBottom()) {
 				this.loadMorePosts();
 			}
-		}).observe(document.documentElement);
+		});
+		this.resizeObserver.observe(document.documentElement);
 	}
 
 	ngAfterViewInit() {
@@ -109,6 +111,12 @@ export class PostsComponent implements OnInit, AfterViewInit {
 				queryParams: { tag: null },
 				queryParamsHandling: 'merge'
 			});
+		}
+	}
+
+	ngOnDestroy() {
+		if (this.resizeObserver) {
+			this.resizeObserver.disconnect();
 		}
 	}
 

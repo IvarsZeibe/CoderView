@@ -8,7 +8,7 @@ const USER_KEY = 'auth-user';
 export class StorageService {
 
 	clean(): void {
-		window.localStorage.clear();
+		window.localStorage.removeItem(USER_KEY);
 	}
 
 	public saveUser(user: string, roles: string[]): void {
