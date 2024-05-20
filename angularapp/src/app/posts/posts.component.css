@@ -92,6 +92,7 @@ mat-expansion-panel-header {
 	}
 	.post-type-field {
 		flex: 1;
+		flex-basis: 100%;
 	}
 	.search-bar {
 		margin-right: 0px !important;

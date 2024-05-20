@@ -97,6 +97,12 @@ mat-accordion mat-expansion-panel:last-of-type {
 	gap: 10px;
 	margin-bottom: 20px;
 }
+
+#info-pane h1 {
+	margin: 10px 0px;
+	height: 60px;
+}
+
 #info-pane mat-card {
 	flex: 1;
 	text-align: center;
@@ -105,3 +111,20 @@ mat-accordion mat-expansion-panel:last-of-type {
 	font-size: 80px;
 	text-align: center;
 }
+
+@media only screen and (max-width: 600px) {
+
+	#info-pane {
+		height: 120px;
+	}
+
+	#info-pane mat-card span {
+		font-size: 40px;
+	}
+
+	#info-pane h1 {
+		font-size: 20px;
+		height: 40px;
+	}
+}
+

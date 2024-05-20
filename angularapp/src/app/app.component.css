@@ -15,16 +15,24 @@ main {
 	display: flex;
 	flex-direction: column;
 }
-
 footer {
 	text-align: center;
 	padding: 20px;
 	background-color: var(--footer-color);
 }
 
+::ng-deep .mat-mdc-table {
+	display: block;
+	overflow-x: auto;
+}
+
 ::ng-deep .mat-mdc-text-field-wrapper {
 	border-top-left-radius: 10px !important;
 	border-top-right-radius: 10px !important;
+}
+
+::ng-deep .mdc-button {
+	white-space: nowrap;
 }
 
 ::ng-deep .mat-mdc-card,
