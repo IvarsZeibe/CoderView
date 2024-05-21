@@ -21,11 +21,6 @@ footer {
 	background-color: var(--footer-color);
 }
 
-::ng-deep .mat-mdc-table {
-	display: block;
-	overflow-x: auto;
-}
-
 ::ng-deep .mat-mdc-text-field-wrapper {
 	border-top-left-radius: 10px !important;
 	border-top-right-radius: 10px !important;

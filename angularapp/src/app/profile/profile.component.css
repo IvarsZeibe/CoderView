@@ -64,6 +64,10 @@ mat-accordion mat-expansion-panel:last-of-type {
 	justify-content: space-between;
 }
 
+.table-container {
+	overflow-x: auto;
+}
+
 table {
 	margin-top: 2px;
 	border-radius: 10px;
