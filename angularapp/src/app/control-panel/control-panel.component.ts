@@ -39,7 +39,10 @@ export class ControlPanelComponent implements OnInit, AfterViewInit {
 		zoomEnabled: true,
 		theme: "light2",
 		title: {
-			text: "Daily Posts"
+			fontFamily: "Roboto, sans-serif"
+		},
+		axisX: {
+			valueFormatString: "MMM YYYY",
 		},
 		data: []
 	}
@@ -55,15 +58,13 @@ export class ControlPanelComponent implements OnInit, AfterViewInit {
 	ngOnInit() {
 		this.updataData();
 		this.themeService.isLightTheme.subscribe((isLightTheme) => {
-			this.chartOptions = {
-				...this.chartOptions,
-				theme: isLightTheme ? 'light2' : 'dark2',
-				backgroundColor: getComputedStyle(document.body).getPropertyValue("--surface-color"),
-				toolbar: {
-					buttonBorderColor: getComputedStyle(document.body).getPropertyValue("--comment-border"),
-					itemBackgroundColor: '#b8c4f599'
-				},
+			this.chartOptions.theme = isLightTheme ? 'light2' : 'dark2';
+			this.chartOptions.backgroundColor = getComputedStyle(document.body).getPropertyValue("--surface-color");
+			this.chartOptions.toolbar = {
+				buttonBorderColor: getComputedStyle(document.body).getPropertyValue("--comment-border"),
+				itemBackgroundColor: '#b8c4f599'
 			};
+			this.chartOptions = { ...this.chartOptions }
 			if (this.graph) {
 				this.graph.shouldUpdateChart = true;
 			}
@@ -142,20 +143,14 @@ export class ControlPanelComponent implements OnInit, AfterViewInit {
 				data.push({ x: createdOn, y: 1 });
 			}
 		});
-		data.sort((a, b) => (b.x - a.x))
-		this.chartOptions = {
-			...this.chartOptions,
-			title: {
-				text: "Monthly New " + (this.graphType[0].toUpperCase() + this.graphType.substring(1))
-			},
-			axisX: {
-				valueFormatString: "MMM YYYY",
-			},
-			data: [{
-				type: 'line',
-				dataPoints: data
-			}]
-		};
+		data.sort((a, b) => (b.x - a.x));
+
+		this.chartOptions.title.text = "Monthly New " + this.graphType[0].toUpperCase() + this.graphType.substring(1);
+		this.chartOptions.data = [{
+			type: 'line',
+			dataPoints: data
+		}];
+		this.chartOptions = {...this.chartOptions };
 		if (this.graph) {
 			this.graph.shouldUpdateChart = true;
 		}
