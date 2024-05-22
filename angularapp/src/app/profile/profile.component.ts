@@ -10,6 +10,7 @@ import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component'
 import { Router } from '@angular/router';
 import { AuthService } from '../_services/auth-service.service';
 import { StorageService } from '../_services/storage.service';
+import { MatSort } from '@angular/material/sort';
 
 @Component({
 	selector: 'app-profile',
@@ -39,12 +40,14 @@ export class ProfileComponent implements OnInit {
 	commentDataSource = new MatTableDataSource(this.comments);
 	displayedCommentHistoryColumns: string[] = ['postTitle', 'commentContent', 'voteCount', 'createdOn'];
 	@ViewChild("commentPaginator") commentPaginator: MatPaginator | null = null;
+	@ViewChild("commentTable", { read: MatSort, static: true }) commentSort: MatSort | null = null;
 
 
 	posts: MyPost[] = [];
 	postDataSource = new MatTableDataSource(this.posts);
 	displayedPostHistoryColumns: string[] = ['title', 'commentCount', 'voteCount', 'createdOn'];
 	@ViewChild("postPaginator") postPaginator: MatPaginator | null = null;
+	@ViewChild("postTable", { read: MatSort, static: true }) postSort: MatSort | null = null;
 
 
 	constructor(
@@ -58,6 +61,16 @@ export class ProfileComponent implements OnInit {
 	) { }
 
 	ngOnInit(): void {
+		const caseInsensetiveSorting = (data: any, sortHeaderId: string): string => {
+			if (typeof data[sortHeaderId] === 'string') {
+				return data[sortHeaderId].toLocaleLowerCase();
+			}
+
+			return data[sortHeaderId];
+		};
+		this.postDataSource.sortingDataAccessor = caseInsensetiveSorting;
+		this.commentDataSource.sortingDataAccessor = caseInsensetiveSorting;
+
 		this.userService.getUserData().subscribe({
 			next: data => {
 				this.username = data.username;
@@ -67,15 +80,31 @@ export class ProfileComponent implements OnInit {
 
 		this.userService.getCommentHistory().subscribe({
 			next: comments => {
-				this.commentDataSource = new MatTableDataSource(comments);
+				this.commentDataSource.data = comments;
 				this.commentDataSource.paginator = this.commentPaginator;
+
+				this.commentDataSource.sort = this.commentSort;
+				if (this.commentSort) {
+					this.commentSort.active = "createdOn";
+					this.commentSort.direction = "desc";
+					this.commentSort.disableClear = true;
+					this.commentSort.sortChange.emit();
+				}
 			}
 		});
 
 		this.userService.getPostHistory().subscribe({
 			next: posts => {
-				this.postDataSource = new MatTableDataSource(posts);
+				this.postDataSource.data = posts;
 				this.postDataSource.paginator = this.postPaginator;
+
+				this.postDataSource.sort = this.postSort
+				if (this.postSort) {
+					this.postSort.active = "createdOn";
+					this.postSort.direction = "desc";
+					this.postSort.disableClear = true;
+					this.postSort.sortChange.emit();
+				}
 			}
 		});
 

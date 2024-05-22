@@ -23,6 +23,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
 import { CanvasJSAngularChartsModule } from '@canvasjs/angular-charts';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
@@ -68,7 +69,7 @@ import { ConfirmResetPasswordDialogComponent } from './confirm-reset-password-di
 		MatMenuModule, MonacoEditorModule.forRoot(),
 		DragDropModule, MatTableModule,
 		MatPaginatorModule, CanvasJSAngularChartsModule,
-		MatButtonToggleModule
+		MatButtonToggleModule, MatSortModule
 	],
 	providers: [httpInterceptorProviders],
 	bootstrap: [AppComponent],

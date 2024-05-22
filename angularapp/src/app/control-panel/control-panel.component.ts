@@ -8,6 +8,7 @@ import { ManageUserDialogComponent } from '../manage-user-dialog/manage-user-dia
 import { CommentData, ControlPanelService, PostData, UserData } from '../_services/control-panel.service';
 import { ThemeService } from '../_services/theme.service';
 import { CanvasJSChart } from '@canvasjs/angular-charts';
+import { MatSort } from '@angular/material/sort';
 
 @Component({
   selector: 'app-control-panel',
@@ -20,14 +21,17 @@ export class ControlPanelComponent implements OnInit, AfterViewInit {
 	postDataSource: MatTableDataSource<PostData> = new MatTableDataSource();
 	displayedPostColumns: string[] = ['title', 'postType', 'author', 'commentCount', 'voteCount', 'createdOn', 'delete'];
 	@ViewChild("postPaginator") postPaginator: MatPaginator | null = null;
+	@ViewChild("postTable", { read: MatSort, static: true }) postSort: MatSort | null = null;
 
 	commentDataSource: MatTableDataSource<CommentData> = new MatTableDataSource();
 	displayedCommentColumns: string[] = ['content', 'postTitle', 'author', 'replyCount', 'voteCount', 'createdOn', 'delete'];
 	@ViewChild("commentPaginator") commentPaginator: MatPaginator | null = null;
+	@ViewChild("commentTable", { read: MatSort, static: true }) commentSort: MatSort | null = null;
 
 	userDataSource: MatTableDataSource<UserData> = new MatTableDataSource();
 	displayedUserColumns: string[] = ['username', 'email', 'isAdmin', 'commentCount', 'postCount', 'createdOn', 'manage', 'delete'];
 	@ViewChild("userPaginator") userPaginator: MatPaginator | null = null;
+	@ViewChild("userTable", { read: MatSort, static: true }) userSort: MatSort | null = null;
 
 	@ViewChild("graph") graph: CanvasJSChart | null = null;
 
@@ -64,12 +68,46 @@ export class ControlPanelComponent implements OnInit, AfterViewInit {
 				this.graph.shouldUpdateChart = true;
 			}
 		})
+		
+		const caseInsensetiveSorting = (data: any, sortHeaderId: string): string => {
+			if (typeof data[sortHeaderId] === 'string') {
+				return data[sortHeaderId].toLocaleLowerCase();
+			}
+
+			return data[sortHeaderId];
+		};
+		this.postDataSource.sortingDataAccessor = caseInsensetiveSorting;
+		this.commentDataSource.sortingDataAccessor = caseInsensetiveSorting;
+		this.userDataSource.sortingDataAccessor = caseInsensetiveSorting;
 	}
 
 	ngAfterViewInit() {
 		this.postDataSource.paginator = this.postPaginator
 		this.commentDataSource.paginator = this.commentPaginator;
 		this.userDataSource.paginator = this.userPaginator;
+
+		this.postDataSource.sort = this.postSort
+		this.commentDataSource.sort = this.commentSort;
+		this.userDataSource.sort = this.userSort;
+
+		if (this.postSort) {
+			this.postSort.active = "createdOn";
+			this.postSort.direction = "desc";
+			this.postSort.disableClear = true;
+			this.postSort.sortChange.emit();
+		}
+		if (this.commentSort) {
+			this.commentSort.active = "createdOn";
+			this.commentSort.direction = "desc";
+			this.commentSort.disableClear = true;
+			this.commentSort.sortChange.emit();
+		}
+		if (this.userSort) {
+			this.userSort.active = "createdOn";
+			this.userSort.direction = "desc";
+			this.userSort.disableClear = true;
+			this.userSort.sortChange.emit();
+		}
 	}
 
 	totalUsers = () => this.userDataSource.data.length;

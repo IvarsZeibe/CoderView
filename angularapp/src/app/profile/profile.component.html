@@ -114,24 +114,24 @@
                     <mat-panel-title>View post history</mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="table-container">
-                    <table mat-table [dataSource]="postDataSource">
+                    <table mat-table matSort #postTable [dataSource]="postDataSource">
                         <ng-container matColumnDef="title">
-                            <th mat-header-cell *matHeaderCellDef> Post </th>
+                            <th mat-header-cell mat-sort-header *matHeaderCellDef> Post </th>
                             <td mat-cell *matCellDef="let element" title="{{element.title}}"> {{element.title}} </td>
                         </ng-container>
 
                         <ng-container matColumnDef="commentCount">
-                            <th mat-header-cell *matHeaderCellDef> Comments </th>
+                            <th mat-header-cell mat-sort-header *matHeaderCellDef> Comments </th>
                             <td mat-cell *matCellDef="let element" title="{{element.commentCount}}"> {{element.commentCount}} </td>
                         </ng-container>
 
                         <ng-container matColumnDef="voteCount">
-                            <th mat-header-cell *matHeaderCellDef> Votes </th>
+                            <th mat-header-cell mat-sort-header *matHeaderCellDef> Votes </th>
                             <td mat-cell *matCellDef="let element" title="{{element.voteCount}}"> {{element.voteCount}} </td>
                         </ng-container>
 
                         <ng-container matColumnDef="createdOn">
-                            <th mat-header-cell *matHeaderCellDef> Created on </th>
+                            <th mat-header-cell mat-sort-header *matHeaderCellDef> Created on </th>
                             <td class="date-row" mat-cell *matCellDef="let element"
                                 title="{{element.createdOn.toLocaleDateString() + ' ' + element.createdOn.toLocaleTimeString()}}">
                                 <div class="time-passed-date">{{dateHelperService.getTimePassedString(element.createdOn, currentTime)}}</div>
@@ -155,24 +155,24 @@
                     <mat-panel-title>View comment history</mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="table-container">
-                    <table mat-table [dataSource]="commentDataSource">
+                    <table mat-table matSort #commentTable [dataSource]="commentDataSource">
                         <ng-container matColumnDef="postTitle">
-                            <th mat-header-cell *matHeaderCellDef> Post </th>
+                            <th mat-header-cell mat-sort-header *matHeaderCellDef> Post </th>
                             <td mat-cell *matCellDef="let element" title="{{element.postTitle}}"> {{element.postTitle}} </td>
                         </ng-container>
 
                         <ng-container matColumnDef="commentContent">
-                            <th mat-header-cell *matHeaderCellDef> Comment </th>
+                            <th mat-header-cell mat-sort-header *matHeaderCellDef> Comment </th>
                             <td mat-cell *matCellDef="let element" title="{{element.commentContent}}"> {{element.commentContent}} </td>
                         </ng-container>
 
                         <ng-container matColumnDef="voteCount">
-                            <th mat-header-cell *matHeaderCellDef> Votes </th>
+                            <th mat-header-cell mat-sort-header *matHeaderCellDef> Votes </th>
                             <td mat-cell *matCellDef="let element" title="{{element.voteCount}}"> {{element.voteCount}} </td>
                         </ng-container>
 
                         <ng-container matColumnDef="createdOn">
-                            <th mat-header-cell *matHeaderCellDef> Created on </th>
+                            <th mat-header-cell mat-sort-header *matHeaderCellDef> Created on </th>
                             <td class="date-row" mat-cell *matCellDef="let element"
                                 title="{{element.createdOn.toLocaleDateString() + ' ' + element.createdOn.toLocaleTimeString()}}">
                                 <div class="time-passed-date">{{dateHelperService.getTimePassedString(element.createdOn, currentTime)}}</div>
