@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StorageService } from '../_services/storage.service';
 import { PostService, PostType } from '../_services/post.service';
@@ -13,7 +13,7 @@ import { ThemeService } from '../_services/theme.service';
 	templateUrl: './post.component.html',
 	styleUrls: ['./post.component.css']
 })
-export class PostComponent implements OnInit {
+export class PostComponent implements OnInit, AfterViewChecked {
 	postId = "";
 	title = "";
 	description? = "";
@@ -38,7 +38,8 @@ export class PostComponent implements OnInit {
 		private postContentService: PostContentService,
 		private snackBar: MatSnackBar,
 		public guideFormattingService: GuideFormattingService,
-		private themeService: ThemeService
+		private themeService: ThemeService,
+		private changeDetector: ChangeDetectorRef,
 	) { }
 
 	ngOnInit(): void {
@@ -65,6 +66,9 @@ export class PostComponent implements OnInit {
 				this.editorOptions = { ...this.editorOptions, theme: isLightTheme ? 'vs-light' : 'vs-dark' };
 			}
 		});
+	}
+	ngAfterViewChecked(): void {
+		this.changeDetector.detectChanges();
 	}
 	updateCommentCount(commentCount: number) {
 		this.commentCount = commentCount;
